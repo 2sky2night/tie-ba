@@ -32,7 +32,6 @@ app.use(
 
 // 注册路由
 app.use(router.routes())
-app.use(router.allowedMethods())
 
 app.listen(config.PROT, () => {
     console.log(`server is running on ${config.BASE_URL}:${config.PROT}`)

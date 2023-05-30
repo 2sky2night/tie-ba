@@ -18,9 +18,10 @@ const barService = new BarService()
  */
 async function createBar(ctx: Context) {
     const body = (ctx.request as any).body as BarBody
-    if (!body.bname || !body.desc) {
+    if (!body.bname || !body.bdesc || !body.photo) {
         ctx.status = 400
-        ctx.body = response(null, '参数未携带', 400)
+        ctx.body = response(null, '有参数未携带', 400)
+        return
     }
     try {
         // 把用户token 解析出来uid
@@ -46,6 +47,22 @@ async function createBar(ctx: Context) {
 }
 
 
+/**
+ * 获取所有的吧
+ * @param ctx 
+ */
+async function getAllBar(ctx: Context) {
+    try {
+        const res = await barService.findAllBar()
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+
 export default {
-    createBar
+    createBar,
+    getAllBar
 }

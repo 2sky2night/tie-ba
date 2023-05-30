@@ -143,7 +143,7 @@ async function getUserInfo(ctx: Context) {
                 ctx.body = response(res, 'ok', 200)
             } else {
                 // 查无此人
-                ctx.bod = response(null, '查无此人', 400)
+                ctx.body = response(null, '查无此人', 400)
             }
         } else {
             await Promise.reject()

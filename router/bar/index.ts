@@ -10,4 +10,7 @@ const baseRouteURL = '/bar'
 // 创建吧 (需要token)
 barRouter.post('bar',`${baseRouteURL}/create`,BarController.createBar)
 
+// 获取所有的吧
+barRouter.get('bar', `${baseRouteURL}/all`, BarController.getAllBar)
+
 export default barRouter

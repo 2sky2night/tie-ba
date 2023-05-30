@@ -16,7 +16,7 @@ class BarModel extends BaseModel {
      */
     async insertBar(data: BarCreateBody) {
         try {
-            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid,desc) values ('${data.bname}','${getNowTimeString()}',${data.uid},'${data.desc}')`)
+            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid,bdesc,photo) values ('${data.bname}','${getNowTimeString()}',${data.uid},'${data.bdesc}','${data.photo}')`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -34,6 +34,18 @@ class BarModel extends BaseModel {
     async selectByBname(bname: string) {
         try {
             const res = await this.runSql<Bar[]>(`select * from bar where bname='${bname}'`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 查询当前所有的吧
+     * @returns 
+     */
+    async selectAllBar() {
+        try {
+            const res = await this.runSql<Bar[]>('select * from bar')
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

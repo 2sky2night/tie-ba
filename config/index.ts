@@ -17,5 +17,6 @@ export const SECRET_KEY = 'tie-ba-lower'
 export const NO_AUTH = [
     '/user/login',
     '/user/query',
-    '/user/register'
+    '/user/register',
+    '/bar/all'
 ]

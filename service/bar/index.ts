@@ -31,6 +31,18 @@ class BarService {
             return Promise.reject(error)
         }
     }
+    /**
+     * 获取所有的吧
+     * @returns 
+     */
+    async findAllBar() {
+        try {
+            const res = await bar.selectAllBar()
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 export default BarService

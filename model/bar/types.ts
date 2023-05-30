@@ -14,7 +14,15 @@ export interface Bar {
     /**
      * 吧的创建人
      */
-    uid: number
+    uid: number;
+    /**
+     * 吧的描述信息
+     */
+    bdesc: string;
+    /**
+     * 吧的头像
+     */
+    photo: string;
 }
 
 /**
@@ -22,12 +30,13 @@ export interface Bar {
  */
 export interface BarBody {
     bname: string;
-    desc: string;
+    bdesc: string;
+    photo: string;
 }
 
 /**
  * 操作sql时创建吧的数据
  */
-export interface BarCreateBody extends BarBody{
-    uid:number
+export interface BarCreateBody extends BarBody {
+    uid: number
 }
