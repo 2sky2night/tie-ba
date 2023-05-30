@@ -1,0 +1,12 @@
+/**
+ * token携带的信息
+ */
+export interface Token {
+    username: string;
+    uid: number;
+    iat: number,
+    /**
+     * token过期时间
+     */
+    exp: number;
+}

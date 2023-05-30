@@ -16,7 +16,7 @@ class BarModel extends BaseModel {
      */
     async insertBar(data: BarCreateBody) {
         try {
-            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid) values ('${data.bname}','${getNowTimeString()}',${data.uid})`)
+            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid,desc) values ('${data.bname}','${getNowTimeString()}',${data.uid},'${data.desc}')`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {

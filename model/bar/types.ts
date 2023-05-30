@@ -22,8 +22,12 @@ export interface Bar {
  */
 export interface BarBody {
     bname: string;
+    desc: string;
 }
 
+/**
+ * 操作sql时创建吧的数据
+ */
 export interface BarCreateBody extends BarBody{
     uid:number
 }

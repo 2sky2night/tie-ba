@@ -1,14 +1,21 @@
-import Koa from 'koa'
+// 所有的路由
 import router from './router'
+// 插件
+import Koa from 'koa'
 import koaBody from 'koa-body'
-import * as  config from './config'
 import koajwt from 'koa-jwt'
+import koaStatic from 'koa-static'
+// 配置项
+import * as  config from './config'
+// 中间件
 import authorizationCatcher from './middleware/authorization'
 
 const app = new Koa()
 
 /*********注册全局中间件*****/
 
+// 挂载静态资源
+app.use(koaStatic('static'))
 // 注册解析请求体
 app.use(koaBody())
 
@@ -25,6 +32,7 @@ app.use(
 
 // 注册路由
 app.use(router.routes())
+app.use(router.allowedMethods())
 
 app.listen(config.PROT, () => {
     console.log(`server is running on ${config.BASE_URL}:${config.PROT}`)

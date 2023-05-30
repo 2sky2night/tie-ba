@@ -3,6 +3,7 @@ import UserService from '../../service/user'
 // 类型
 import type { Context, Next } from 'koa'
 import type { UserBody } from '../../model/user/types'
+import type {Token} from './types'
 // 工具
 import response from '../../utils/tools/response'
 import jwt from "jsonwebtoken"
@@ -132,14 +133,14 @@ async function testToken(ctx: Context) {
  */
 async function getUserInfo(ctx: Context) {
     // token中有用户名称,解析token后,使用用户名称查询用户数据
-    const user = ctx.state.user
+    const user = ctx.state.user as Token;
     try {
         if (user.uid) {
             // 通过用户的id查询用户数据
-            const res = await userService.findUserByUid(user.id)
+            const res = await userService.findUserByUid(user.uid)
             if (res) {
                 // 查询到了
-                ctx.bod = response(res, 'ok', 200)
+                ctx.body = response(res, 'ok', 200)
             } else {
                 // 查无此人
                 ctx.bod = response(null, '查无此人', 400)
