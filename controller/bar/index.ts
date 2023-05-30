@@ -15,6 +15,7 @@ const barService = new BarService()
 /**
  * 创建吧
  * @param ctx 
+ * @returns 创建吧的成功与否的信息
  */
 async function createBar(ctx: Context) {
     const body = (ctx.request as any).body as BarBody
@@ -41,6 +42,7 @@ async function createBar(ctx: Context) {
             await Promise.reject()
         }
     } catch (error) {
+        console.log(error)
         ctx.status = 500
         ctx.body = response(null, '服务器出错了!', 500)
     }
@@ -50,19 +52,77 @@ async function createBar(ctx: Context) {
 /**
  * 获取所有的吧
  * @param ctx 
+ * @returns 返回所有吧
  */
 async function getAllBar(ctx: Context) {
     try {
         const res = await barService.findAllBar()
         ctx.body = response(res, 'ok')
     } catch (error) {
+        console.log(error)
         ctx.status = 500;
         ctx.body = response(null, '服务器出错了!', 500)
     }
 }
 
+/**
+ * 获取吧的数据
+ * @param ctx 
+ * @returns 返回吧和吧创建者的数据
+ */
+async function getBarInfo(ctx: Context) {
+    console.log(ctx.header.authorization)
+    const query = ctx.query
+    if (query.bid === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带', 400)
+    }
+    try {
+        // 获取吧的数据
+        const res = await barService.getBarInfo(+query.bid)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 关注吧
+ * @param ctx 
+ */
+async function followBar(ctx: Context) {
+    // 查询参数检验
+    if (!ctx.query.bid) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带', 400)
+    }
+    // 解析出token数据
+    const user = ctx.state.user as Token
+    try {
+        if (user.uid) {
+            // token解析成功
+            const res = await barService.followBar(+ctx.query.bid, user.uid)
+            if (res) {
+                return ctx.body = response(null, '关注成功!')
+            } else {
+                return ctx.body = response(null, '已经关注了!', 400)
+            }
+        } else {
+            // token解析失败
+            await Promise.reject()
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
 
 export default {
     createBar,
-    getAllBar
+    getAllBar,
+    getBarInfo,
+    followBar
 }

@@ -1,7 +1,7 @@
 // 基础模型
 import BaseModel from "../base"
 // 类型
-import type { User, UserBody } from "./types"
+import type { User, UserBody, UserWithout } from "./types"
 import type { OkPacket } from 'mysql'
 // 工具函数
 import { getNowTimeString } from '../../utils/tools/time'
@@ -14,7 +14,7 @@ class UserModel extends BaseModel {
      * 根据用户名查询全匹配 (返回用户所有的信息 测试用)
      * @param username 用户名称
      */
-    async selectByUsername(username: string) {
+    async selectByUsername(username: string): Promise<User[]> {
         try {
             const res = await this.runSql<User[]>(`select * from user where username='${username}';`)
             return Promise.resolve(res)
@@ -28,7 +28,7 @@ class UserModel extends BaseModel {
      * @param password 密码
      * @returns 
      */
-    async selectByUsernameAndPassword(username: string, password: string) {
+    async selectByUsernameAndPassword(username: string, password: string): Promise<User[]> {
         try {
             const res = await this.runSql<User[]>(`select * from user where username='${username}' and password='${password}';`)
             return Promise.resolve(res)
@@ -55,9 +55,9 @@ class UserModel extends BaseModel {
     /**
      * 通过用户名查询出用户数据 (不包含密码和状态信息)
      */
-    async selectDataByUsername(username: string) {
+    async selectDataByUsername(username: string): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<User[]>(`select uid,username,createTime,avatar from user where username='${username}';`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where username='${username}';`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -68,9 +68,9 @@ class UserModel extends BaseModel {
      * @param uid 用户的id
      * @returns 
      */
-    async selectByUid(uid: number) {
+    async selectByUid(uid: number): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<User[]>(`select uid,username,createTime,avatar from user where uid=${uid}`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where uid=${uid}`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

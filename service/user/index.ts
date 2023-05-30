@@ -1,7 +1,7 @@
 // model层
 import UserModel from '../../model/user'
 // 类型
-import type { User, UserBody } from '../../model/user/types'
+import type { User, UserBody, UserWithout } from '../../model/user/types'
 
 // 用户模型
 const user = new UserModel()
@@ -76,7 +76,7 @@ class UserService {
      * @param uid 
      * @returns 0查无此人 用户信息:查询数据成功
      */
-    async findUserByUid(uid: number): Promise<0 | User> {
+    async findUserByUid(uid: number): Promise<0 | UserWithout> {
         try {
             const res = await user.selectByUid(uid)
             if (res.length) {

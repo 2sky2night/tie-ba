@@ -36,3 +36,25 @@ export interface UserBody {
     username: string;
     password: string
 }
+
+/**
+ * 用户基本信息
+ */
+export interface UserWithout {
+    /**
+ * 用户的id
+ */
+    uid: number;
+    /**
+     * 用户的名称
+     */
+    username: string;
+    /**
+     * 创建时间
+     */
+    createTime: string;
+    /**
+     * 用户的头像
+     */
+    avatar: string;
+}

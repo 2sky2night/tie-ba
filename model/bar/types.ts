@@ -1,3 +1,6 @@
+/**
+ * 吧的全部数据
+ */
 export interface Bar {
     /**
      * 吧的id
@@ -39,4 +42,13 @@ export interface BarBody {
  */
 export interface BarCreateBody extends BarBody {
     uid: number
+}
+
+/**
+ * 用户关注吧表的元组数据
+ */
+export interface UserFollowBarItem {
+    bid: number;
+    uid: number;
+    createTime: string;
 }
