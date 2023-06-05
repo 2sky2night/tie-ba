@@ -66,7 +66,7 @@ async function getAllBar(ctx: Context) {
 }
 
 /**
- * 获取吧的数据
+ * 获取吧的数据 (需要根据当前登录的用户来查询是否关注了吧,由于是白名单,需要单独使用中间件解析token)
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
