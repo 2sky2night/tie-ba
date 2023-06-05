@@ -7,7 +7,13 @@ import response from "../utils/tools/response";
  */
 export default async function authorizationCatcher(ctx: Context, next: Next) {
     try {
-        await next();
+        if (!ctx.header.authorization) {
+            // 未携带token
+            ctx.status = 401;
+            ctx.body = response(null, '未携带 token', 400)
+        } else {
+            await next();
+        }
     } catch (err) {
         // 由 koa-jwt 抛出的错误
         if (err.status === 401) {
