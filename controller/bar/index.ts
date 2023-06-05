@@ -66,20 +66,23 @@ async function getAllBar(ctx: Context) {
 }
 
 /**
- * 获取吧的数据 (需要根据当前登录的用户来查询是否关注了吧,由于是白名单,需要单独使用中间件解析token)
+ * 获取吧的数据 
+ * 1.吧关注状态:若用户未登录,吧关注状态为false,若用户token解析合法通过用户id在用户关注吧中查询返回关注状态
+ * 2.吧创建者的关注状态::若用户未登录,吧关注状态为false,若用户token解析合法通过用户id在用户关注中查询返回关注状态
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
 async function getBarInfo(ctx: Context) {
-    console.log(ctx.header.authorization)
+    const token = ctx.state.user as Token;
     const query = ctx.query
+    console.log(token)
     if (query.bid === undefined) {
         ctx.status = 400
         return ctx.body = response(null, '参数未携带', 400)
     }
     try {
-        // 获取吧的数据
-        const res = await barService.getBarInfo(+query.bid)
+        // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
+        const res = await barService.getBarInfo(+query.bid, ctx.header.authorization ? token.uid : undefined)
         ctx.body = response(res, 'ok')
     } catch (error) {
         console.log(error)

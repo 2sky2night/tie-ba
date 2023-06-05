@@ -1,5 +1,6 @@
 import Router from "koa-router";
 import BarController from '../../controller/bar'
+import middleware from "../../middleware";
 
 // 吧的路由
 const barRouter = new Router()
@@ -13,10 +14,10 @@ barRouter.post('bar',`${baseRouteURL}/create`,BarController.createBar)
 // 获取所有的吧
 barRouter.get('bar', `${baseRouteURL}/all`, BarController.getAllBar)
 
-// 根据吧的id获取吧的数据
-barRouter.get('bar',`${baseRouteURL}/info`,BarController.getBarInfo)
+// 根据吧的id获取吧的数据 (使用中间件解析token 需要使用token中的数据)
+barRouter.get('bar', `${baseRouteURL}/info`, middleware.tokenParse ,BarController.getBarInfo)
 
 // 关注吧 (需要token)
-barRouter.get('bar', `${baseRouteURL}/follow`, BarController.followBar)
+barRouter.get('bar', `${baseRouteURL}/follow`,BarController.followBar)
 
 export default barRouter

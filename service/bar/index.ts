@@ -49,9 +49,12 @@ class BarService {
     /**
      * 获取吧的详情数据
      * @param bid 吧的id
-     * @returns 获取吧的数据已经用户数据已经当前用户是否 (当前登录的用户是否关注吧 未完成)
+     * @param uid 当前登录的用户id
+     * @returns 获取吧的数据已经用户数据已经当前用户是否
+     * 1. (当前登录的用户是否关注吧 完成)
+     * 2.(当前登录的用户是否关注吧主 未完成)
      */
-    async getBarInfo(bid: number) {
+    async getBarInfo(bid: number, uid: number|undefined) {
         try {
             //  获取吧的信息
             const resBar = await bar.selectByBid(bid)
@@ -65,7 +68,23 @@ class BarService {
             const resUser = await user.selectByUid(barInfo.uid)
             if (resUser.length) {
                 // 将用户数据和吧的数据响应给客户端
-                return Promise.resolve({...barInfo,user:resUser[0]})
+                let res:any = null
+                // 通过当前登录的用户id来检验是否关注了吧
+                if (uid === undefined) {
+                    //  若未登陆
+                    res = { ...barInfo,follow_bar:false, user: { ...resUser[0] } }
+                } else {
+                    //  若登录 查询用户是否关注了吧
+                    const resFollow = await bar.selectFollowByUidAndBid(bid, uid)
+                    if (resFollow.length) {
+                        // 关注了
+                        res = { ...barInfo, follow_bar: true, user: { ...resUser[0] } }
+                    } else {
+                        //  未关注
+                        res = { ...barInfo, follow_bar: false, user: { ...resUser[0] } }
+                    }
+                }
+                return Promise.resolve(res)
             } else {
                 //  获取用户数据失败
                 await Promise.reject()

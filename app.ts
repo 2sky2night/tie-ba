@@ -8,7 +8,7 @@ import koaStatic from 'koa-static'
 // 配置项
 import * as  config from './config'
 // 中间件
-import authorizationCatcher from './middleware/authorization'
+import middleware from './middleware'
 
 const app = new Koa()
 
@@ -20,7 +20,7 @@ app.use(koaStatic('static'))
 app.use(koaBody())
 
 // 捕获token解析
-app.use(authorizationCatcher)
+app.use(middleware.authorizationCatcher)
 // 全局解析token koa-jwt 中间件会获取前端请求中的token,进行检验
 app.use(
     koajwt({
