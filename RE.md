@@ -861,6 +861,10 @@ async function getAllBar(ctx: Context) {
 
 ​	该接口需要配置路由白名单，根据请求头中Authorization是否传入token，来判断当前用户是否登录。若未登录则直接设置对吧的关注状态为false，若传入了则需要通过中间件来解析出token数据，token数据中包含用户的uid，通过uid和bid到表中进行查询记录，若有则设置状态为关注，否则设置状态为未关注。最终就把吧的数据响应给客户端。
 
+##### 	当前用户对吧主的关注状态
+
+​	通过吧的信息中包含吧主的id与token中用户的id，在用户关注表中查询即可，有记录则为关注，无记录没关注
+
 #### model层
 
 ```ts
@@ -882,12 +886,15 @@ async function getAllBar(ctx: Context) {
 #### service层
 
 ```ts
-    /**
+ /**
      * 获取吧的详情数据
      * @param bid 吧的id
-     * @returns 获取吧的数据已经用户数据 (当前登录的用户是否关注吧 未完成)
+     * @param uid 当前登录的用户id
+     * @returns 获取吧的数据已经用户数据已经当前用户是否
+     * 1. (当前登录的用户是否关注吧)
+     * 2.(当前登录的用户是否关注吧主)
      */
-    async getBarInfo(bid: number) {
+    async getBarInfo (bid: number, uid: number | undefined) {
         try {
             //  获取吧的信息
             const resBar = await bar.selectByBid(bid)
@@ -895,13 +902,44 @@ async function getAllBar(ctx: Context) {
                 // 根据bid获取吧数据失败
                 await Promise.reject()
             }
-            // 通过吧的数据查询用户数据
-            const barInfo = resBar[0]
-            // 获取到用户数据
+            // 吧的数据
+            const barInfo = resBar[ 0 ]
+            // 获取到吧主的信息
             const resUser = await user.selectByUid(barInfo.uid)
             if (resUser.length) {
                 // 将用户数据和吧的数据响应给客户端
-                return Promise.resolve({ bar: barInfo, user: resUser[0] })
+                let res: any = null
+                // 通过当前登录的用户id来检验是否关注了吧
+                if (uid === undefined) {
+                    //  若未登陆
+                    res = { ...barInfo, is_follow: false, user: { ...resUser[ 0 ], is_follow: false } }
+                } else {
+                    //  若登录 
+                    // 1.查询用户是否关注了吧
+                    const resFollowBar = await bar.selectFollowByUidAndBid(bid, uid)
+                    let isFollowBar = false
+                    if (resFollowBar.length) {
+                        // 关注了吧
+                        isFollowBar = true
+                    } else {
+                        //  未关注吧
+                        isFollowBar = false
+                    }
+                    // 2.查询用户是否关注了吧主
+                    const resFollowUser = await user.selectByUidAndUidIsFollow(uid, barInfo.uid)
+                    let isFollowUser = false
+                    if (resFollowUser.length) {
+                        // 关注了吧主
+                        isFollowUser = true
+                    } else {
+                        // 未关注吧主
+                        isFollowUser = false
+                    }
+                    // 响应请求内容
+                    res = { ...barInfo, follow_bar: isFollowBar, user: { ...resUser[ 0 ], is_follow: isFollowUser } }
+                }
+
+                return Promise.resolve(res)
             } else {
                 //  获取用户数据失败
                 await Promise.reject()

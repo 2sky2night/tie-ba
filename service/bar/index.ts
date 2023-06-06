@@ -18,7 +18,7 @@ class BarService {
      * @param data 吧的数据
      * @returns 创建的结果 0吧名重复 1创建成功
      */
-    async createBar(data: BarCreateBody): Promise<0 | 1> {
+    async createBar (data: BarCreateBody): Promise<0 | 1> {
         try {
             // 先查询吧是否存在
             const resExist = await bar.selectByBname(data.bname)
@@ -38,7 +38,7 @@ class BarService {
      * 获取所有的吧
      * @returns 所有吧的数据
      */
-    async findAllBar() {
+    async findAllBar () {
         try {
             const res = await bar.selectAllBar()
             return Promise.resolve(res)
@@ -51,10 +51,10 @@ class BarService {
      * @param bid 吧的id
      * @param uid 当前登录的用户id
      * @returns 获取吧的数据已经用户数据已经当前用户是否
-     * 1. (当前登录的用户是否关注吧 完成)
-     * 2.(当前登录的用户是否关注吧主 未完成)
+     * 1. (当前登录的用户是否关注吧)
+     * 2.(当前登录的用户是否关注吧主)
      */
-    async getBarInfo(bid: number, uid: number|undefined) {
+    async getBarInfo (bid: number, uid: number | undefined) {
         try {
             //  获取吧的信息
             const resBar = await bar.selectByBid(bid)
@@ -62,28 +62,43 @@ class BarService {
                 // 根据bid获取吧数据失败
                 await Promise.reject()
             }
-            // 通过吧的数据查询用户数据
-            const barInfo = resBar[0]
-            // 获取到用户数据
+            // 吧的数据
+            const barInfo = resBar[ 0 ]
+            // 获取到吧主的信息
             const resUser = await user.selectByUid(barInfo.uid)
             if (resUser.length) {
                 // 将用户数据和吧的数据响应给客户端
-                let res:any = null
+                let res: any = null
                 // 通过当前登录的用户id来检验是否关注了吧
                 if (uid === undefined) {
                     //  若未登陆
-                    res = { ...barInfo,follow_bar:false, user: { ...resUser[0] } }
+                    res = { ...barInfo, is_follow: false, user: { ...resUser[ 0 ], is_follow: false } }
                 } else {
-                    //  若登录 查询用户是否关注了吧
-                    const resFollow = await bar.selectFollowByUidAndBid(bid, uid)
-                    if (resFollow.length) {
-                        // 关注了
-                        res = { ...barInfo, follow_bar: true, user: { ...resUser[0] } }
+                    //  若登录 
+                    // 1.查询用户是否关注了吧
+                    const resFollowBar = await bar.selectFollowByUidAndBid(bid, uid)
+                    let isFollowBar = false
+                    if (resFollowBar.length) {
+                        // 关注了吧
+                        isFollowBar = true
                     } else {
-                        //  未关注
-                        res = { ...barInfo, follow_bar: false, user: { ...resUser[0] } }
+                        //  未关注吧
+                        isFollowBar = false
                     }
+                    // 2.查询用户是否关注了吧主
+                    const resFollowUser = await user.selectByUidAndUidIsFollow(uid, barInfo.uid)
+                    let isFollowUser = false
+                    if (resFollowUser.length) {
+                        // 关注了吧主
+                        isFollowUser = true
+                    } else {
+                        // 未关注吧主
+                        isFollowUser = false
+                    }
+                    // 响应请求内容
+                    res = { ...barInfo, follow_bar: isFollowBar, user: { ...resUser[ 0 ], is_follow: isFollowUser } }
                 }
+
                 return Promise.resolve(res)
             } else {
                 //  获取用户数据失败
@@ -99,7 +114,7 @@ class BarService {
      * @param uid 用户的id
      * @returns 0已经关注了 1关注成功
      */
-    async followBar(bid: number, uid: number): Promise<0 | 1> {
+    async followBar (bid: number, uid: number): Promise<0 | 1> {
         try {
             // 先检查用户是否关注吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)

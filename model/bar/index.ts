@@ -11,7 +11,7 @@ import { getNowTimeString } from '../../utils/tools/time'
  */
 class BarModel extends BaseModel {
     /**
-     * 插入一条吧的数据
+     * 在吧表中插入一条吧的数据
      * @param data 
      */
     async insertBar(data: BarCreateBody) {
@@ -27,7 +27,7 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 通过吧的名称来查询吧
+     * 在吧表中通过吧的名称来查询吧
      * @param bname 吧的名称
      * @returns 查询结果
      */
@@ -40,7 +40,7 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 查询当前所有的吧
+     * 在吧表中查询当前所有的吧
      * @returns 
      */
     async selectAllBar() {
@@ -52,7 +52,7 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 根据吧的id查询吧的信息
+     * 在吧表中根据吧的id查询吧的信息
      * @param bid 
      * @returns 
      */
@@ -65,7 +65,7 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 关注吧 (操作吧关注表)
+     * 在用户关注吧表中插入一条记录
      * @param bid 吧的id
      * @param uid 用户的id
      * @returns 
@@ -83,7 +83,7 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 查询用户是否关注了当前吧 (查询吧关注表)
+     * 在用户关注吧表中查询用户是否关注了当前吧
      * @param bid 吧的id
      * @param uid 用户的id
      */

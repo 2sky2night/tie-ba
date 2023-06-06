@@ -58,3 +58,12 @@ export interface UserWithout {
      */
     avatar: string;
 }
+
+/**
+ * 一条用户关注的信息
+ */
+export interface UserFollow {
+    uid: number;
+    uid_is_followed: number;
+    createTime: string;
+}

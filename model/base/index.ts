@@ -52,6 +52,8 @@ class BaseModel {
                     reject('查询失败')
                     console.log(err)
                 } else {
+                    // 打印sql查询结果
+                    console.log(res)
                     resolve(res)
                 }
                 //  查询无论成功与否都关闭数据库的连接 节约服务器资源
