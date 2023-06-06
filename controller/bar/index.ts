@@ -17,7 +17,7 @@ const barService = new BarService()
  * @param ctx 
  * @returns 创建吧的成功与否的信息
  */
-async function createBar(ctx: Context) {
+async function createBar (ctx: Context) {
     const body = (ctx.request as any).body as BarBody
     if (!body.bname || !body.bdesc || !body.photo) {
         ctx.status = 400
@@ -54,7 +54,7 @@ async function createBar(ctx: Context) {
  * @param ctx 
  * @returns 返回所有吧
  */
-async function getAllBar(ctx: Context) {
+async function getAllBar (ctx: Context) {
     try {
         const res = await barService.findAllBar()
         ctx.body = response(res, 'ok')
@@ -72,54 +72,70 @@ async function getAllBar(ctx: Context) {
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
-async function getBarInfo(ctx: Context) {
+async function getBarInfo (ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
-    console.log(ctx.state)
     if (query.bid === undefined) {
         ctx.status = 400
-        return ctx.body = response(null, '参数未携带', 400)
+        ctx.body = response(null, '参数未携带', 400)
+    } else {
+        const bid = + query.bid
+        if (isNaN(bid) || bid === 0) {
+            // 参数非法
+            ctx.status = 400
+            ctx.body = response(null, '参数非法', 400)
+        } else {
+            // 参数合法
+            try {
+                // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
+                const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
+                ctx.body = response(res, 'ok')
+            } catch (error) {
+                console.log(error)
+                ctx.status = 500;
+                ctx.body = response(null, '服务器出错了!', 500)
+            }
+        }
     }
-    try {
-        // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
-        const res = await barService.getBarInfo(+query.bid, ctx.header.authorization ? token.uid : undefined)
-        ctx.body = response(res, 'ok')
-    } catch (error) {
-        console.log(error)
-        ctx.status = 500;
-        ctx.body = response(null, '服务器出错了!', 500)
-    }
+
 }
 
 /**
  * 关注吧
  * @param ctx 
  */
-async function followBar(ctx: Context) {
+async function followBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
         return ctx.body = response(null, '参数未携带', 400)
     }
-    // 解析出token数据
-    const user = ctx.state.user as Token
-    try {
-        if (user.uid) {
-            // token解析成功
-            const res = await barService.followBar(+ctx.query.bid, user.uid)
-            if (res) {
-                return ctx.body = response(null, '关注成功!')
+    const bid = +ctx.query.bid
+    if (isNaN(bid)) {
+        // 参数非法
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    } else {
+        // 解析出token数据
+        const user = ctx.state.user as Token
+        try {
+            if (user.uid) {
+                // token解析成功
+                const res = await barService.followBar(bid, user.uid)
+                if (res) {
+                    return ctx.body = response(null, '关注成功!')
+                } else {
+                    return ctx.body = response(null, '已经关注了!', 400)
+                }
             } else {
-                return ctx.body = response(null, '已经关注了!', 400)
+                // token解析失败
+                await Promise.reject()
             }
-        } else {
-            // token解析失败
-            await Promise.reject()
+        } catch (error) {
+            console.log(error)
+            ctx.status = 500;
+            ctx.body = response(null, '服务器出错了!', 500)
         }
-    } catch (error) {
-        console.log(error)
-        ctx.status = 500;
-        ctx.body = response(null, '服务器出错了!', 500)
     }
 }
 
