@@ -111,7 +111,7 @@ async function followBar (ctx: Context) {
         return ctx.body = response(null, '参数未携带', 400)
     }
     const bid = +ctx.query.bid
-    if (isNaN(bid)) {
+    if (isNaN(bid) || bid === 0) {
         // 参数非法
         ctx.status = 400
         return ctx.body = response(null, '参数非法', 400)
@@ -121,11 +121,11 @@ async function followBar (ctx: Context) {
         try {
             if (user.uid) {
                 // token解析成功
-                const res = await barService.followBar(bid, user.uid)
+                const res = await barService.toFollowBar(bid, user.uid)
                 if (res) {
                     return ctx.body = response(null, '关注成功!')
                 } else {
-                    return ctx.body = response(null, '已经关注了!', 400)
+                    return ctx.body = response(null, '关注吧失败,已经关注了!', 400)
                 }
             } else {
                 // token解析失败
@@ -139,9 +139,46 @@ async function followBar (ctx: Context) {
     }
 }
 
+
+/**
+ * 取消关注吧
+ * @param ctx 
+ */
+async function canceFollowBar (ctx: Context) {
+    // 查询参数检验
+    if (!ctx.query.bid) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带', 400)
+    }
+    const bid = +ctx.query.bid
+    if (isNaN(bid) || bid === 0) {
+        // 参数非法
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    }
+    // 解析出token数据
+    const token = ctx.state.user as Token
+    try {
+        const res = await barService.toCancelFollowBar(bid, token.uid)
+        if (res) {
+            // 取消关注成功
+            ctx.body=response(null,'取消关注成功!')
+        } else {
+            // 当前未关注吧 不能取消关注
+            ctx.body=response(null,'取消关注吧失败,当前未关注该吧!',400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     createBar,
     getAllBar,
     getBarInfo,
-    followBar
+    followBar,
+    canceFollowBar
 }

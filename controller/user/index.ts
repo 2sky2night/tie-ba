@@ -3,7 +3,7 @@ import UserService from '../../service/user'
 // 类型
 import type { Context, Next } from 'koa'
 import type { UserBody } from '../../model/user/types'
-import type {Token} from './types'
+import type { Token } from './types'
 // 工具
 import response from '../../utils/tools/response'
 import jwt from "jsonwebtoken"
@@ -18,7 +18,7 @@ const userService = new UserService()
  * 通过用户名查询用户 (测试用)
  * @param ctx 
  */
-async function checkUser(ctx: Context) {
+async function checkUser (ctx: Context) {
     const username = ctx.query.username
     if (!username) {
         ctx.status = 400
@@ -27,7 +27,7 @@ async function checkUser(ctx: Context) {
     try {
         const res = await userService.findUserByUsername(username as string)
         if (res.length) {
-            ctx.body = response(res[0], 'ok', 200)
+            ctx.body = response(res[ 0 ], 'ok', 200)
         } else {
             ctx.body = response(null, '查无此人', 400)
         }
@@ -41,7 +41,7 @@ async function checkUser(ctx: Context) {
  * 用户登录
  * @param ctx 
  */
-async function login(ctx: Context) {
+async function login (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -83,7 +83,7 @@ async function login(ctx: Context) {
  * 用户注册
  * @param ctx 
  */
-async function register(ctx: Context) {
+async function register (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -122,7 +122,7 @@ async function register(ctx: Context) {
  * 测试解析token
  * @param ctx 
  */
-async function testToken(ctx: Context) {
+async function testToken (ctx: Context) {
     console.log(ctx.state)
     ctx.body = response(ctx.state, 'ok', 200)
 }
@@ -131,7 +131,7 @@ async function testToken(ctx: Context) {
  * 获取用户信息 (需要token)
  * @param ctx 
  */
-async function getUserInfo(ctx: Context) {
+async function getUserInfo (ctx: Context) {
     // token中有用户名称,解析token后,使用用户名称查询用户数据
     const user = ctx.state.user as Token;
     try {
@@ -155,10 +155,94 @@ async function getUserInfo(ctx: Context) {
 
 }
 
+/**
+ * 关注用户 （需要token）
+ * @param ctx 
+ */
+async function followUser (ctx: Context) {
+    const token = ctx.state.user as Token
+    const query = ctx.query
+    if (query.uid === undefined) {
+        // 参数未携带
+        ctx.status = 400
+        ctx.body = response(null, '参数未携带', 400)
+    } else {
+        // 携带了参数
+        const uidIsFollowed = +query.uid
+        // 验证参数
+        if (isNaN(uidIsFollowed) || uidIsFollowed === 0) {
+            // 参数不合法
+            ctx.status = 400
+            ctx.body = response(null, '参数不合法', 400)
+        } else {
+            try {
+                const res = await userService.toFollowUser(token.uid, uidIsFollowed)
+                if (res === 1) {
+                    // 关注成功
+                    ctx.body = response(null, '关注成功!')
+                } else if (res === 0) {
+                    // 重复关注的提示
+                    ctx.body = response(null, '关注用户失败,已经关注了!', 400)
+                } else if (res === -2) {
+                    // 不能自己关注自己
+                    ctx.body = response(null, '关注用户失败,不能自己关注自己!', 400)
+                } else if (res === -1) {
+                    // 被关注者不存在
+                    ctx.body = response(null, '关注用户失败,被关注者不存在!', 400)
+                }
+            } catch (error) {
+                ctx.status = 500
+                ctx.body = response(null, '服务器出错了!', 500)
+            }
+
+        }
+    }
+}
+
+/**
+ * 取消关注用户
+ * @param ctx 
+ */
+async function cancelFollowUser (ctx: Context) {
+    const token = ctx.state.user as Token;
+
+    if (ctx.query.uid === undefined) {
+        // 参数未携带
+        ctx.status = 400;
+        ctx.body = response(null, '参数未携带!', 400)
+        return
+    }
+
+    // 被关注者的id
+    const uidIsFollowed = +ctx.query.uid;
+    if (uidIsFollowed === 0 || isNaN(uidIsFollowed)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+
+    try {
+        const res = await userService.toCancelFollow(token.uid, uidIsFollowed)
+        switch (res) {
+            case 0: { ctx.status = 400; ctx.body = response(null, '取消关注失败,还未关注此用户!', 400); break; }
+            case -2: { ctx.status = 400; ctx.body = response(null, '取消关注失败,不能取消关注自己!', 400); break; }
+            case 1: { ctx.status = 200; ctx.body = response(null, '取消关注成功!'); break; }
+            case -1: { ctx.status = 400; ctx.body = response(null, '取消关注失败,被关注者不存在!', 400); break; }
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     login,
     checkUser,
     register,
     testToken,
-    getUserInfo
+    getUserInfo,
+    followUser,
+    cancelFollowUser
 }

@@ -95,6 +95,25 @@ class BarModel extends BaseModel {
             return Promise.reject(error)
         }
     }
+
+    /**
+     * 在用户关注吧表中删除关注吧记录
+     * @param bid 
+     * @param uid 
+     * @returns 
+     */
+    async deleteFollowByUidAndBid (bid: number, uid: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${ uid } AND bid = ${ bid }`)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                await Promise.reject()
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }    
+    }
 }
 
 export default BarModel

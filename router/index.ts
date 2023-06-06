@@ -4,7 +4,7 @@ import userRouter from './user'
 // 吧路由
 import barRouter from "./bar";
 // 文件上传路由
-import FileRouter from '../router/file'
+import FileRouter from './file'
 
 // 统一注册路由
 const router = new Router()

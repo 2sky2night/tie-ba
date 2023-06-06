@@ -63,7 +63,16 @@ export interface UserWithout {
  * 一条用户关注的信息
  */
 export interface UserFollow {
+    /**
+     * 关注者
+     */
     uid: number;
+    /**
+     * 被关注的用户
+     */
     uid_is_followed: number;
+    /**
+     * 创建时间
+     */
     createTime: string;
 }

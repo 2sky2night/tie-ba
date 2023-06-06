@@ -108,6 +108,24 @@ class UserModel extends BaseModel {
             return Promise.reject(error)
         }
     }
+    /**
+     * 在用户关注表中删除一条记录
+     * @param uid 
+     * @param uidIsFollowed 
+     * @returns 
+     */
+    async deleteByUidAndUidIsFollowedScopedFollow (uid: number, uidIsFollowed: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`delete from user_follow_user where uid=${ uid } and uid_is_followed=${ uidIsFollowed }`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                await Promise.reject()
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 

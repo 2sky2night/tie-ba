@@ -114,7 +114,7 @@ class BarService {
      * @param uid 用户的id
      * @returns 0已经关注了 1关注成功
      */
-    async followBar (bid: number, uid: number): Promise<0 | 1> {
+    async toFollowBar (bid: number, uid: number): Promise<0 | 1> {
         try {
             // 先检查用户是否关注吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)
@@ -126,7 +126,28 @@ class BarService {
             await bar.insertFollow(bid, uid)
             return Promise.resolve(1)
         } catch (error) {
-            return Promise.reject()
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 取消关注吧
+     * @param bid 吧id 
+     * @param uid 用户id
+     * @returns 0:未关注不能取消关注吧 1：关注了则取消关注吧
+     */
+    async toCancelFollowBar (bid: number, uid: number):Promise<0|1> {
+        try {
+            // 1.当前用户是否关注过吧
+            const resExist = await bar.selectFollowByUidAndBid(bid, uid)
+            if (!resExist.length) {
+                // 未关注不能取消关注
+                return Promise.resolve(0)
+            }
+            // 2.删除关注记录
+            await bar.deleteFollowByUidAndBid(bid, uid)
+            return Promise.resolve(1)
+        } catch (error) {
+            return Promise.reject(error) 
         }
     }
 }

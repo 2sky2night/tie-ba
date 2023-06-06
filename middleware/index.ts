@@ -1,5 +1,5 @@
-import tokenParse from "./token";
-import authorizationCatcher from "./authorization";
+import tokenParse from "./auth/token";
+import authorizationCatcher from "./auth/authorization";
 
 export default {
     tokenParse,

@@ -624,6 +624,239 @@ async function getUserInfo(ctx: Context) {
 }
 ```
 
+### 4.关注用户（需要token）
+
+model
+
+```ts
+    /**
+     * 在用户关注表中插入一条记录
+     * @param uid 关注者的id
+     * @param uidIsFollowed  被关注者的id
+     */
+    async insertFollow (uid: number, uidIsFollowed: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_user(uid, uid_is_followed, createTime) VALUES (${ uid }, ${ uidIsFollowed }, '${ getNowTimeString() }')`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                await Promise.reject()
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户关注表中通过uid和uidIsFollowed查询记录
+     * @param uid 关注者的id
+     * @param uidIsFollowed 被关注者的id
+     * @returns 
+     */
+    async selectByUidAndUidIsFollow (uid: number, uidIsFollowed: number) {
+        try {
+            const res = await this.runSql<UserFollow[]>(`select * from user_follow_user where uid=${ uid } and uid_is_followed=${ uidIsFollowed }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+```
+
+service
+
+```tsx
+    /**
+     * 关注用户
+     * @param uid 关注者
+     * @param uidIsFollowed 被关注者
+     * @returns -2不能自己关注自己 -1被关注者不存在 0已经关注了 1关注成功 
+     */
+    async toFollowUser (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+        if (uid === uidIsFollowed) {
+            return Promise.resolve(-2)
+        }
+        try {
+            // 1.查询被关注着是否存在
+            const resFollowerExist = await user.selectByUid(uidIsFollowed)
+            if (!resFollowerExist.length) {
+                return Promise.resolve(-1)
+            }
+            // 2.查询是否已经关注了
+            const resExist = await user.selectByUidAndUidIsFollow(uid, uidIsFollowed)
+            if (resExist.length) {
+                // 已经关注了
+                return Promise.resolve(0)
+            } else {
+                // 未关注
+                await user.insertFollow(uid, uidIsFollowed)
+                return Promise.resolve(1)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+```
+
+controller
+
+```ts
+/**
+ * 关注用户 （需要token）
+ * @param ctx 
+ */
+async function followUser (ctx: Context) {
+    const token = ctx.state.user as Token
+    const query = ctx.query
+    console.log(query)
+    if (query.uid === undefined) {
+        // 参数未携带
+        ctx.status = 400
+        ctx.body = response(null, '参数未携带', 400)
+    } else {
+        // 携带了参数
+        const uidIsFollowed = +query.uid
+        // 验证参数
+        if (isNaN(uidIsFollowed)) {
+            // 参数不合法
+            ctx.status = 400
+            ctx.body = response(null, '参数不合法', 400)
+        } else {
+            try {
+                const res = await userService.toFollowUser(token.uid, uidIsFollowed)
+                if (res === 1) {
+                    // 关注成功
+                    ctx.body = response(null, '关注成功!', 200)
+                } else if (res === 0) {
+                    // 重复关注的提示
+                    ctx.body = response(null, '已经关注了!', 400)
+                } else if (res === -2) {
+                    // 不能自己关注自己
+                    ctx.body = response(null, '不能自己关注自己!', 400)
+                } else if (res === -1) {
+                    // 被关注者不存在
+                    ctx.body = response(null, '被关注者不存在!', 400)
+                }
+            } catch (error) {
+                ctx.status = 500
+                ctx.body = response(null, '服务器出错了!', 500)
+            }
+
+        }
+    }
+}
+```
+
+
+
+### 5.取消关注用户
+
+model
+
+```ts
+    /**
+     * 在用户关注表中删除一条记录
+     * @param uid 
+     * @param uidIsFollowed 
+     * @returns 
+     */
+    async deleteByUidAndUidIsFollowedScopedFollow (uid: number, uidIsFollowed: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`delete from user_follow_user where uid=${ uid } and uid_is_followed=${ uidIsFollowed }`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                await Promise.reject()
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+```
+
+service
+
+```ts
+    /**
+     * 取消关注用户
+     * @param uid 关注者的id
+     * @param uidIsFollowed 被关注者的id
+     * @returns -2：自己不能取消关注自己 -1：被关注者不存在 0：还未关注不能取消关注 1：取关成功
+     */
+    async toCancelFollow (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+        if (uid === uidIsFollowed) {
+            // 自己不能取消关注自己
+            return Promise.resolve(-2)
+        }
+        try {
+            // 1.查询被关注着是否存在
+            const resFollowerExist = await user.selectByUid(uidIsFollowed)
+            if (!resFollowerExist.length) {
+                return Promise.resolve(-1)
+            }
+            // 2.查询是否已经关注了
+            const resExist = await user.selectByUidAndUidIsFollow(uid, uidIsFollowed)
+            if (resExist.length) {
+                // 已经关注了 则删除该记录
+                await user.deleteByUidAndUidIsFollowedScopedFollow(uid, uidIsFollowed)
+                return Promise.resolve(1)
+            } else {
+                // 未关注 则说明没有该记录取消关注失败
+                return Promise.resolve(0)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+```
+
+
+
+controller
+
+```ts
+/**
+ * 取消关注用户
+ * @param ctx 
+ */
+async function cancelFollowUser (ctx: Context) {
+    const token = ctx.state.user as Token;
+
+    if (ctx.query.uid === undefined) {
+        // 参数未携带
+        ctx.status = 400;
+        ctx.body = response(null, '参数未携带!', 400)
+        return
+    }
+
+    // 被关注者的id
+    const uidIsFollowed = +ctx.query.uid;
+    if (uidIsFollowed === 0 || isNaN(uidIsFollowed)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+
+    try {
+        const res = await userService.toCancelFollow(token.uid, uidIsFollowed)
+        switch (res) {
+            case 0: { ctx.status = 400; ctx.body = response(null, '取消关注失败,还未关注此用户!', 400); break; }
+            case -2: { ctx.status = 400; ctx.body = response(null, '取消关注失败,不能取消关注自己!', 400); break; }
+            case 1: { ctx.status = 200; ctx.body = response(null, '取消关注成功!'); break; }
+            case -1: { ctx.status = 400; ctx.body = response(null, '取消关注失败,被关注者不存在!', 400); break; }
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+```
+
+
+
+
+
 ## 三、吧模块
 
 ### 1.创建吧 (需要token)
@@ -954,21 +1187,26 @@ async function getAllBar(ctx: Context) {
 
  ```ts
 /**
- * 获取吧的数据
+ * 获取吧的数据 
+ * 1.吧关注状态:若用户未登录,吧关注状态为false,若用户token解析合法通过用户id在用户关注吧中查询返回关注状态
+ * 2.吧创建者的关注状态::若用户未登录,吧关注状态为false,若用户token解析合法通过用户id在用户关注中查询返回关注状态
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
 async function getBarInfo(ctx: Context) {
+    const token = ctx.state.user as Token;
     const query = ctx.query
+    console.log(ctx.state)
     if (query.bid === undefined) {
         ctx.status = 400
         return ctx.body = response(null, '参数未携带', 400)
     }
     try {
-        // 获取吧的数据
-        const res = await barService.getBarInfo(+query.bid)
-        return ctx.body = response(res, 'ok')
+        // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
+        const res = await barService.getBarInfo(+query.bid, ctx.header.authorization ? token.uid : undefined)
+        ctx.body = response(res, 'ok')
     } catch (error) {
+        console.log(error)
         ctx.status = 500;
         ctx.body = response(null, '服务器出错了!', 500)
     }

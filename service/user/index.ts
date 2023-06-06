@@ -15,7 +15,7 @@ class UserService {
      * @param username 
      * @returns 用户信息
      */
-    async findUserByUsername(username: string) {
+    async findUserByUsername (username: string) {
         try {
             const res = await user.selectDataByUsername(username)
             return Promise.resolve(res)
@@ -28,7 +28,7 @@ class UserService {
      * @param data 
      * @returns 0注册失败 1注册成功
      */
-    async createUser(data: UserBody): Promise<0 | 1> {
+    async createUser (data: UserBody): Promise<0 | 1> {
         try {
             // 查询当前需要注册的用户名称是否存在
             const resExist = await user.selectByUsername(data.username)
@@ -50,7 +50,7 @@ class UserService {
      * @param data 
      * @returns 0:用户名不存在 1:密码错误 用户信息:登录成功
      */
-    async checkLogin(data: UserBody): Promise<0 | 1 | User> {
+    async checkLogin (data: UserBody): Promise<0 | 1 | User> {
         try {
             // 查询登录用户是否存在
             const resExit = await user.selectByUsername(data.username)
@@ -62,7 +62,7 @@ class UserService {
             const resUser = await user.selectByUsernameAndPassword(data.username, data.password)
             if (resUser.length) {
                 // 匹配成功 返回用户的数据 token中保存用户的id和用户名称
-                return Promise.resolve(resUser[0])
+                return Promise.resolve(resUser[ 0 ])
             } else {
                 // 密码错误
                 return Promise.resolve(1)
@@ -76,12 +76,12 @@ class UserService {
      * @param uid 
      * @returns 0查无此人 用户信息:查询数据成功
      */
-    async findUserByUid(uid: number): Promise<0 | UserWithout> {
+    async findUserByUid (uid: number): Promise<0 | UserWithout> {
         try {
             const res = await user.selectByUid(uid)
             if (res.length) {
                 // 查询到了
-                return Promise.resolve(res[0])
+                return Promise.resolve(res[ 0 ])
             } else {
                 // 查无此人
                 return Promise.resolve(0)
@@ -90,6 +90,69 @@ class UserService {
             return Promise.reject(error)
         }
     }
+    /**
+     * 关注用户
+     * @param uid 关注者
+     * @param uidIsFollowed 被关注者
+     * @returns -2不能自己关注自己 -1被关注者不存在 0已经关注了 1关注成功 
+     */
+    async toFollowUser (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+        if (uid === uidIsFollowed) {
+            return Promise.resolve(-2)
+        }
+        try {
+            // 1.查询被关注着是否存在
+            const resFollowerExist = await user.selectByUid(uidIsFollowed)
+            if (!resFollowerExist.length) {
+                return Promise.resolve(-1)
+            }
+            // 2.查询是否已经关注了
+            const resExist = await user.selectByUidAndUidIsFollow(uid, uidIsFollowed)
+            if (resExist.length) {
+                // 已经关注了
+                return Promise.resolve(0)
+            } else {
+                // 未关注
+                await user.insertFollow(uid, uidIsFollowed)
+                return Promise.resolve(1)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+    /**
+     * 取消关注用户
+     * @param uid 关注者的id
+     * @param uidIsFollowed 被关注者的id
+     * @returns -2：自己不能取消关注自己 -1：被关注者不存在 0：还未关注不能取消关注 1：取关成功
+     */
+    async toCancelFollow (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+        if (uid === uidIsFollowed) {
+            // 自己不能取消关注自己
+            return Promise.resolve(-2)
+        }
+        try {
+            // 1.查询被关注着是否存在
+            const resFollowerExist = await user.selectByUid(uidIsFollowed)
+            if (!resFollowerExist.length) {
+                return Promise.resolve(-1)
+            }
+            // 2.查询是否已经关注了
+            const resExist = await user.selectByUidAndUidIsFollow(uid, uidIsFollowed)
+            if (resExist.length) {
+                // 已经关注了 则删除该记录
+                await user.deleteByUidAndUidIsFollowedScopedFollow(uid, uidIsFollowed)
+                return Promise.resolve(1)
+            } else {
+                // 未关注 则说明没有该记录取消关注失败
+                return Promise.resolve(0)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
 }
 
 export default UserService

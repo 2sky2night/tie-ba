@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch app.ts --watch model --watch router  --watch service --watch controller  --exec ts-node app.ts",
+    "dev": "nodemon --watch app.ts --watch model --watch router  --watch service --watch controller --watch middleware  --exec ts-node app.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
