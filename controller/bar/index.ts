@@ -75,7 +75,7 @@ async function getAllBar(ctx: Context) {
 async function getBarInfo(ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
-    console.log(token)
+    console.log(ctx.state)
     if (query.bid === undefined) {
         ctx.status = 400
         return ctx.body = response(null, '参数未携带', 400)
