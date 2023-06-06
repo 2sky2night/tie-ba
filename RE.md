@@ -1,6 +1,6 @@
 tie-ba-lower
 
-​	一个简易版的贴吧论坛：该系统有多个吧，一个吧中有多个帖子，一个帖子有多个评论，一个评论来自一个用户，一个用户可以发送帖子，可以创建吧，点赞帖子，点赞评论。
+​	一个简易版的贴吧论坛：该系统有多个吧，一个吧中有多个帖子，一个帖子有多个评论，一个评论来自一个用户，一个用户可以发送帖子，可以创建吧，点赞帖子，点赞评论,一个用户可以关注多个用户，一个用户也可以被多个用户关注，一个吧可以被多个用户关注，一个用户可以关注多个吧
 
 ## 一、环境搭建
 
@@ -47,9 +47,11 @@ tie-ba-lower
 
 ​	7.一个用户可以点赞多个帖子、一个帖子也可以被多个用户点赞	（用户--点赞--帖子	n对n）
 
+​	8.一个用户可以关注多个用户，一个用户也可以被多个用户关注 （用户--关注--用户 n对n）
+
 ​	数据库ER图如下：
 
-![image-20230529151445206](C:\Users\Dell\AppData\Roaming\Typora\typora-user-images\image-20230529151445206.png)
+![image-20230605213403951](C:\Users\Dell\AppData\Roaming\Typora\typora-user-images\image-20230605213403951.png)
 
 1.用户表：uid、username、password、createTime
 
@@ -65,7 +67,7 @@ tie-ba-lower
 
 7.关注吧：bid、pid、createTime
 
-
+8.用户关注表: uid_is_followed（被关注的用户）、uid（关注用户的用户）、createTime
 
 测试
 
@@ -626,7 +628,9 @@ async function getUserInfo(ctx: Context) {
 
 ### 4.关注用户（需要token）
 
-model
+​	根据当前token解析出关注者的id，携带查询参数uid代表需要被关注者的id。需要检验当前用户是否关注了被关注者，若没有插入该记录即可，若有记录则提示已经关注的错误。
+
+#### model
 
 ```ts
     /**
@@ -662,7 +666,7 @@ model
     }
 ```
 
-service
+#### service
 
 ```tsx
     /**
@@ -697,7 +701,7 @@ service
     }
 ```
 
-controller
+#### controller
 
 ```ts
 /**
@@ -748,9 +752,11 @@ async function followUser (ctx: Context) {
 
 
 
-### 5.取消关注用户
+### 5.取消关注用户 （需要token）
 
-model
+​	根据当前token解析出关注者的id，携带查询参数uid代表需要被关注者的id。需要检验当前用户是否关注了被关注者，若没有提示还没关注该用户的错误，若有记录则删除该记录即可。
+
+#### model
 
 ```ts
     /**
@@ -773,7 +779,7 @@ model
     }
 ```
 
-service
+#### service
 
 ```ts
     /**
@@ -809,9 +815,7 @@ service
     }
 ```
 
-
-
-controller
+#### controller
 
 ```ts
 /**
@@ -854,6 +858,237 @@ async function cancelFollowUser (ctx: Context) {
 ```
 
 
+
+### 6.获取关注列表  （分页）
+
+​	在用户关注表中uid为关注者的id，只需要在表中查询有多少该关注者的记录即可查询该用户的关注列表。
+
+​	1.注意分页，在sql查询时使用limit offset关键字实现分页。
+
+​	2.获取到关注用户的id列表后，只需要遍历通过uid_is_followed去用户表查询对应数据，即可获取到关注列表用户的详情数据。
+
+​	3.还需要获取该用户关注列表的总数total
+
+#### model
+
+```ts
+    /**
+     * 在用户关注表中 通过uid来查询记录关注列表    (分页数据)
+     * @param uid 关注者的id
+     * @param limit 需要查询多少条记录
+     * @param offset 从第几条数据开始查询数据
+     * @returns 
+     */
+    async selectByUidScopedFollowLimit(uid: number, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid=${uid} limit ${limit} OFFSET ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户关注表中 通过uid来获取关注数量
+     * @param uid 
+     * @returns 
+     */
+    async selectByUidScopedFollowCount(uid: number) {
+        try {
+            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid=${uid};`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+```
+
+#### service层
+
+```ts
+    /**
+     * 获取用户的关注列表
+     * @param uid 用户id
+     * @param limit 多少条数据
+     * @param offset 从第几条开始获取数据
+     * @returns 
+     */
+    async getFollowList(uid: number, limit: number, offset: number) {
+        try {
+            // 获取通过当前uid来获取被关注的用户列表 (分页的数据)
+            const resIdList = await user.selectByUidScopedFollowLimit(uid, limit, offset)
+            const userList: UserWithout[] = []
+            // 遍历获取用户数据
+            for (let i = 0; i < resIdList.length; i++) {
+                // 通过被关注者的id获取被关注者数据
+                const userItem = await user.selectByUid(resIdList[i].uid_is_followed)
+                if (userItem.length) {
+                    // 若查询到了 保存该数据
+                    userList.push(userItem[0])
+                }
+            }
+            // 获取关注数量
+            const total = await user.selectByUidScopedFollowCount(uid)
+            return Promise.resolve({ list: userList, total: total[0].total, limit, offset })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+```
+
+#### controller
+
+```ts
+/**
+ * 获取用户关注列表
+ * @param ctx 
+ * @returns 
+ */
+async function getUserFollowList(ctx:Context) {
+    if (ctx.query.uid === undefined) {
+        // 未携带参数
+        ctx.status = 400;
+        ctx.body=response(null,'未携带参数!',400)
+        return
+    }
+    const uid = +ctx.query.uid;
+    // 获取的条数默认20条
+    const limit =ctx.query.limit===undefined? 20:+ctx.query.limit;
+    // 获取的偏移量默认从0开始
+    const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+    try {
+        const res = await userService.getFollowList(uid, limit, offset)
+        ctx.body=response(res,'ok')
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+```
+
+
+
+### 7.获取粉丝列表（分页）
+
+​		在用户关注表中uid_is_followed为被关注者的id，只需要在表中查询有多少该被关注者的记录即可查询该用户的粉丝列表。
+
+​	1.注意分页，在sql查询时使用limit offset关键字实现分页。
+
+​	2.获取到粉丝用户的id列表后，只需要遍历通过uid去用户表查询对应数据，即可获取到关注列表用户的详情数据。
+
+​	3.还需要获取该用户粉丝列表的总数total
+
+#### model
+
+```ts
+    /**
+ * 在用户关注表中 通过uid_is_followed来查询记录粉丝列表    (分页数据)
+ * @param uidIsFollowed 被关注者的id
+ * @param limit 需要查询多少条记录
+ * @param offset 从第几条数据开始查询数据
+ * @returns 
+ */
+    async selectByUidFollowedScopedFollowLimit(uidIsFollowed: number, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid_is_followed=${uidIsFollowed} limit ${limit} OFFSET ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户关注表中 通过uid_is_followed来获取粉丝数量
+     * @param uidIsFollowed 被关注者的id
+     * @returns 
+     */
+    async selectByUidFollowedScopedFollowCount(uidIsFollowed: number) {
+        try {
+            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid_is_followed=${uidIsFollowed};`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+```
+
+#### service层
+
+```ts
+    /**
+     * 获取粉丝列表
+     * @param uidIsFollowed 被关注者的id
+     * @param limit 多少条数据
+     * @param offset 从第几条开始获取数据
+     * @returns 
+     */
+    async getFansList(uidIsFollowed: number, limit: number, offset: number) {
+        try {
+            // 获取通过当前uid来获取粉丝列表 (分页的数据)
+            const resIdList = await user.selectByUidFollowedScopedFollowLimit(uidIsFollowed, limit, offset)
+            const userList: UserWithout[] = []
+            // 遍历获取用户数据
+            for (let i = 0; i < resIdList.length; i++) {
+                // 通过关注者的id获取粉丝数据
+                const userItem = await user.selectByUid(resIdList[i].uid)
+                if (userItem.length) {
+                    // 若查询到了 保存该数据
+                    userList.push(userItem[0])
+                }
+            }
+            // 获取粉丝数量
+            const total = await user.selectByUidFollowedScopedFollowCount(uidIsFollowed)
+            return Promise.resolve({ list: userList, total: total[0].total, limit, offset })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+}
+```
+
+#### controller
+
+```ts
+/**
+ * 获取用户粉丝列表
+ * @param ctx 
+ * @returns 
+ */
+async function getUserFansList(ctx: Context) {
+    if (ctx.query.uid === undefined) {
+        // 未携带参数
+        ctx.status = 400;
+        ctx.body = response(null, '未携带参数!', 400)
+        return
+    }
+    const uid = +ctx.query.uid;
+    // 获取的条数默认20条
+    const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
+    // 获取的偏移量默认从0开始
+    const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+    try {
+        const res = await userService.getFansList(uid, limit, offset)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+```
 
 
 
@@ -1094,9 +1329,65 @@ async function getAllBar(ctx: Context) {
 
 ​	该接口需要配置路由白名单，根据请求头中Authorization是否传入token，来判断当前用户是否登录。若未登录则直接设置对吧的关注状态为false，若传入了则需要通过中间件来解析出token数据，token数据中包含用户的uid，通过uid和bid到表中进行查询记录，若有则设置状态为关注，否则设置状态为未关注。最终就把吧的数据响应给客户端。
 
-##### 	当前用户对吧主的关注状态
+​	**当前用户对吧主的关注状态**
 
-​	通过吧的信息中包含吧主的id与token中用户的id，在用户关注表中查询即可，有记录则为关注，无记录没关注
+​	根据token可以获取出用户id，通过用户id和吧主id在用户关注用户的表中查询是否有记录即可，若未登录则直接返回未登录。
+
+#### 单独解析token中的数据的中间件
+
+​	使用jsonwebtoken库来单独解析token数据。jsonwebtoken库可以解析任意以jwt标准市场的token，注意解析时不要传入Bearer+空格字段，会导致解析出错。
+
+​	环境：
+
+<img src="C:\Users\Dell\AppData\Roaming\Typora\typora-user-images\image-20230605223818442.png" alt="image-20230605223818442" style="zoom:50%;" />
+
+```ts
+// 单独解析token的中间件(若未携带token则ctx.state.user={} 若token解析成功则ctx.state.user=对应数据)
+import type { Context, Next } from 'koa'
+import jwt from 'jsonwebtoken'
+import { SECRET_KEY } from '../config'
+import response from '../utils/tools/response'
+
+export default async function tokenParse(ctx: Context, next: Next) {
+    try {
+        // 获取用户的token
+        const token = ctx.header.authorization
+        // 若传入token就进行解析
+        if (token) {
+            // 把token中多余的bearer去掉 否则解析会出错
+            const formatToken = token.split(' ')[1]
+            // 获取解析出来的token数据
+           const data= await new Promise((resolve, rejected) => {
+               jwt.verify(formatToken, SECRET_KEY, function (err, decoded) {
+                    if (err) {
+                        // token解析失败
+                        console.log(err)
+                        rejected(err)
+                    } else {
+                        // token解析成功
+                        resolve(decoded)
+                    }
+                })
+           })
+            // 将token数据保存在ctx.state.user中
+            ctx.state.user=data
+        } else {
+            //未传入token 交给控制层进行处理
+
+        }
+        //  无论是否传入token 只要解析成功都进入控制层逻辑
+        await next()
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+
+```
+
+
 
 #### model层
 
@@ -1119,7 +1410,7 @@ async function getAllBar(ctx: Context) {
 #### service层
 
 ```ts
- /**
+  /**
      * 获取吧的详情数据
      * @param bid 吧的id
      * @param uid 当前登录的用户id
@@ -1133,7 +1424,7 @@ async function getAllBar(ctx: Context) {
             const resBar = await bar.selectByBid(bid)
             if (!resBar.length) {
                 // 根据bid获取吧数据失败
-                await Promise.reject()
+                return Promise.resolve(0)
             }
             // 吧的数据
             const barInfo = resBar[ 0 ]
@@ -1193,27 +1484,42 @@ async function getAllBar(ctx: Context) {
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
-async function getBarInfo(ctx: Context) {
+async function getBarInfo (ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
-    console.log(ctx.state)
     if (query.bid === undefined) {
         ctx.status = 400
-        return ctx.body = response(null, '参数未携带', 400)
+        ctx.body = response(null, '参数未携带', 400)
+    } else {
+        const bid = + query.bid
+        if (isNaN(bid) || bid === 0) {
+            // 参数非法
+            ctx.status = 400
+            ctx.body = response(null, '参数非法', 400)
+        } else {
+            // 参数合法
+            try {
+                // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
+                const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
+                if (res === 0) {
+                    ctx.body=response(null,'获取吧数据失败,该吧不存在!',400)
+                } else {
+                    ctx.body = response(res, 'ok')
+                }
+            } catch (error) {
+                console.log(error)
+                ctx.status = 500;
+                ctx.body = response(null, '服务器出错了!', 500)
+            }
+        }
     }
-    try {
-        // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
-        const res = await barService.getBarInfo(+query.bid, ctx.header.authorization ? token.uid : undefined)
-        ctx.body = response(res, 'ok')
-    } catch (error) {
-        console.log(error)
-        ctx.status = 500;
-        ctx.body = response(null, '服务器出错了!', 500)
-    }
+
 }
  ```
 
 ### 4.用户关注吧 (需要token)
+
+​	根据当前token解析出关注者的id，携带查询参数bid代表需要被吧的id。需要检验当前用户是否关注了吧，若没有则增加记录，若有记录则提示已经关注了的错误。
 
 #### model层
 
@@ -1285,33 +1591,142 @@ async function getBarInfo(ctx: Context) {
  * 关注吧
  * @param ctx 
  */
-async function followBar(ctx: Context) {
+async function followBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
         return ctx.body = response(null, '参数未携带', 400)
     }
-    // 解析出token数据
-    const user = ctx.state.user as Token
-    try {
-        if (user.uid) {
-            // token解析成功
-            const res = await barService.followBar(+ctx.query.bid, user.uid)
-            if (res) {
-                return ctx.body = response(null, '关注成功!')
+    const bid = +ctx.query.bid
+    if (isNaN(bid) || bid === 0) {
+        // 参数非法
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    } else {
+        // 解析出token数据
+        const user = ctx.state.user as Token
+        try {
+            if (user.uid) {
+                // token解析成功
+                const res = await barService.toFollowBar(bid, user.uid)
+                if (res) {
+                    return ctx.body = response(null, '关注成功!')
+                } else {
+                    return ctx.body = response(null, '关注吧失败,已经关注了!', 400)
+                }
             } else {
-                return ctx.body = response(null, '已经关注了!', 400)
+                // token解析失败
+                await Promise.reject()
             }
-        } else {
-            // token解析失败
-            await Promise.reject()
+        } catch (error) {
+            console.log(error)
+            ctx.status = 500;
+            ctx.body = response(null, '服务器出错了!', 500)
         }
-    } catch (error) {
-        ctx.status = 500;
-        ctx.body = response(null, '服务器出错了!', 500)
     }
 }
 ```
+
+### 5.用户取消关注吧 （需要token）
+
+​	根据当前token解析出关注者的id，携带查询参数bid代表需要被吧的id。需要检验当前用户是否关注了吧，若没有则提示还没关注的错误，若有记录则删除记录即可。
+
+#### model
+
+```ts
+    /**
+     * 在用户关注吧表中删除关注吧记录
+     * @param bid 
+     * @param uid 
+     * @returns 
+     */
+    async deleteFollowByUidAndBid (bid: number, uid: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${ uid } AND bid = ${ bid }`)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                await Promise.reject()
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }    
+    }
+```
+
+#### service
+
+```ts
+  /**
+     * 取消关注吧
+     * @param bid 吧id 
+     * @param uid 用户id
+     * @returns 0:未关注不能取消关注吧 1：关注了则取消关注吧
+     */
+    async toCancelFollowBar (bid: number, uid: number):Promise<0|1> {
+        try {
+            // 1.当前用户是否关注过吧
+            const resExist = await bar.selectFollowByUidAndBid(bid, uid)
+            if (!resExist.length) {
+                // 未关注不能取消关注
+                return Promise.resolve(0)
+            }
+            // 2.删除关注记录
+            await bar.deleteFollowByUidAndBid(bid, uid)
+            return Promise.resolve(1)
+        } catch (error) {
+            return Promise.reject(error) 
+        }
+    }
+```
+
+#### controller
+
+```ts
+
+/**
+ * 取消关注吧
+ * @param ctx 
+ */
+async function canceFollowBar (ctx: Context) {
+    // 查询参数检验
+    if (!ctx.query.bid) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带', 400)
+    }
+    const bid = +ctx.query.bid
+    if (isNaN(bid) || bid === 0) {
+        // 参数非法
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    }
+    // 解析出token数据
+    const token = ctx.state.user as Token
+    try {
+        const res = await barService.toCancelFollowBar(bid, token.uid)
+        if (res) {
+            // 取消关注成功
+            ctx.body=response(null,'取消关注成功!')
+        } else {
+            // 当前未关注吧 不能取消关注
+            ctx.body=response(null,'取消关注吧失败,当前未关注该吧!',400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+```
+
+### 6.获取吧关注者的列表 (分页)
+
+
+
+### 7.获取当前用户关注的吧  (分页)
+
+
 
 
 
@@ -1399,6 +1814,82 @@ export default fileRouter
 ​	4.所有的吧: /bar/all
 
 ​	5.获取吧数据:/bar/info
+
+
+
+## 六、中间件
+
+### 1.全局解析token的中间件
+
+```ts
+import type { Next, Context } from "koa";
+import jwt from 'jsonwebtoken'
+import { SECRET_KEY, NO_AUTH } from '../../config'
+import response from '../../utils/tools/response'
+
+/**
+ * 检验token的中间件
+ * @param ctx 
+ * @param next 
+ */
+export default async function authorizationCatcher (ctx: Context, next: Next) {
+    // No_Auth为路由白名单数组
+    if (NO_AUTH.includes(ctx.path)) {
+        // 路由白名单
+        await next()
+    } else {
+        // 需要检验token的
+        try {
+            if (!ctx.header.authorization) {
+                // 未携带token
+                ctx.status = 401;
+                ctx.body = response(null, '未携带 token', 400)
+            } else {
+                // 携带了token需要进行验证 (需要先格式化token，把Bearer 截取掉)
+                const tokenFormat = ctx.header.authorization.split(' ')[ 1 ]
+                // 解析token中的数据
+                const data = await new Promise((resolve, rejected) => {
+                    jwt.verify(tokenFormat, SECRET_KEY, function (err, decoded) {
+                        if (err) {
+                            console.log(JSON.stringify(err))
+                            // token解析失败
+                            if (err.message === "invalid signature") {
+                                // 无效的token
+                                rejected(2)
+                            } else if (err.message === "jwt expired") {
+                                // token过期
+                                rejected(1)
+                            }
+                        } else {
+                            // token解析成功
+                            resolve(decoded)
+                        }
+                    })
+                })
+                // 解析成功 （保存在上下文中）
+                ctx.state.user = data
+                await next()
+            }
+        } catch (err) {
+            
+            if (err === 1) {
+                // token过期
+                ctx.status = 401;
+                ctx.body = response(null, 'token过期,请重新登陆', 400)
+            } else if (err === 2) {
+                // 无效的token
+                ctx.status = 401;
+                ctx.body = response(null, '无效的token', 400)
+            } else {
+                ctx.status = 500;
+                ctx.body = response(null, '其他错误', 500)
+            }
+        }
+
+    }
+}
+
+```
 
 
 

@@ -237,6 +237,72 @@ async function cancelFollowUser (ctx: Context) {
 
 }
 
+/**
+ * 获取用户关注列表
+ * @param ctx 
+ * @returns 
+ */
+async function getUserFollowList(ctx:Context) {
+    if (ctx.query.uid === undefined) {
+        // 未携带参数
+        ctx.status = 400;
+        ctx.body=response(null,'未携带参数!',400)
+        return
+    }
+    const uid = +ctx.query.uid;
+    // 获取的条数默认20条
+    const limit =ctx.query.limit===undefined? 20:+ctx.query.limit;
+    // 获取的偏移量默认从0开始
+    const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+    try {
+        const res = await userService.getFollowList(uid, limit, offset)
+        ctx.body=response(res,'ok')
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 获取用户粉丝列表
+ * @param ctx 
+ * @returns 
+ */
+async function getUserFansList(ctx: Context) {
+    if (ctx.query.uid === undefined) {
+        // 未携带参数
+        ctx.status = 400;
+        ctx.body = response(null, '未携带参数!', 400)
+        return
+    }
+    const uid = +ctx.query.uid;
+    // 获取的条数默认20条
+    const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
+    // 获取的偏移量默认从0开始
+    const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+        // 参数非法
+        ctx.status = 400;
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+    try {
+        const res = await userService.getFansList(uid, limit, offset)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
 export default {
     login,
     checkUser,
@@ -244,5 +310,7 @@ export default {
     testToken,
     getUserInfo,
     followUser,
-    cancelFollowUser
+    cancelFollowUser,
+    getUserFollowList,
+    getUserFansList
 }

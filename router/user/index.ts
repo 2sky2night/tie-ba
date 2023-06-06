@@ -23,9 +23,15 @@ userRouter.get('user', `${baseRouteURL}/token`, UserController.testToken)
 userRouter.get('user', `${baseRouteURL}/info`, UserController.getUserInfo)
 
 // 关注用户 (需要token) query:{uid:number}
-userRouter.get('user',`${baseRouteURL}/follow`, UserController.followUser)
+userRouter.get('user', `${baseRouteURL}/follow`, UserController.followUser)
 
 // 取消关注用户 (需要token) query:{uid:number}
-userRouter.delete('user',`${baseRouteURL}/follow`, UserController.cancelFollowUser)
+userRouter.delete('user', `${baseRouteURL}/follow`, UserController.cancelFollowUser)
+
+//  获取关注列表 query:{uid:number,limit?:number,offset?:number}
+userRouter.get('user', `${baseRouteURL}/follow/list`, UserController.getUserFollowList)
+
+//  获取粉丝列表 query:{uid:number,limit?:number,offset?:number}
+userRouter.get('user', `${baseRouteURL}/fans/list`, UserController.getUserFansList)
 
 export default userRouter
