@@ -1,8 +1,8 @@
 // 单独解析token的中间件(若未携带token则ctx.state.user={} 若token解析成功则ctx.state.user=对应数据)
 import type { Context, Next } from 'koa'
 import jwt from 'jsonwebtoken'
-import { SECRET_KEY } from '../config'
-import response from '../utils/tools/response'
+import { SECRET_KEY } from '../../config'
+import response from '../../utils/tools/response'
 
 /**
  * 解析token数据保存在上下文中
