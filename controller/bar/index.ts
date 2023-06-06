@@ -89,7 +89,11 @@ async function getBarInfo (ctx: Context) {
             try {
                 // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
                 const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
-                ctx.body = response(res, 'ok')
+                if (res === 0) {
+                    ctx.body=response(null,'获取吧数据失败,该吧不存在!',400)
+                } else {
+                    ctx.body = response(res, 'ok')
+                }
             } catch (error) {
                 console.log(error)
                 ctx.status = 500;

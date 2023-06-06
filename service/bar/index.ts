@@ -60,7 +60,7 @@ class BarService {
             const resBar = await bar.selectByBid(bid)
             if (!resBar.length) {
                 // 根据bid获取吧数据失败
-                await Promise.reject()
+                return Promise.resolve(0)
             }
             // 吧的数据
             const barInfo = resBar[ 0 ]
