@@ -3,6 +3,7 @@ import BarModel from "../../model/bar";
 import UserModel from '../../model/user'
 // 类型
 import type { BarBody, BarCreateBody } from "../../model/bar/types";
+import { UserInfo, UserWithout } from "../../model/user/types";
 
 // 吧模型实例
 const bar = new BarModel()
@@ -18,7 +19,7 @@ class BarService {
      * @param data 吧的数据
      * @returns 创建的结果 0吧名重复 1创建成功
      */
-    async createBar (data: BarCreateBody): Promise<0 | 1> {
+    async createBar(data: BarCreateBody): Promise<0 | 1> {
         try {
             // 先查询吧是否存在
             const resExist = await bar.selectByBname(data.bname)
@@ -38,7 +39,7 @@ class BarService {
      * 获取所有的吧
      * @returns 所有吧的数据
      */
-    async findAllBar () {
+    async findAllBar() {
         try {
             const res = await bar.selectAllBar()
             return Promise.resolve(res)
@@ -54,7 +55,7 @@ class BarService {
      * 1. (当前登录的用户是否关注吧)
      * 2.(当前登录的用户是否关注吧主)
      */
-    async getBarInfo (bid: number, uid: number | undefined) {
+    async getBarInfo(bid: number, uid: number | undefined) {
         try {
             //  获取吧的信息
             const resBar = await bar.selectByBid(bid)
@@ -63,7 +64,7 @@ class BarService {
                 return Promise.resolve(0)
             }
             // 吧的数据
-            const barInfo = resBar[ 0 ]
+            const barInfo = resBar[0]
             // 获取到吧主的信息
             const resUser = await user.selectByUid(barInfo.uid)
             if (resUser.length) {
@@ -72,7 +73,7 @@ class BarService {
                 // 通过当前登录的用户id来检验是否关注了吧
                 if (uid === undefined) {
                     //  若未登陆
-                    res = { ...barInfo, is_follow: false, user: { ...resUser[ 0 ], is_follow: false } }
+                    res = { ...barInfo, is_followed: false, user: { ...resUser[0], is_followed: false } }
                 } else {
                     //  若登录 
                     // 1.查询用户是否关注了吧
@@ -96,7 +97,7 @@ class BarService {
                         isFollowUser = false
                     }
                     // 响应请求内容
-                    res = { ...barInfo, follow_bar: isFollowBar, user: { ...resUser[ 0 ], is_follow: isFollowUser } }
+                    res = { ...barInfo, is_followed: isFollowBar, user: { ...resUser[0], is_followed: isFollowUser } }
                 }
 
                 return Promise.resolve(res)
@@ -114,7 +115,7 @@ class BarService {
      * @param uid 用户的id
      * @returns 0已经关注了 1关注成功
      */
-    async toFollowBar (bid: number, uid: number): Promise<0 | 1> {
+    async toFollowBar(bid: number, uid: number): Promise<0 | 1> {
         try {
             // 先检查用户是否关注吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)
@@ -135,7 +136,7 @@ class BarService {
      * @param uid 用户id
      * @returns 0:未关注不能取消关注吧 1：关注了则取消关注吧
      */
-    async toCancelFollowBar (bid: number, uid: number):Promise<0|1> {
+    async toCancelFollowBar(bid: number, uid: number): Promise<0 | 1> {
         try {
             // 1.当前用户是否关注过吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)
@@ -147,7 +148,70 @@ class BarService {
             await bar.deleteFollowByUidAndBid(bid, uid)
             return Promise.resolve(1)
         } catch (error) {
-            return Promise.reject(error) 
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取关注该吧的用户
+     * @param bid 吧id
+     * @param uid 当前登录的用户id
+     * @param limit 响应多少条数据
+     * @param offset 从多少偏移量开始获取数据
+     * @returns 
+     */
+    async getBarFollowUser(bid: number, uid: number | undefined, limit: number, offset: number) {
+        try {
+            // 1.获取关注该吧的用户数量
+            const resCount = await bar.selectFollowByBidCount(bid)
+            if (!resCount.length) {
+                // 查询出错
+                await Promise.reject()
+            }
+            // 2.获取关注该吧的所有用户id列表
+            const resUid = await bar.selectFollowByBidLimit(bid, limit, offset)
+
+            // 3.通过用户id来获取用户详情数据
+            const userList: UserWithout[] = []
+            for (let i = 0; i < resUid.length; i++) {
+                const userInfo = await user.selectByUid(resUid[i].uid)
+                if (userInfo.length) {
+                    // 有记录就保存用户数据
+                    userList.push(userInfo[0])
+                }
+            }
+
+            // 用户详情信息列表
+            const userInfoList: UserInfo[] = []
+            // 4.若当前登录了用户还需要查询当前用户是否关注了这些用户
+            if (uid !== undefined) {
+                // 登录了 需要使用查询当前用户对这些用户的关注状态
+                for (let i = 0; i < userList.length; i++) {
+                    // 通过当前用户id和列表用户id来查询是否有关注状态
+                    const resFollow = await user.selectByUidAndUidIsFollow(uid, userList[i].uid)
+                    if (resFollow.length) {
+                        // 有记录 说明关注了
+                        userInfoList.push({ ...userList[i], is_followed: true })
+                    } else {
+                        // 无记录 说明未关注
+                        userInfoList.push({ ...userList[i], is_followed: false })
+                    }
+                }
+            } else {
+                // 未登录 则对这些用户的关注状态为未关注
+                userList.map(ele => {
+                    return { ...ele, is_followed: false }
+                }).forEach(ele => {
+                    userInfoList.push(ele)
+                })
+            }
+            return Promise.resolve({
+                list: userInfoList,
+                limit,
+                offset,
+                total: resCount[0].total
+            })
+        } catch (error) {
+            return Promise.reject(error)
         }
     }
 }

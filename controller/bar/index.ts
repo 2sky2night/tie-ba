@@ -17,7 +17,7 @@ const barService = new BarService()
  * @param ctx 
  * @returns 创建吧的成功与否的信息
  */
-async function createBar (ctx: Context) {
+async function createBar(ctx: Context) {
     const body = (ctx.request as any).body as BarBody
     if (!body.bname || !body.bdesc || !body.photo) {
         ctx.status = 400
@@ -54,7 +54,7 @@ async function createBar (ctx: Context) {
  * @param ctx 
  * @returns 返回所有吧
  */
-async function getAllBar (ctx: Context) {
+async function getAllBar(ctx: Context) {
     try {
         const res = await barService.findAllBar()
         ctx.body = response(res, 'ok')
@@ -72,7 +72,7 @@ async function getAllBar (ctx: Context) {
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
-async function getBarInfo (ctx: Context) {
+async function getBarInfo(ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
     if (query.bid === undefined) {
@@ -90,7 +90,7 @@ async function getBarInfo (ctx: Context) {
                 // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
                 const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
                 if (res === 0) {
-                    ctx.body=response(null,'获取吧数据失败,该吧不存在!',400)
+                    ctx.body = response(null, '获取吧数据失败,该吧不存在!', 400)
                 } else {
                     ctx.body = response(res, 'ok')
                 }
@@ -108,7 +108,7 @@ async function getBarInfo (ctx: Context) {
  * 关注吧
  * @param ctx 
  */
-async function followBar (ctx: Context) {
+async function followBar(ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
@@ -148,17 +148,17 @@ async function followBar (ctx: Context) {
  * 取消关注吧
  * @param ctx 
  */
-async function canceFollowBar (ctx: Context) {
+async function canceFollowBar(ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
-        return ctx.body = response(null, '参数未携带', 400)
+        return ctx.body = response(null, '有参数未携带!', 400)
     }
     const bid = +ctx.query.bid
     if (isNaN(bid) || bid === 0) {
         // 参数非法
         ctx.status = 400
-        return ctx.body = response(null, '参数非法', 400)
+        return ctx.body = response(null, '参数非法!', 400)
     }
     // 解析出token数据
     const token = ctx.state.user as Token
@@ -166,11 +166,57 @@ async function canceFollowBar (ctx: Context) {
         const res = await barService.toCancelFollowBar(bid, token.uid)
         if (res) {
             // 取消关注成功
-            ctx.body=response(null,'取消关注成功!')
+            ctx.body = response(null, '取消关注成功!')
         } else {
             // 当前未关注吧 不能取消关注
-            ctx.body=response(null,'取消关注吧失败,当前未关注该吧!',400)
+            ctx.body = response(null, '取消关注吧失败,当前未关注该吧!', 400)
         }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
+/**
+ * 获取关注该吧的用户
+ * @param ctx 
+ * @returns 
+ */
+async function getBarFollowUserList(ctx: Context) {
+
+    // 1.检查是否携带token来获取当前登录用户的id
+    let uid: undefined | null | number = null;
+    if (ctx.header.authorization) {
+        // 若携带了token且被解析成功 则获取token中的uid数据
+        uid = (ctx.state.user as Token).uid
+    } else {
+        // 未携带token
+        uid = undefined
+    }
+
+    //  2.检验查询参数是否合法
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '有参数未携带!', 400)
+        return
+    }
+
+    const bid = +ctx.query.bid;
+    const limit = ctx.query.limit ? +ctx.query.limit : 20;
+    const offset = ctx.query.offset ? +ctx.query.offset : 0;
+
+    if (isNaN(bid) || isNaN(limit) || isNaN(offset)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+        return
+    }
+
+    // 3. 调用service层获取数据
+    try {
+        const res = await barService.getBarFollowUser(bid, uid, limit, offset)
+        ctx.body = response(res, 'ok')
     } catch (error) {
         console.log(error)
         ctx.status = 500;
@@ -184,5 +230,6 @@ export default {
     getAllBar,
     getBarInfo,
     followBar,
-    canceFollowBar
+    canceFollowBar,
+    getBarFollowUserList
 }

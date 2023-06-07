@@ -3,6 +3,7 @@ import BaseModel from '../base'
 // 类型
 import type { Bar, BarCreateBody, UserFollowBarItem } from './types'
 import type { OkPacket } from 'mysql'
+import type { CountRes } from '../../types/index'
 // 工具函数
 import { getNowTimeString } from '../../utils/tools/time'
 
@@ -102,9 +103,9 @@ class BarModel extends BaseModel {
      * @param uid 
      * @returns 
      */
-    async deleteFollowByUidAndBid (bid: number, uid: number) {
+    async deleteFollowByUidAndBid(bid: number, uid: number) {
         try {
-            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${ uid } AND bid = ${ bid }`)
+            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${uid} AND bid = ${bid}`)
             if (res.affectedRows) {
                 return Promise.resolve()
             } else {
@@ -112,7 +113,35 @@ class BarModel extends BaseModel {
             }
         } catch (error) {
             return Promise.reject(error)
-        }    
+        }
+    }
+    /**
+     * 在用户关注吧表中 通过吧bid查询有多少个用户关注了该吧
+     * @param bid 吧id
+     * @returns 
+     */
+    async selectFollowByBidCount(bid: number) {
+        try {
+            const res = await this.runSql<CountRes>(`SELECT count(*) as total FROM user_follow_bar where bid=${bid} `)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户关注吧表中 通过bid来查询有多少个用户关注了该吧 (分页限制)
+     * @param bid 吧id
+     * @param limit 查询多少条数据?
+     * @param offset 偏移量多少开始查询数据
+     * @returns 
+     */
+    async selectFollowByBidLimit(bid: number, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${bid}  limit ${limit} offset ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
     }
 }
 

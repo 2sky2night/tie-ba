@@ -76,3 +76,13 @@ export interface UserFollow {
      */
     createTime: string;
 }
+
+/**
+ * 用户详情数据
+ */
+export interface UserInfo extends UserWithout {
+    /**
+     * 当前用户是否关注了该用户
+     */
+    is_followed: boolean
+}

@@ -9,18 +9,21 @@ const barRouter = new Router()
 const baseRouteURL = '/bar'
 
 // 创建吧 (需要token) json {bname:string;bdesc:string;photo:string}
-barRouter.post('bar',`${baseRouteURL}/create`,BarController.createBar)
+barRouter.post('bar', `${baseRouteURL}/create`, BarController.createBar)
 
 // 获取所有的吧
 barRouter.get('bar', `${baseRouteURL}/all`, BarController.getAllBar)
 
 // 根据吧的id获取吧的数据 (使用中间件解析token 需要使用token中的数据) query {bid:number}
-barRouter.get('bar', `${baseRouteURL}/info`, middleware.tokenParse ,BarController.getBarInfo)
+barRouter.get('bar', `${baseRouteURL}/info`, middleware.tokenParse, BarController.getBarInfo)
 
 // 关注吧 (需要token) query {bid:number}
-barRouter.get('bar', `${baseRouteURL}/follow`,BarController.followBar)
+barRouter.get('bar', `${baseRouteURL}/follow`, BarController.followBar)
 
 // 取消关注吧 (需要token) query {bid:number}
-barRouter.delete('bar', `${baseRouteURL}/follow`,BarController.canceFollowBar)
+barRouter.delete('bar', `${baseRouteURL}/follow`, BarController.canceFollowBar)
+
+// 获取关注该吧的用户 (使用中间件解析token 需要使用token中的数据) query {bid:number,limit?:number=20,offset?:number=0}
+barRouter.get('bar', `${baseRouteURL}/follow/list`, middleware.tokenParse, BarController.getBarFollowUserList)
 
 export default barRouter
