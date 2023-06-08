@@ -15,9 +15,9 @@ class BarModel extends BaseModel {
      * 在吧表中插入一条吧的数据
      * @param data 
      */
-    async insertBar(data: BarCreateBody) {
+    async insertBar (data: BarCreateBody) {
         try {
-            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid,bdesc,photo) values ('${data.bname}','${getNowTimeString()}',${data.uid},'${data.bdesc}','${data.photo}')`)
+            const res = await this.runSql<OkPacket>(`insert into bar (bname,createTime,uid,bdesc,photo) values ('${ data.bname }','${ getNowTimeString() }',${ data.uid },'${ data.bdesc }','${ data.photo }')`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -32,9 +32,9 @@ class BarModel extends BaseModel {
      * @param bname 吧的名称
      * @returns 查询结果
      */
-    async selectByBname(bname: string) {
+    async selectByBname (bname: string) {
         try {
-            const res = await this.runSql<Bar[]>(`select * from bar where bname='${bname}'`)
+            const res = await this.runSql<Bar[]>(`select * from bar where bname='${ bname }'`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -44,7 +44,7 @@ class BarModel extends BaseModel {
      * 在吧表中查询当前所有的吧
      * @returns 
      */
-    async selectAllBar() {
+    async selectAllBar () {
         try {
             const res = await this.runSql<Bar[]>('select * from bar')
             return Promise.resolve(res)
@@ -57,9 +57,9 @@ class BarModel extends BaseModel {
      * @param bid 
      * @returns 
      */
-    async selectByBid(bid: number) {
+    async selectByBid (bid: number) {
         try {
-            const res = await this.runSql<Bar[]>(`select * from bar where bid=${bid}`)
+            const res = await this.runSql<Bar[]>(`select * from bar where bid=${ bid }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -71,9 +71,9 @@ class BarModel extends BaseModel {
      * @param uid 用户的id
      * @returns 
      */
-    async insertFollow(bid: number, uid: number) {
+    async insertFollow (bid: number, uid: number) {
         try {
-            const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_bar (uid, bid, createTime) VALUES (${uid}, ${bid}, '${getNowTimeString()}')`)
+            const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_bar (uid, bid, createTime) VALUES (${ uid }, ${ bid }, '${ getNowTimeString() }')`)
             if (res.affectedRows) {
                 return Promise.resolve()
             } else {
@@ -88,9 +88,9 @@ class BarModel extends BaseModel {
      * @param bid 吧的id
      * @param uid 用户的id
      */
-    async selectFollowByUidAndBid(bid: number, uid: number) {
+    async selectFollowByUidAndBid (bid: number, uid: number) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`select * from user_follow_bar where bid=${bid} and uid=${uid}`)
+            const res = await this.runSql<UserFollowBarItem[]>(`select * from user_follow_bar where bid=${ bid } and uid=${ uid }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -103,9 +103,9 @@ class BarModel extends BaseModel {
      * @param uid 
      * @returns 
      */
-    async deleteFollowByUidAndBid(bid: number, uid: number) {
+    async deleteFollowByUidAndBid (bid: number, uid: number) {
         try {
-            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${uid} AND bid = ${bid}`)
+            const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${ uid } AND bid = ${ bid }`)
             if (res.affectedRows) {
                 return Promise.resolve()
             } else {
@@ -120,9 +120,9 @@ class BarModel extends BaseModel {
      * @param bid 吧id
      * @returns 
      */
-    async selectFollowByBidCount(bid: number) {
+    async selectFollowByBidCount (bid: number) {
         try {
-            const res = await this.runSql<CountRes>(`SELECT count(*) as total FROM user_follow_bar where bid=${bid} `)
+            const res = await this.runSql<CountRes>(`SELECT count(*) as total FROM user_follow_bar where bid=${ bid } `)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -135,9 +135,38 @@ class BarModel extends BaseModel {
      * @param offset 偏移量多少开始查询数据
      * @returns 
      */
-    async selectFollowByBidLimit(bid: number, limit: number, offset: number) {
+    async selectFollowByBidLimit (bid: number, limit: number, offset: number) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${bid}  limit ${limit} offset ${offset}`)
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${ bid }  limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户关注吧表中 通过用户uid 获取用户关注吧的总数
+     * @param uid 
+     * @returns 
+     */
+    async selectFollowByUidCount (uid: number) {
+        try {
+            const res = await this.runSql<CountRes>(`SELECT count(*) as total FROM user_follow_bar where uid=${ uid } `)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+    /**
+     * 在用户关注吧表中 通过用户uid 获取该用户关注的吧id列表 (分页限制)
+     * @param uid 用户id
+     * @param limit 查询多少条数据?
+     * @param offset 偏移量多少开始查询数据
+     * @returns 
+     */
+    async selectFollowByUidLimit (uid: number, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where uid=${ uid }  limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

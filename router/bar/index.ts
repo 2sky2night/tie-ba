@@ -26,4 +26,7 @@ barRouter.delete('bar', `${baseRouteURL}/follow`, BarController.canceFollowBar)
 // 获取关注该吧的用户 (使用中间件解析token 需要使用token中的数据) query {bid:number,limit?:number=20,offset?:number=0}
 barRouter.get('bar', `${baseRouteURL}/follow/list`, middleware.tokenParse, BarController.getBarFollowUserList)
 
+// 获取用户关注的吧列表 (使用中间件解析token 需要使用token中的数据) query {uid:number,limit?:number=20,offset?:number=0}
+barRouter.get('bar', `${baseRouteURL}/user/follow/list`, middleware.tokenParse, BarController.getUserFollowBarList)
+
 export default barRouter

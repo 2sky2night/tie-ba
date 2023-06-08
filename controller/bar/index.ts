@@ -17,7 +17,7 @@ const barService = new BarService()
  * @param ctx 
  * @returns 创建吧的成功与否的信息
  */
-async function createBar(ctx: Context) {
+async function createBar (ctx: Context) {
     const body = (ctx.request as any).body as BarBody
     if (!body.bname || !body.bdesc || !body.photo) {
         ctx.status = 400
@@ -54,7 +54,7 @@ async function createBar(ctx: Context) {
  * @param ctx 
  * @returns 返回所有吧
  */
-async function getAllBar(ctx: Context) {
+async function getAllBar (ctx: Context) {
     try {
         const res = await barService.findAllBar()
         ctx.body = response(res, 'ok')
@@ -72,7 +72,7 @@ async function getAllBar(ctx: Context) {
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
-async function getBarInfo(ctx: Context) {
+async function getBarInfo (ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
     if (query.bid === undefined) {
@@ -108,7 +108,7 @@ async function getBarInfo(ctx: Context) {
  * 关注吧
  * @param ctx 
  */
-async function followBar(ctx: Context) {
+async function followBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
@@ -148,7 +148,7 @@ async function followBar(ctx: Context) {
  * 取消关注吧
  * @param ctx 
  */
-async function canceFollowBar(ctx: Context) {
+async function canceFollowBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
@@ -184,7 +184,7 @@ async function canceFollowBar(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getBarFollowUserList(ctx: Context) {
+async function getBarFollowUserList (ctx: Context) {
 
     // 1.检查是否携带token来获取当前登录用户的id
     let uid: undefined | null | number = null;
@@ -225,11 +225,58 @@ async function getBarFollowUserList(ctx: Context) {
 
 }
 
+/**
+ * 获取用户关注吧的列表
+ * @param ctx 
+ * @returns 
+ */
+async function getUserFollowBarList (ctx: Context) {
+
+    // 1.检查是否携带token来获取当前登录用户的id
+    let currentUid: undefined | null | number = null;
+    if (ctx.header.authorization) {
+        // 若携带了token且被解析成功 则获取token中的uid数据
+        currentUid = (ctx.state.user as Token).uid
+    } else {
+        // 未携带token
+        currentUid = undefined
+    }
+
+    //  2.检验查询参数是否合法
+    if (ctx.query.uid === undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '有参数未携带!', 400)
+        return
+    }
+
+    const uid = +ctx.query.uid;
+    const limit = ctx.query.limit ? +ctx.query.limit : 20;
+    const offset = ctx.query.offset ? +ctx.query.offset : 0;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+        return
+    }
+
+    // 3. 调用service层获取数据
+    try {
+        const res = await barService.getUserFollowBar(uid, currentUid, limit, offset)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     createBar,
     getAllBar,
     getBarInfo,
     followBar,
     canceFollowBar,
-    getBarFollowUserList
+    getBarFollowUserList,
+    getUserFollowBarList
 }

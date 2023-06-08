@@ -1,3 +1,4 @@
+import type { UserInfo } from '../user/types';
 /**
  * 吧的全部数据
  */
@@ -51,4 +52,18 @@ export interface UserFollowBarItem {
     bid: number;
     uid: number;
     createTime: string;
+}
+
+/**
+ * 吧的信息包括用户关注吧的信息 
+ */
+export interface BarInfoWithFollow extends Bar {
+    is_followed: boolean
+}
+
+/**
+ * 吧的信息（包含吧关注的信息以及吧主的信息+关注状态）
+ */
+export interface BarInfo extends BarInfoWithFollow {
+    user: UserInfo
 }
