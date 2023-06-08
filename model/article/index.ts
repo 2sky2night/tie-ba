@@ -1,5 +1,5 @@
 import type { OkPacket } from 'mysql'
-import type { ArticleBaseItem, CreateArticleBody } from './types'
+import type { ArticleBaseItem, InsertArticleBody } from './types'
 import BaseModel from '../base/index'
 import { getNowTimeString } from '../../utils/tools/time'
 
@@ -17,10 +17,12 @@ class ArticleModel extends BaseModel {
    * @param data 
    * @returns 
    */
-  async insertInArticleTable (data: CreateArticleBody) {
+  async insertInArticleTable(data: InsertArticleBody) {
     try {
-      const photo = data.photo ? data.photo : null
-      const res = await this.runSql<OkPacket>(`INSERT INTO acrticle(content, createTime, bid, uid, title,photo) VALUES ('${ data.content }', '${ getNowTimeString() }', ${ data.bid }, ${ data.uid }, '${ data.title }',${ photo })`)
+      const sqlString = data.photo ?
+        `INSERT INTO acrticle(content, createTime, bid, uid, title,photo) VALUES ('${data.content}', '${getNowTimeString()}', ${data.bid}, ${data.uid}, '${data.title}','${data.photo}')` :
+        `INSERT INTO acrticle(content, createTime, bid, uid, title) VALUES ('${data.content}', '${getNowTimeString()}', ${data.bid}, ${data.uid}, '${data.title}')`
+      const res = await this.runSql<OkPacket>(sqlString)
       if (res.affectedRows) {
         return Promise.resolve()
       } else {
@@ -35,9 +37,9 @@ class ArticleModel extends BaseModel {
    * @param aid 
    * @returns 
    */
-  async selectInArticleTableByAid (aid: number) {
+  async selectInArticleTableByAid(aid: number) {
     try {
-      const res = await this.runSql<ArticleBaseItem[]>(`select * from acrticle where aid=${ aid }`)
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from acrticle where aid=${aid}`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

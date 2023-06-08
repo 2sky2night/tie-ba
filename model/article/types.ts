@@ -37,9 +37,27 @@ export interface ArticleBaseItem {
  */
 export interface CreateArticleBody {
   /**
-   * 帖子id
+   * 帖子内容
    */
-  aid: number;
+  content: number;
+  /**
+   * 帖子所属吧的id
+   */
+  bid: number;
+  /**
+   * 帖子的配图
+   */
+  photo?: string;
+  /**
+   * 帖子标题
+   */
+  title: string;
+}
+
+/**
+ * 创建帖子的数据 操作数据库时的请求体
+ */
+export interface InsertArticleBody {
   /**
    * 帖子内容
    */
@@ -49,7 +67,7 @@ export interface CreateArticleBody {
    */
   bid: number;
   /**
-   * 帖子创建者
+   * 帖子创建者的id
    */
   uid: number;
   /**
