@@ -5,6 +5,7 @@ import userRouter from './user'
 import barRouter from "./bar";
 // 文件上传路由
 import FileRouter from './file'
+import ArticleRouter from './article';
 
 // 统一注册路由
 const router = new Router()
@@ -13,6 +14,8 @@ const router = new Router()
 router.use(userRouter.routes())
 // 注册吧路由
 router.use(barRouter.routes())
+// 注册帖子路由
+router.use(ArticleRouter.routes())
 // 注册上传文件的路由
 router.use(FileRouter.routes())
 export default router

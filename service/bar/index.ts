@@ -3,7 +3,7 @@ import BarModel from "../../model/bar";
 import UserModel from '../../model/user'
 // 类型
 import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../model/bar/types";
-import { UserInfo, UserWithout } from "../../model/user/types";
+import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
 
 // 吧模型实例
@@ -270,6 +270,7 @@ class BarService {
                         barInfoFollowList.push({ ...barInfoList[ i ], is_followed: false })
                     }
                 }
+                
             }
 
             // 5.通过吧详情数据来获取每个吧的吧主信息以及对吧主的关注状态

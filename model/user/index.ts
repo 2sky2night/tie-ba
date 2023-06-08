@@ -8,6 +8,12 @@ import type { Count, CountRes } from "../../types"
 import { getNowTimeString } from '../../utils/tools/time'
 
 /**
+ * 在某个表用 in
+ * 查询某个字段用 by
+ */
+
+
+/**
  * 用户模型
  */
 class UserModel extends BaseModel {
