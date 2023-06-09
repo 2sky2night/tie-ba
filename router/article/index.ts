@@ -18,5 +18,7 @@ articleRouter.get('article', `${ baseRouteURL }/like`, ArticleController.toLikeA
 // 取消点赞文章 (需要token) {aid:number}
 articleRouter.delete('article', `${ baseRouteURL }/like`, ArticleController.toCancelLikeArticle)
 
+// 收藏文章 (需要token) {aid:number}
+articleRouter.get('article', `${ baseRouteURL }/star`, ArticleController.toStarArticle)
 
 export default articleRouter

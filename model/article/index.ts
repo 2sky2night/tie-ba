@@ -112,7 +112,7 @@ class ArticleModel extends BaseModel {
   /**
    * 在收藏帖子表中 通过uid和aid插入一条记录
    * @param uid 用户id
-   * @param aid 帖子
+   * @param aid 帖子id
    * @returns 
    */
   async insertInStarArticleTable (uid: number, aid: number) {
@@ -129,14 +129,32 @@ class ArticleModel extends BaseModel {
   }
   /**
    * 在收藏帖子表中 通过uid和aid来查询用户收藏该帖子的记录
-   * @param uid 
-   * @param aid 
+   * @param uid 帖子id
+   * @param aid 用户id
    * @returns 
    */
   async selectInStarArticleTableByUidAndAid (uid: number, aid: number) {
     try {
       const res = await this.runSql<ArticleStarBaseItem[]>(`select * from user_star_article where uid=${ uid } and aid=${ aid }`)
       return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在收藏帖子中 通过uid和aid来删除用户收藏帖子的记录
+   * @param aid 帖子id
+   * @param uid 用户id
+   * @returns 
+   */
+  async deleteInStarArticleTableByAidAndUid (aid: number, uid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`delete from user_star_article where uid=${ uid } and aid=${ aid }`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        await Promise.reject('删除收藏帖子的记录失败!')
+      }
     } catch (error) {
       return Promise.reject(error)
     }

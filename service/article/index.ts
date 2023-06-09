@@ -120,6 +120,37 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 收藏帖子
+   * 1.通过aid查询帖子是否存在
+   * 2.通过aid和uid查询帖子是否已经收藏了
+   * 3.通过验证即可插入记录收藏帖子
+   * @param uid 用户id
+   * @param aid 帖子id
+   * @returns -1：帖子不存在 0：重复收藏 1：收藏成功
+   */
+  async starArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
+    try {
+      // 1.通过aid查询帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      if (!resExist.length) {
+        // 收藏的帖子不存在
+        return Promise.resolve(-1)
+      }
+      // 2.通过aid和uid查询是否收藏了帖子
+      const resIsStar = await article.selectInStarArticleTableByUidAndAid(uid, aid)
+      if (resIsStar.length) {
+        // 已经收藏了 则不能重复收藏
+        return Promise.resolve(0)
+      } else {
+        // 未收藏 则插入记录
+        await article.insertInStarArticleTable(uid, aid)
+        return Promise.resolve(1)
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleService

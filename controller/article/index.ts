@@ -160,9 +160,49 @@ async function toCancelLikeArticle (ctx: Context) {
 
 }
 
+/**
+ * 收藏帖子
+ * @param ctx 
+ */
+async function toStarArticle (ctx: Context) {
+  const token = ctx.state.user as Token;
+
+  // 验证帖子aid参数
+  if (ctx.query.aid === undefined) {
+    ctx.status = 400;
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+
+  const aid = +ctx.query.aid
+
+  if (isNaN(aid)) {
+    ctx.status = 400;
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    const res = await acrticleService.starArticle(token.uid, aid);
+    if (res === -1) {
+      ctx.status = 400;
+      ctx.body = response(null, '收藏帖子失败,帖子不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400;
+      ctx.body = response(null, '收藏帖子失败,请勿重复收藏帖子!', 400)
+    } else {
+      ctx.body = response(null, '收藏帖子成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
   getArticleInfo,
   toLikeArticle,
-  toCancelLikeArticle
+  toCancelLikeArticle,
+  toStarArticle
 }
