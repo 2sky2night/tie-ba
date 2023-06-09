@@ -14,7 +14,7 @@ const acrticleService = new ArticleService()
  * 创建帖子
  * @param ctx 
  */
-async function toCreateArticle (ctx: Context) {
+async function toCreateArticle(ctx: Context) {
   const token = ctx.state.user as Token;
   const body = (ctx.request as any).body as CreateArticleBody
   if (isNaN(body.bid) || body.content === undefined || body.title === undefined) {
@@ -41,7 +41,7 @@ async function toCreateArticle (ctx: Context) {
  * 获取帖子的详情数据 (未完成)
  * @param ctx 
  */
-async function getArticleInfo (ctx: Context) {
+async function getArticleInfo(ctx: Context) {
 
   // 检验参数
   if (ctx.query.aid === undefined) {
@@ -79,7 +79,7 @@ async function getArticleInfo (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toLikeArticle (ctx: Context) {
+async function toLikeArticle(ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -122,7 +122,7 @@ async function toLikeArticle (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCancelLikeArticle (ctx: Context) {
+async function toCancelLikeArticle(ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -164,7 +164,7 @@ async function toCancelLikeArticle (ctx: Context) {
  * 收藏帖子
  * @param ctx 
  */
-async function toStarArticle (ctx: Context) {
+async function toStarArticle(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 验证帖子aid参数
@@ -199,10 +199,50 @@ async function toStarArticle (ctx: Context) {
 
 }
 
+/**
+ * 取消收藏帖子
+ * @param ctx 
+ */
+async function toCancelStarArticle(ctx: Context) {
+  const token = ctx.state.user as Token;
+
+  // 验证帖子aid参数
+  if (ctx.query.aid === undefined) {
+    ctx.status = 400;
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+
+  const aid = +ctx.query.aid
+
+  if (isNaN(aid)) {
+    ctx.status = 400;
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    const res = await acrticleService.cancelStarArticle(token.uid, aid);
+    if (res === -1) {
+      ctx.status = 400;
+      ctx.body = response(null, '取消收藏帖子失败,帖子不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400;
+      ctx.body = response(null, '取消收藏帖子失败,未收藏帖子!', 400)
+    } else {
+      ctx.body = response(null, '取消收藏帖子成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
   getArticleInfo,
   toLikeArticle,
   toCancelLikeArticle,
-  toStarArticle
+  toStarArticle,
+  toCancelStarArticle
 }

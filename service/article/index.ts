@@ -14,7 +14,7 @@ class ArticleService {
    * @param data 
    * @returns 0所在吧不存在 1发帖成功
    */
-  async createArticle (data: InsertArticleBody): Promise<1 | 0> {
+  async createArticle(data: InsertArticleBody): Promise<1 | 0> {
     try {
       // 1.需要先查询发帖所在的吧是否存在
       const res = await bar.selectByBid(data.bid)
@@ -47,7 +47,7 @@ class ArticleService {
    * @param aid 
    * @returns 
    */
-  async getArticleInfo (aid: number) {
+  async getArticleInfo(aid: number) {
     try {
       const res = await article.selectInArticleTableByAid(aid)
       if (res.length) {
@@ -67,7 +67,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1：文章不存在 0：已经点赞了 1：点赞成功
    */
-  async likeArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async likeArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.查询文章是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -98,7 +98,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1：文章不存在 0：没有点赞记录 1：取消点赞成功
    */
-  async cancelLikeArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async cancelLikeArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.查询文章是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -129,7 +129,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1：帖子不存在 0：重复收藏 1：收藏成功
    */
-  async starArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async starArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过aid查询帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -146,6 +146,38 @@ class ArticleService {
         // 未收藏 则插入记录
         await article.insertInStarArticleTable(uid, aid)
         return Promise.resolve(1)
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 取消收藏帖子
+   * 1.通过aid查询帖子是否存在
+   * 2.通过aid和uid查询用户是否收藏过帖子
+   * 3.若收藏过则取消收藏
+   * @param uid 用户id
+   * @param aid 帖子id
+   * @returns -1:帖子不存咋 0:未收藏过 1:取消收藏成功
+   */
+  async cancelStarArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
+    try {
+      // 1.通过uid来查询该帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      if (!resExist.length) {
+        // 若帖子不存在 则不能收藏
+        return Promise.resolve(-1)
+      }
+      // 2.通过uid和aid来查询用户是否收藏过帖子
+      const resIsStar = await article.selectInStarArticleTableByUidAndAid(uid, aid)
+      console.log(resIsStar)
+      if (resIsStar.length) {
+        // 若存在记录说明用户收藏过帖子 则可以取消收藏
+        await article.deleteInStarArticleTableByAidAndUid(aid, uid)
+        return Promise.resolve(1)
+      } else {
+        // 不存在记录 说明用户没有收藏过帖子 不能取消收藏
+        return Promise.resolve(0)
       }
     } catch (error) {
       return Promise.reject(error)
