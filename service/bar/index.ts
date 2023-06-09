@@ -1,6 +1,7 @@
-// 吧模型
+// 模型
 import BarModel from "../../model/bar";
 import UserModel from '../../model/user'
+import ArticleModel from '../../model/article';
 // 类型
 import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../model/bar/types";
 import type { UserInfo, UserWithout } from "../../model/user/types";
@@ -10,6 +11,8 @@ import type { Bar } from '../../model/bar/types';
 const bar = new BarModel()
 // 用户模型实例
 const user = new UserModel()
+// 帖子模型实例
+const article = new ArticleModel()
 
 /**
  * 吧的service层
@@ -53,8 +56,10 @@ class BarService {
      * @param bid 吧的id
      * @param uid 当前登录的用户id
      * @returns 获取吧的数据已经用户数据已经当前用户是否
-     * 1. (当前登录的用户是否关注吧)
-     * 2.(当前登录的用户是否关注吧主)
+     * 1. 当前登录的用户是否关注吧
+     * 2.当前登录的用户是否关注吧主
+     * 3.该吧的发帖数量
+     * 4.该吧的关注数量
      */
     async getBarInfo (bid: number, uid: number | undefined) {
         try {
@@ -64,10 +69,11 @@ class BarService {
                 // 根据bid获取吧数据失败
                 return Promise.resolve(0)
             }
-            // 吧的数据
+            // 1.吧的数据
             const barInfo = resBar[ 0 ]
-            // 获取到吧主的信息
+            // 2.获取到吧主的信息
             const resUser = await user.selectByUid(barInfo.uid)
+            // 3.获取当前用户对吧以及吧主的关注状态
             if (resUser.length) {
                 // 将用户数据和吧的数据响应给客户端
                 let res: any = null
@@ -77,7 +83,7 @@ class BarService {
                     res = { ...barInfo, is_followed: false, user: { ...resUser[ 0 ], is_followed: false } }
                 } else {
                     //  若登录 
-                    // 1.查询用户是否关注了吧
+                    // 3.1 查询用户是否关注了吧
                     const resFollowBar = await bar.selectFollowByUidAndBid(bid, uid)
                     let isFollowBar = false
                     if (resFollowBar.length) {
@@ -87,7 +93,7 @@ class BarService {
                         //  未关注吧
                         isFollowBar = false
                     }
-                    // 2.查询用户是否关注了吧主
+                    // 3.2 查询用户是否关注了吧主
                     const resFollowUser = await user.selectByUidAndUidIsFollow(uid, barInfo.uid)
                     let isFollowUser = false
                     if (resFollowUser.length) {
@@ -100,10 +106,15 @@ class BarService {
                     // 响应请求内容
                     res = { ...barInfo, is_followed: isFollowBar, user: { ...resUser[ 0 ], is_followed: isFollowUser } }
                 }
-
+                // 4.查询该吧的发帖数量
+                const resArticleCount = await article.CountInArticleTableByBid(bid)
+                Reflect.set(res, 'article_count', resArticleCount[ 0 ].total)
+                // 5.查询关注该吧的人数
+                const resFollowBarCount = await bar.selectFollowByBidCount(bid)
+                Reflect.set(res, 'user_follow_count', resFollowBarCount[ 0 ].total)
                 return Promise.resolve(res)
             } else {
-                //  获取用户数据失败
+                //  获取吧主的用户数据失败
                 await Promise.reject()
             }
         } catch (error) {
@@ -270,7 +281,7 @@ class BarService {
                         barInfoFollowList.push({ ...barInfoList[ i ], is_followed: false })
                     }
                 }
-                
+
             }
 
             // 5.通过吧详情数据来获取每个吧的吧主信息以及对吧主的关注状态
