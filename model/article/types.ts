@@ -33,6 +33,24 @@ export interface ArticleBaseItem {
 }
 
 /**
+ * 点赞文章表中的一条记录
+ */
+export interface ArticleLikeBaseItem {
+  uid: number;
+  aid: number;
+  createTime: string;
+}
+
+/**
+ * 收藏文章表中的一条记录
+ */
+export interface ArticleStarBaseItem {
+  uid: number;
+  aid: number;
+  createTime: string;
+}
+
+/**
  * 创建帖子的数据 请求体
  */
 export interface CreateArticleBody {

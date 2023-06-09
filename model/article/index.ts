@@ -1,5 +1,5 @@
 import type { OkPacket } from 'mysql'
-import type { ArticleBaseItem, InsertArticleBody } from './types'
+import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleStarBaseItem } from './types'
 import type { CountRes } from '../../types'
 import BaseModel from '../base/index'
 import { getNowTimeString } from '../../utils/tools/time'
@@ -54,6 +54,88 @@ class ArticleModel extends BaseModel {
   async CountInArticleTableByBid (bid: number) {
     try {
       const res = await this.runSql<CountRes>(`select count(*) as total from article where bid=${ bid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在点赞帖子表中 插入一条记录
+   * @param uid 
+   * @param aid 
+   * @returns 
+   */
+  async insertInLikeArticleTable (uid: number, aid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`INSERT INTO user_like_article(aid, uid, createTime) VALUES (${ aid }, ${ uid }, '${ getNowTimeString() }')`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        await Promise.reject('插入数据失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在点赞帖子表中 通过aid和uid查询该用户是否点赞该帖子
+   * @param uid 
+   * @param aid 
+   * @returns 
+   */
+  async selectInLikeArticleTableByAidAndUid (uid: number, aid: number) {
+    try {
+      const res = await this.runSql<ArticleLikeBaseItem[]>(`select * from user_like_article where uid=${ uid } and aid=${ aid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在点赞帖子表中 通过uid和aid删除用户点赞帖子的记录
+   * @param uid 用户id
+   * @param aid 帖子id
+   * @returns 
+   */
+  async deleteInLikeArticleTableByAidAndUid (uid: number, aid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`delete from user_like_article where uid=${ uid } and aid=${ aid }`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        await Promise.reject('删除点赞帖子的记录失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在收藏帖子表中 通过uid和aid插入一条记录
+   * @param uid 用户id
+   * @param aid 帖子
+   * @returns 
+   */
+  async insertInStarArticleTable (uid: number, aid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`INSERT INTO user_star_article(uid, aid, createTime) VALUES (${ uid }, ${ aid }, '${ getNowTimeString() }')`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        await Promise.reject('插入收藏帖子记录失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在收藏帖子表中 通过uid和aid来查询用户收藏该帖子的记录
+   * @param uid 
+   * @param aid 
+   * @returns 
+   */
+  async selectInStarArticleTableByUidAndAid (uid: number, aid: number) {
+    try {
+      const res = await this.runSql<ArticleStarBaseItem[]>(`select * from user_star_article where uid=${ uid } and aid=${ aid }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

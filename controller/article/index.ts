@@ -14,7 +14,7 @@ const acrticleService = new ArticleService()
  * 创建帖子
  * @param ctx 
  */
-async function toCreateArticle(ctx: Context) {
+async function toCreateArticle (ctx: Context) {
   const token = ctx.state.user as Token;
   const body = (ctx.request as any).body as CreateArticleBody
   if (isNaN(body.bid) || body.content === undefined || body.title === undefined) {
@@ -41,7 +41,7 @@ async function toCreateArticle(ctx: Context) {
  * 获取帖子的详情数据 (未完成)
  * @param ctx 
  */
-async function getArticleInfo(ctx: Context) {
+async function getArticleInfo (ctx: Context) {
 
   // 检验参数
   if (ctx.query.aid === undefined) {
@@ -74,7 +74,95 @@ async function getArticleInfo(ctx: Context) {
 
 }
 
+/**
+ * 点赞帖子
+ * @param ctx 
+ * @returns 
+ */
+async function toLikeArticle (ctx: Context) {
+  const token = ctx.state.user as Token
+
+  // 验证帖子aid参数
+  if (ctx.query.aid === undefined) {
+    // 未携带参数
+    ctx.status = 400;
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+
+  const aid = +ctx.query.aid
+  // 帖子aid参数非法
+  if (isNaN(aid)) {
+    ctx.status = 400;
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await acrticleService.likeArticle(token.uid, aid)
+    if (res === -1) {
+      ctx.status = 400;
+      ctx.body = response(null, '点赞帖子失败,帖子不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400;
+      ctx.body = response(null, '点赞帖子失败,请勿重复点赞!', 400)
+    } else if (res === 1) {
+      ctx.body = response(null, '点赞帖子成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
+/**
+ * 取消点赞帖子
+ * @param ctx 
+ * @returns 
+ */
+async function toCancelLikeArticle (ctx: Context) {
+  const token = ctx.state.user as Token
+
+  // 验证帖子aid参数
+  if (ctx.query.aid === undefined) {
+    // 未携带参数
+    ctx.status = 400;
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+
+  const aid = +ctx.query.aid
+  // 帖子aid参数非法
+  if (isNaN(aid)) {
+    ctx.status = 400;
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await acrticleService.cancelLikeArticle(token.uid, aid)
+    if (res === -1) {
+      ctx.status = 400;
+      ctx.body = response(null, '取消点赞帖子失败,帖子不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400;
+      ctx.body = response(null, '取消点赞帖子失败,还未对该帖子点赞!', 400)
+    } else if (res === 1) {
+      ctx.body = response(null, '取消点赞帖子成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
-  getArticleInfo
+  getArticleInfo,
+  toLikeArticle,
+  toCancelLikeArticle
 }
