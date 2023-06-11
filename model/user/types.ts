@@ -86,3 +86,19 @@ export interface UserInfo extends UserWithout {
      */
     is_followed: boolean
 }
+
+/**
+ * 修改用户信息的请求体
+ */
+export interface UserUpdateBody {
+    username: string;
+    avatar: string;
+}
+
+/**
+ * 修改用户密码时的请求体
+ */
+export interface UserUpdatePasswordBody {
+    password: string;
+    oldPassword: string;
+}

@@ -54,7 +54,7 @@ class UserModel extends BaseModel {
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('创建用户失败')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -95,7 +95,7 @@ class UserModel extends BaseModel {
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('插入用户关注记录失败')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -127,7 +127,7 @@ class UserModel extends BaseModel {
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('删除用户关注记录失败')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -190,7 +190,56 @@ class UserModel extends BaseModel {
             return Promise.reject(error)
         }
     }
-
+    /**
+     * 在用户表中 更新用户信息
+     * @param uid 用户id
+     * @param username 用户名
+     * @param avatar 头像
+     * @returns 
+     */
+    async updateInUserTableByUid(uid: number, username: string, avatar: string) {
+        try {
+            const res = await this.runSql<OkPacket>(`UPDATE user SET username = '${username}', avatar='${avatar}'  WHERE uid = ${uid}`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                await Promise.reject('更新用户信息失败')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户表中 更新用户密码
+     * @param uid 用户名
+     * @param password 密码
+     * @returns 
+     */
+    async updateInUserTableByUidWithPassword(uid: number, password: string) {
+        try {
+            const res = await this.runSql<OkPacket>(`UPDATE user SET password = '${password}' WHERE uid = ${uid}`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                await Promise.reject('更新用户密码失败')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     *  在用户表中 通过uid查询用户信息
+     * @param uid 
+     * @returns 
+     */
+    async selectInUserTableByUid(uid: number) {
+        try {
+            const res = await this.runSql<User[]>(`select * from user where uid=${uid}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 

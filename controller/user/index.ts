@@ -2,7 +2,7 @@
 import UserService from '../../service/user'
 // 类型
 import type { Context, Next } from 'koa'
-import type { UserBody } from '../../model/user/types'
+import type { UserBody, UserUpdateBody, UserUpdatePasswordBody } from '../../model/user/types'
 import type { Token } from './types'
 // 工具
 import response from '../../utils/tools/response'
@@ -18,7 +18,7 @@ const userService = new UserService()
  * 通过用户名查询用户 (测试用)
  * @param ctx 
  */
-async function checkUser (ctx: Context) {
+async function checkUser(ctx: Context) {
     const username = ctx.query.username
     if (!username) {
         ctx.status = 400
@@ -27,7 +27,7 @@ async function checkUser (ctx: Context) {
     try {
         const res = await userService.findUserByUsername(username as string)
         if (res.length) {
-            ctx.body = response(res[ 0 ], 'ok', 200)
+            ctx.body = response(res[0], 'ok', 200)
         } else {
             ctx.body = response(null, '查无此人', 400)
         }
@@ -41,7 +41,7 @@ async function checkUser (ctx: Context) {
  * 用户登录
  * @param ctx 
  */
-async function login (ctx: Context) {
+async function login(ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -55,6 +55,7 @@ async function login (ctx: Context) {
     }
     if (!body.username.trim().length) {
         // 用户名长度非法
+        ctx.status = 400
         return ctx.body = response(null, '用户名不能为空!', 400)
     }
     if (body.password.length < 5 || body.password.length > 14) {
@@ -83,7 +84,7 @@ async function login (ctx: Context) {
  * 用户注册
  * @param ctx 
  */
-async function register (ctx: Context) {
+async function register(ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -97,10 +98,12 @@ async function register (ctx: Context) {
     }
     if (!body.username.trim().length) {
         // 用户名长度非法
+        ctx.status = 400;
         return ctx.body = response(null, '用户名不能为空!', 400)
     }
     if (body.password.length < 5 || body.password.length > 14) {
         // 密码长度非法
+        ctx.status = 400;
         return ctx.body = response(null, '密码长度必须为6-14位!', 400)
     }
     try {
@@ -110,6 +113,7 @@ async function register (ctx: Context) {
             ctx.body = response(null, '注册成功!', 200)
         } else {
             // 用户名重复
+            ctx.status = 400;
             ctx.body = response(null, '用户名重复!', 400)
         }
     } catch (error) {
@@ -122,16 +126,16 @@ async function register (ctx: Context) {
  * 测试解析token
  * @param ctx 
  */
-async function testToken (ctx: Context) {
+async function testToken(ctx: Context) {
     console.log(ctx.state)
     ctx.body = response(ctx.state, 'ok', 200)
 }
 
 /**
- * 获取用户信息 (需要token)
+ * 获取用户信息 (需要token 未完成)
  * @param ctx 
  */
-async function getUserInfo (ctx: Context) {
+async function getUserInfo(ctx: Context) {
     // token中有用户名称,解析token后,使用用户名称查询用户数据
     const user = ctx.state.user as Token;
     try {
@@ -159,7 +163,7 @@ async function getUserInfo (ctx: Context) {
  * 关注用户 （需要token）
  * @param ctx 
  */
-async function followUser (ctx: Context) {
+async function followUser(ctx: Context) {
     const token = ctx.state.user as Token
     const query = ctx.query
     if (query.uid === undefined) {
@@ -203,7 +207,7 @@ async function followUser (ctx: Context) {
  * 取消关注用户
  * @param ctx 
  */
-async function cancelFollowUser (ctx: Context) {
+async function cancelFollowUser(ctx: Context) {
     const token = ctx.state.user as Token;
 
     if (ctx.query.uid === undefined) {
@@ -242,16 +246,16 @@ async function cancelFollowUser (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFollowList(ctx:Context) {
+async function getUserFollowList(ctx: Context) {
     if (ctx.query.uid === undefined) {
         // 未携带参数
         ctx.status = 400;
-        ctx.body=response(null,'未携带参数!',400)
+        ctx.body = response(null, '未携带参数!', 400)
         return
     }
     const uid = +ctx.query.uid;
     // 获取的条数默认20条
-    const limit =ctx.query.limit===undefined? 20:+ctx.query.limit;
+    const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
     // 获取的偏移量默认从0开始
     const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
 
@@ -263,7 +267,7 @@ async function getUserFollowList(ctx:Context) {
     }
     try {
         const res = await userService.getFollowList(uid, limit, offset)
-        ctx.body=response(res,'ok')
+        ctx.body = response(res, 'ok')
     } catch (error) {
         ctx.status = 500
         ctx.body = response(null, '服务器出错了!', 500)
@@ -302,6 +306,75 @@ async function getUserFansList(ctx: Context) {
         ctx.body = response(null, '服务器出错了!', 500)
     }
 }
+/**
+ * 修改用户信息 (不包含密码)
+ * @param ctx 
+ */
+async function toUpdateUser(ctx: Context) {
+    const token = ctx.state.user as Token
+    const body = (ctx.request as any).body as UserUpdateBody
+    if (body === undefined || body.avatar === undefined || body.username === undefined) {
+        ctx.status = 400;
+        return ctx.body = response(null, '有参数未携带!', 400)
+    }
+
+    if (!body.username.trim().length) {
+        // 用户名长度非法
+        ctx.status = 400
+        return ctx.body = response(null, '用户名不能为空!', 400)
+    }
+
+    try {
+        const res = await userService.updateUserData(token.uid, body.avatar, body.username)
+        if (res) {
+            // 更新成功
+            ctx.body = response(null, '修改用户信息成功!')
+        } else {
+            // 用户名已经存在了
+            ctx.body = response(null, '修改用户信息失败,用户名已经存在了!', 400)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+/**
+ * 修改用户密码
+ * @param ctx 
+ * @returns 
+ */
+async function toUpdateUserPassword(ctx: Context) {
+    const token = ctx.state.user as Token
+    const body = (ctx.request as any).body as UserUpdatePasswordBody
+
+    if (body === undefined || body.password === undefined || body.oldPassword === undefined) {
+        ctx.status = 400;
+        return ctx.body = response(null, '有参数未携带!', 400)
+    }
+
+    if (body.password.length < 5 || body.password.length > 14 || body.oldPassword.length < 5 || body.oldPassword.length > 14) {
+        // 密码长度非法
+        ctx.status = 400;
+        return ctx.body = response(null, '密码长度必须为6-14位!', 400)
+    }
+
+    try {
+        const res = await userService.updateUserPassword(token.uid, body.password, body.oldPassword)
+        if (res === 1) {
+            ctx.body = response(null, '修改密码成功')
+        } else if (res === 0) {
+            ctx.status = 400
+            ctx.body = response(null, '修改密码失败,新旧密码一致!', 400)
+        } else {
+            ctx.status = 400
+            ctx.body = response(null, '修改密码失败,密码验证失败!', 400)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
 
 export default {
     login,
@@ -312,5 +385,7 @@ export default {
     followUser,
     cancelFollowUser,
     getUserFollowList,
-    getUserFansList
+    getUserFansList,
+    toUpdateUser,
+    toUpdateUserPassword
 }

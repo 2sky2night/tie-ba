@@ -208,6 +208,63 @@ class UserService {
             return Promise.reject(error)
         }
     }
+    /**
+     * 修改用户信息(不包括密码)
+     * 1.查询要修改的用户是否重复
+     * 2.不重复则可以修改用户信息
+     * @param uid 用户id
+     * @param avatar 头像
+     * @param username 用户名称
+     * @returns 0:用户名已经存在了 1:修改成功
+     */
+    async updateUserData(uid: number, avatar: string, username: string): Promise<0 | 1> {
+        try {
+            const resExist = await user.selectByUsername(username)
+            if (resExist.length) {
+                // 用户名已经存在了 不能修改
+                return Promise.resolve(0)
+            } else {
+                // 用户名不存在 则可以修改
+                await user.updateInUserTableByUid(uid, username, avatar)
+                return Promise.resolve(1)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 更新用户密码
+     * @param uid 用户id
+     * @param password 新密码
+     * @param oldPassword 旧密码
+     * @returns -1:旧密码对不上 0:新旧密码一致 1:修改密码成功
+     */
+    async updateUserPassword(uid: number, password: string, oldPassword: string): Promise<-1 | 0 | 1> {
+        try {
+            const [userInfo] = await user.selectInUserTableByUid(uid)
+            if (userInfo) {
+                // 用户存在
+                if (userInfo.password === oldPassword) {
+                    // 旧密码匹配成功
+                    if (userInfo.password === password) {
+                        // 新旧密码一样
+                        return Promise.resolve(0)
+                    } else {
+                        await user.updateInUserTableByUidWithPassword(uid, password)
+                        return Promise.resolve(1)
+                    }
+                } else {
+                    // 验证密码失败
+                    return Promise.resolve(-1)
+                }
+            } else {
+                // 用户不存在
+                return await Promise.reject('用户不存在!')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 export default UserService

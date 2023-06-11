@@ -1,7 +1,7 @@
 /*
 MySQL Backup
 Database: tie_bar_lower
-Backup Time: 2023-06-09 21:56:12
+Backup Time: 2023-06-11 18:21:49
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -27,7 +27,7 @@ CREATE TABLE `article` (
   KEY `bid_acrticle` (`bid`),
   CONSTRAINT `bid_acrticle` FOREIGN KEY (`bid`) REFERENCES `bar` (`bid`),
   CONSTRAINT `uid_acrticle` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `bar` (
   `bid` int NOT NULL AUTO_INCREMENT COMMENT '吧的id',
   `bname` varchar(255) DEFAULT NULL COMMENT '吧的名称',
@@ -45,12 +45,13 @@ CREATE TABLE `comment` (
   `createTime` datetime DEFAULT NULL COMMENT '评论的时间',
   `aid` int DEFAULT NULL COMMENT '帖子的id',
   `uid` int DEFAULT NULL COMMENT '用户的id',
+  `photo` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`cid`),
   KEY `uid_comment` (`uid`),
   KEY `aid_comment` (`aid`),
   CONSTRAINT `aid_comment` FOREIGN KEY (`aid`) REFERENCES `article` (`aid`),
   CONSTRAINT `uid_comment` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `user` (
   `uid` int NOT NULL AUTO_INCREMENT COMMENT '用户的id',
   `username` varchar(20) DEFAULT NULL COMMENT '用户的名称',
@@ -81,7 +82,7 @@ CREATE TABLE `user_follow_user` (
 CREATE TABLE `user_like_article` (
   `aid` int NOT NULL COMMENT '文章的id',
   `uid` int DEFAULT NULL COMMENT '用户的id',
-  `creatTime` datetime DEFAULT NULL COMMENT '点赞帖子的时间',
+  `createTime` datetime DEFAULT NULL COMMENT '点赞帖子的时间',
   KEY `uid_like_article` (`uid`),
   KEY `aid_like_article` (`aid`),
   CONSTRAINT `aid_like_article` FOREIGN KEY (`aid`) REFERENCES `article` (`aid`),
@@ -108,7 +109,7 @@ CREATE TABLE `user_star_article` (
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`article` WRITE;
 DELETE FROM `tie_bar_lower`.`article`;
-INSERT INTO `tie_bar_lower`.`article` (`aid`,`content`,`createTime`,`bid`,`uid`,`title`,`photo`) VALUES (1, '测试帖子', '2023-06-08 21:33:31', 1, 1, '·测试标题', NULL),(2, '你好测试帖子', '2023-06-08 21:56:18', 1, 1, '测试帖子01', 'http://dummyimage.com/400x400'),(4, '你好测试帖子', '2023-06-08 21:58:48', 1, 1, '测试帖子02', NULL);
+INSERT INTO `tie_bar_lower`.`article` (`aid`,`content`,`createTime`,`bid`,`uid`,`title`,`photo`) VALUES (1, '测试帖子', '2023-06-08 21:33:31', 1, 1, '·测试标题', NULL),(2, '你好测试帖子', '2023-06-08 21:56:18', 1, 1, '测试帖子01', 'http://dummyimage.com/400x400'),(4, '你好测试帖子', '2023-06-08 21:58:48', 1, 2, '测试帖子02', NULL),(5, '测试帖子', '2023-06-11 17:22:13', 1, 1, '测试帖子03', 'http://dummyimage.com/400x400'),(6, 'laboris enim officia labore reprehenderit', '2023-06-11 17:36:14', 1, 1, '公林多回', 'http://dummyimage.com/400x400'),(7, 'voluptate Lorem adipisicing do fugiat', '2023-06-11 17:36:55', 1, 1, '法程人她', 'http://dummyimage.com/400x400,http://dummyimage.com/400x400,http://dummyimage.com/400x400');
 UNLOCK TABLES;
 COMMIT;
 BEGIN;
@@ -120,6 +121,7 @@ COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`comment` WRITE;
 DELETE FROM `tie_bar_lower`.`comment`;
+INSERT INTO `tie_bar_lower`.`comment` (`cid`,`content`,`createTime`,`aid`,`uid`,`photo`) VALUES (1, '测试评论', '2023-06-11 09:34:00', 1, 1, NULL),(3, 'magna dolor anim fugiat mollit', '2023-06-11 10:32:51', 1, 1, 'sit aliquip'),(4, 'magna dolor anim fugiat mollit', '2023-06-11 10:33:05', 4, 2, NULL);
 UNLOCK TABLES;
 COMMIT;
 BEGIN;
@@ -143,17 +145,18 @@ COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`user_like_article` WRITE;
 DELETE FROM `tie_bar_lower`.`user_like_article`;
-INSERT INTO `tie_bar_lower`.`user_like_article` (`aid`,`uid`,`creatTime`) VALUES (1, 1, '2023-06-08 22:00:31');
+INSERT INTO `tie_bar_lower`.`user_like_article` (`aid`,`uid`,`createTime`) VALUES (1, 1, '2023-06-08 22:00:31'),(1, 2, '2023-06-11 18:19:09'),(2, 2, '2023-06-11 18:19:20'),(4, 2, '2023-06-11 18:19:25'),(5, 2, '2023-06-11 18:19:26'),(6, 2, '2023-06-11 18:19:30');
 UNLOCK TABLES;
 COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`user_like_comment` WRITE;
 DELETE FROM `tie_bar_lower`.`user_like_comment`;
+INSERT INTO `tie_bar_lower`.`user_like_comment` (`cid`,`uid`,`createTime`) VALUES (1, 1, '2023-06-11 12:13:05'),(3, 1, '2023-06-11 15:46:00'),(3, 2, '2023-06-11 15:46:39');
 UNLOCK TABLES;
 COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`user_star_article` WRITE;
 DELETE FROM `tie_bar_lower`.`user_star_article`;
-INSERT INTO `tie_bar_lower`.`user_star_article` (`uid`,`aid`,`createTime`) VALUES (1, 1, '2023-06-08 21:36:56');
+INSERT INTO `tie_bar_lower`.`user_star_article` (`uid`,`aid`,`createTime`) VALUES (1, 1, '2023-06-11 16:14:17'),(1, 2, '2023-06-11 16:14:30'),(2, 2, '2023-06-11 18:19:36'),(2, 1, '2023-06-11 18:19:40'),(2, 5, '2023-06-11 18:19:42');
 UNLOCK TABLES;
 COMMIT;
