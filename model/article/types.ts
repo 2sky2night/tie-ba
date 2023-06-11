@@ -1,3 +1,5 @@
+import { UserInfo } from "../user/types";
+
 /**
  * 帖子的基础数据
  */
@@ -25,7 +27,7 @@ export interface ArticleBaseItem {
   /**
    * 帖子的配图
    */
-  photo: string;
+  photo: string | null;
   /**
    * 帖子标题
    */
@@ -65,7 +67,7 @@ export interface CreateArticleBody {
   /**
    * 帖子的配图
    */
-  photo?: string;
+  photo?: string | string[];
   /**
    * 帖子标题
    */
@@ -147,6 +149,7 @@ export interface CommentBaseItem {
   createTime: string;
   aid: number;
   uid: number;
+  photo: string;
 }
 
 /**
@@ -156,4 +159,19 @@ export interface LikeCommentBaseItem {
   cid: number;
   uid: number;
   createTime: string;
+}
+
+/**
+ * 一条评论的基本信息
+ */
+export interface CommentItem {
+  user: UserInfo;
+  is_liked: boolean;
+  like_count: number;
+  cid: number;
+  content: string;
+  createTime: string;
+  aid: number;
+  uid: number;
+  photo: string[] | null;
 }

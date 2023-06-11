@@ -15,9 +15,19 @@ fileRouter.use(koaBody({
         keepExtensions: true,    // 保持文件的后缀
         maxFieldsSize: 10 * 1024 * 1024, // 文件上传大小 为 10MB
         onFileBegin(name, file) {
+            if (file.originalFilename && file.originalFilename.includes(',')) {
+                // 若源文件名称包含英文逗号 需要将英文逗号全部删除 避免影响解析数据
+                for (; ;) {
+                    if (file.originalFilename.includes(',')) {
+                        file.originalFilename = file.originalFilename.replace(',', '')
+                    } else {
+                        break;
+                    }
+                }
+            }
             const newName = `${file.originalFilename}_${Date.now()}_${file.newFilename}`
             file.filepath = file.filepath.replace(file.newFilename, newName)
-            file.newFilename=newName
+            file.newFilename = newName
         },
     }
 }))

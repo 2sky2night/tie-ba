@@ -1,10 +1,13 @@
 // models
 import ArticleModel from '../../model/article';
 import BarModel from '../../model/bar'
+import UserModel from '../../model/user'
 // types
-import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
+import type { InserCommentBody, InsertArticleBody, CommentItem } from '../../model/article/types';
+import type { UserInfo } from '../../model/user/types';
+import { BarInfo } from '../../model/bar/types';
 
-
+const user = new UserModel()
 const article = new ArticleModel()
 const bar = new BarModel()
 
@@ -31,29 +34,79 @@ class ArticleService {
     }
   }
   /**
-   * 获取文章详情数据 (未完成)
-   
+   * 获取文章详情数据
    1.通过查询参数aid获取帖子详情数据
-
     2.通过帖子详情数据的uid查询帖子创建者详情数据，以及当前登录用户对帖子创建者的关注状态
-
     3.通过帖子详情数据的bid查询帖子所属吧的详情数据，以及当前登录用户对吧的关注状态
-
     4.通过aid来查询帖子点赞数量，以及当前登录用户对帖子的点赞状态
-
     5.通过aid来查询帖子的收藏数量，以及当前登录用户对帖子的收藏状态
-
-    6.文章的评论数据需要调用其他接口来进行业务处理。
    * @param aid 
    * @returns 
    */
-  async getArticleInfo(aid: number) {
+  async getArticleInfo(aid: number, uid: number | undefined) {
     try {
-      const res = await article.selectInArticleTableByAid(aid)
-      if (res.length) {
-        return Promise.resolve(res)
+      // 1.查询文章是否存在
+      const [articleInfo] = await article.selectInArticleTableByAid(aid)
+      if (articleInfo) {
+        // 文章存在
+
+        // 2.查询该文章的创建者 以及当前登录的用户对创建者的关注状态
+        const [resUserCreateArticle] = await user.selectByUid(articleInfo.uid)
+        const userInfo: UserInfo = {
+          ...resUserCreateArticle,
+          is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateArticle.uid)).length > 0
+        }
+
+        // 3.查询该帖子所属的吧详情信息 以及当前登录用户对吧的关注状态 以及吧主的详情信息以及吧主的关注状态
+        const [resBar] = await bar.selectByBid(articleInfo.bid)
+        const [resUserCreateBar] = await user.selectByUid(resBar.uid)
+        const barInfo: BarInfo = {
+          ...resBar,
+          // 对当前吧的关注状态
+          is_followed: uid === undefined ? false : (await bar.selectFollowByUidAndBid(resBar.bid, uid)).length > 0,
+          user: {
+            ...resUserCreateBar,
+            // 对当前吧主的关注状态
+            is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateBar.uid)).length > 0
+          }
+        }
+
+        // 4.查询该帖子的点赞数量 以及当前用户点赞的状态
+        const [resLikeCount] = await article.countInLikeArticleTableByAid(aid)
+        const isLiked = uid === undefined ? false : (await article.selectInLikeArticleTableByAidAndUid(uid, aid)).length > 0
+
+        // 5.查询该帖子的收藏数量 以及当前用户收藏的状态
+        const [resStarCount] = await article.countInStarArticleTableByAid(aid)
+        const isStar = uid === undefined ? false : (await article.selectInStarArticleTableByUidAndAid(uid, aid)).length > 0
+
+        // 6.处理帖子配图问题
+        const photo: string[] = []
+        if (articleInfo.photo !== null) {
+          // 若帖子有配图 则需要转换成数组
+          articleInfo.photo.split(',').forEach(ele => photo.push(ele))
+        }
+
+        return Promise.resolve({
+          aid: articleInfo.aid,
+          title: articleInfo.title,
+          content: articleInfo.content,
+          bid: articleInfo.bid,
+          uid: articleInfo.uid,
+          photo: articleInfo.photo === null ? null : photo,
+          createTime: articleInfo.createTime,
+          like_count: resLikeCount.total,
+          is_liked: isLiked,
+          star_count: resStarCount.total,
+          is_star: isStar,
+          user: userInfo,
+          bar: barInfo
+        })
+
+      } else {
+        // 文章不存在
+        return Promise.resolve(0)
       }
-      return Promise.resolve(res)
+
     } catch (error) {
       return Promise.reject(error)
     }
@@ -214,7 +267,7 @@ class ArticleService {
    * @param uid 
    * @returns -1:评论不存在 0:不是评论创建者和楼主 1:评论创建者删除评论 2:楼主删除评论
    */
-  async deleteComment(cid: number, uid: number) {
+  async deleteComment(cid: number, uid: number): Promise<-1 | 0 | 1 | 2> {
     try {
 
       // 1.查询评论是否存在
@@ -255,7 +308,7 @@ class ArticleService {
    * @param uid 
    * @returns -1:评论不存在 0:已经点赞过了 1:点赞成功
    */
-  async likeComment(cid: number, uid: number) {
+  async likeComment(cid: number, uid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过cid来查询评论是否存在
       const [comment] = await article.selectInCommentTableByCid(cid)
@@ -289,7 +342,7 @@ class ArticleService {
  * @param uid 
  * @returns -1:评论不存在 0:未点赞过评论 1:取消点赞成功
  */
-  async cancelLikeComment(cid: number, uid: number) {
+  async cancelLikeComment(cid: number, uid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过cid来查询评论是否存在
       const [comment] = await article.selectInCommentTableByCid(cid)
@@ -313,7 +366,69 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 查询某个帖子的评论数据 (分页)
+   * 1.查询帖子是否存在
+   * 2.查询该帖子的评论总数
+   * 3.查询某一页的评论列表
+   * 4.遍历评论列表 ,获取评论的创建者信息关注状态以及评论点赞的状态以及评论点赞的总数
+   * @param aid 
+   * @param uid 
+   * @param limit 
+   * @param offset 
+   */
+  async getArticleCommentList(aid: number, uid: number | undefined, limit: number, offset: number) {
+    try {
+      // 1.查询帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      if (!resExist.length) {
+        // 不存在
+        return Promise.resolve(0)
+      }
+      // 2.存在则通过aid查询该帖子的评论总数
+      const [count] = await article.countInCommentTableByAid(aid)
+      // 3.查询当前页的评论列表
+      const commentList = await article.selectInCommentTableByAidLimit(aid, limit, offset)
+      // 4.遍历评论列表,查询相关数据
+      const resList: CommentItem[] = []
+      for (let i = 0; i < commentList.length; i++) {
+        // 4.1 查询用户数据
+        const [userInfo] = await user.selectByUid(commentList[i].uid)
+        // 4.2查询当前登录的用户对该评论创建者的关注状态
+        const isFollowed = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[i].uid)).length ? true : false
+        // 4.3查询当前登录的用户对该评论的点赞状态
+        const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(commentList[i].cid, uid)).length ? true : false
+        // 4.4查询当前评论的点赞总数
+        const [count] = await article.countInLikeCommentTabeByCid(commentList[i].cid)
+        // 4.5 需要对评论的图片单独进行处理
+        const photo: string[] = []
+        if (commentList[i].photo !== null) {
+          commentList[i].photo.split(',').map(ele => photo.push(ele))
+        }
+        resList.push({
+          cid: commentList[i].cid,
+          content: commentList[i].content,
+          createTime: commentList[i].createTime,
+          aid: commentList[i].aid,
+          uid: commentList[i].uid,
+          photo: commentList[i].photo ? photo : null,
+          user: { ...userInfo, is_followed: isFollowed },
+          is_liked: isLiked,
+          like_count: count.total
+        })
+      }
 
+      return Promise.resolve({
+        list: resList,
+        total: count.total,
+        offset,
+        limit,
+        has_more: count.total > limit * offset + limit
+      })
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleService

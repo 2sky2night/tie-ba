@@ -1,7 +1,7 @@
 // types
 import type { Context } from 'koa';
 import type { Token } from '../user/types'
-import type { CreateArticleBody, CreateCommentBody, InserCommentBody } from '../../model/article/types';
+import type { CreateArticleBody, CreateCommentBody, InserCommentBody, InsertArticleBody } from '../../model/article/types';
 // service层
 import ArticleService from '../../service/article';
 // 工具函数
@@ -22,8 +22,29 @@ async function toCreateArticle(ctx: Context) {
     ctx.body = response(null, '参数非法!', 400)
     return
   }
+  const insertBody: InsertArticleBody = {
+    uid: token.uid,
+    content: body.content,
+    bid: body.bid,
+    title: body.title
+  }
+
+  if (body.photo && body.photo instanceof Array) {
+    // 若携带了帖子配图且为数组 
+    // 需要检验配图携带的上限
+    if (body.photo.length > 3) {
+      ctx.status = 400;
+      return ctx.body = response(null, '发帖失败,帖子配图上限为三张')
+    } else {
+      insertBody.photo = body.photo.join(',')
+    }
+  } else if (typeof body.photo === 'string') {
+    // 若是字符串(单个图片)
+    insertBody.photo = body.photo
+  }
+
   try {
-    const res = await articleService.createArticle({ ...body, uid: token.uid })
+    const res = await articleService.createArticle(insertBody)
     if (res) {
       ctx.body = response(null, '发帖成功!')
     } else {
@@ -38,10 +59,12 @@ async function toCreateArticle(ctx: Context) {
 }
 
 /**
- * 获取帖子的详情数据 (未完成)
+ * 获取帖子的详情数据
  * @param ctx 
  */
 async function getArticleInfo(ctx: Context) {
+
+  const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
   // 检验参数
   if (ctx.query.aid === undefined) {
@@ -57,10 +80,10 @@ async function getArticleInfo(ctx: Context) {
   }
 
   try {
-    const res = await articleService.getArticleInfo(aid)
-    if (res.length) {
+    const res = await articleService.getArticleInfo(aid, uid)
+    if (res) {
       // 请求文章存在
-      ctx.body = response(res, 'ok', 404)
+      ctx.body = response(res, 'ok')
     } else {
       // 请求文章不存在
       ctx.status = 404;
@@ -389,6 +412,41 @@ async function toCancelLikeComment(ctx: Context) {
 
 }
 
+/**
+ * 获取帖子的评论 分页数据
+ * @param ctx 
+ */
+async function getArticleCommentList(ctx: Context) {
+
+  // 根据是否携带token来获取当前登录的用户id
+  const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+
+  // 检验查询参数
+  if (ctx.query.aid === undefined) { ctx.status = 400; return ctx.body = response(null, '参数未携带!', 400) }
+  const aid = + ctx.query.aid
+  const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+  const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
+  if (isNaN(aid) || isNaN(offset) || isNaN(limit)) {
+    ctx.status = 400;
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    const res = await articleService.getArticleCommentList(aid, uid, limit, offset)
+    if (res === 0) {
+      ctx.status = 400;
+      ctx.body = response(null, '获取评论失败,帖子不存在!', 400)
+    } else {
+      ctx.body = response(res, 'ok')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
   getArticleInfo,
@@ -399,5 +457,6 @@ export default {
   toCreateComment,
   toDeleteComment,
   toLikeComment,
-  toCancelLikeComment
+  toCancelLikeComment,
+  getArticleCommentList
 }

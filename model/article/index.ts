@@ -51,7 +51,7 @@ class ArticleModel extends BaseModel {
    * @param bid 吧id
    * @returns 该吧下的发帖数量
    */
-  async CountInArticleTableByBid(bid: number) {
+  async countInArticleTableByBid(bid: number) {
     try {
       const res = await this.runSql<CountRes>(`select count(*) as total from article where bid=${bid}`)
       return Promise.resolve(res)
@@ -110,6 +110,18 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在点赞帖子表中 通过aid来查询点赞文章的数量
+   * @param aid 帖子id
+   */
+  async countInLikeArticleTableByAid(aid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_article where aid=${aid}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在收藏帖子表中 通过uid和aid插入一条记录
    * @param uid 用户id
    * @param aid 帖子id
@@ -160,6 +172,19 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在收藏帖子中 通过aid来查询帖子被收藏的数量
+   * @param aid 用户id
+   * @returns 
+   */
+  async countInStarArticleTableByAid(aid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_star_article where aid=${aid}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在评论表中 插入一条记录
    * @param data 评论的请求体
    * @returns 
@@ -200,7 +225,7 @@ class ArticleModel extends BaseModel {
    * @param aid 帖子id
    * @returns 
    */
-  async selectInCommentTableByAidCount(aid: number) {
+  async countInCommentTableByAid(aid: number) {
     try {
       const res = await this.runSql<CountRes>(`select count(*)  as total from comment where aid=${aid}`)
       return Promise.resolve(res)
@@ -291,7 +316,19 @@ class ArticleModel extends BaseModel {
       return Promise.reject(error)
     }
   }
-
+  /**
+   * 在点赞评论表中 通过cid查询该评论的点赞数量
+   * @param cid 
+   * @returns 
+   */
+  async countInLikeCommentTabeByCid(cid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_comment where cid=${cid}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleModel

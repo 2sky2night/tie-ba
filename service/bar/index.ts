@@ -107,7 +107,7 @@ class BarService {
                     res = { ...barInfo, is_followed: isFollowBar, user: { ...resUser[ 0 ], is_followed: isFollowUser } }
                 }
                 // 4.查询该吧的发帖数量
-                const resArticleCount = await article.CountInArticleTableByBid(bid)
+                const resArticleCount = await article.countInArticleTableByBid(bid)
                 Reflect.set(res, 'article_count', resArticleCount[ 0 ].total)
                 // 5.查询关注该吧的人数
                 const resFollowBarCount = await bar.selectFollowByBidCount(bid)

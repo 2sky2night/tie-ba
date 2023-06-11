@@ -1,13 +1,14 @@
 import Router from 'koa-router';
 import ArticleController from '../../controller/article'
+import Middleware from '../../middleware/index'
 
 const articleRouter = new Router()
 
 // 统一注册帖子路由的路径
 const baseRouteURL = '/article'
 
-// 获取帖子的详情数据 (未完成)
-articleRouter.get('article', `${baseRouteURL}/info`, ArticleController.getArticleInfo)
+// 获取帖子的详情数据  (单独解析token)  query {aid:number}
+articleRouter.get('article', `${baseRouteURL}/info`, Middleware.tokenParse, ArticleController.getArticleInfo)
 
 // 发帖 (需要token) json {bid:number;content:string;photo?:string;title:string}
 articleRouter.post('article', `${baseRouteURL}/post`, ArticleController.toCreateArticle)
@@ -35,5 +36,8 @@ articleRouter.get('article', `${baseRouteURL}/comment/like`, ArticleController.t
 
 // 取消点赞评论 (需要token) query {cid:number}
 articleRouter.delete('article', `${baseRouteURL}/comment/like`, ArticleController.toCancelLikeComment)
+
+// 获取帖子的评论列表 (单独解析token) query {aid:number;limit?number=20;offset?:number=0}
+articleRouter.get('article', `${baseRouteURL}/comment/list`, Middleware.tokenParse, ArticleController.getArticleCommentList)
 
 export default articleRouter
