@@ -57,7 +57,7 @@ export interface CreateArticleBody {
   /**
    * 帖子内容
    */
-  content: number;
+  content: string;
   /**
    * 帖子所属吧的id
    */
@@ -79,7 +79,7 @@ export interface InsertArticleBody {
   /**
    * 帖子内容
    */
-  content: number;
+  content: string;
   /**
    * 帖子所属吧的id
    */
@@ -96,4 +96,64 @@ export interface InsertArticleBody {
    * 帖子标题
    */
   title: string;
+}
+
+/**
+ * 创建评论的数据 发送请求时的请求体
+ */
+export interface CreateCommentBody {
+  /**
+   * 评论内容
+   */
+  content: string;
+  /**
+   * 帖子id
+   */
+  aid: number;
+  /**
+   * 配图
+   */
+  photo?: string | string[];
+}
+
+/**
+ * 创建评论的数据 操作数据库时的请求体
+ */
+export interface InserCommentBody {
+  /**
+   * 评论内容
+   */
+  content: string;
+  /**
+   * 帖子id
+   */
+  aid: number;
+  /**
+   * 用户id
+   */
+  uid: number;
+  /**
+   * 配图
+   */
+  photo?: string;
+}
+
+/**
+ * 评论数据的基础数据
+ */
+export interface CommentBaseItem {
+  cid: number;
+  content: string;
+  createTime: string;
+  aid: number;
+  uid: number;
+}
+
+/**
+ * 点赞评论的基础数据
+ */
+export interface LikeCommentBaseItem {
+  cid: number;
+  uid: number;
+  createTime: string;
 }

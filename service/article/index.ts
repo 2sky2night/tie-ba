@@ -2,7 +2,7 @@
 import ArticleModel from '../../model/article';
 import BarModel from '../../model/bar'
 // types
-import type { InsertArticleBody } from '../../model/article/types';
+import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 
 const article = new ArticleModel()
@@ -183,6 +183,137 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 创建评论
+   * 1.通过aid查询对应的帖子是否存在
+   * 2.在评论表中插入记录
+   * @param data 
+   * @returns 0:帖子不存在 1:发送评论成功
+   */
+  async createComment(data: InserCommentBody): Promise<0 | 1> {
+    try {
+      const resExist = await article.selectInArticleTableByAid(data.aid)
+      if (!resExist.length) {
+        // 帖子不存在
+        return Promise.resolve(0)
+      } else {
+        // 帖子存在
+        await article.insertInCommentTable(data)
+        return Promise.resolve(1)
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 删除评论
+   * 1.通过cid查询帖子是否存在
+   * 2.评论创建者可以删除评论,若评论创建者是当前用户则可以删除评论
+   * 3.楼主也可以删除评论,若当前用户的id===当前评论所属的帖子的创建者id则可以删除评论
+   * @param cid 
+   * @param uid 
+   * @returns -1:评论不存在 0:不是评论创建者和楼主 1:评论创建者删除评论 2:楼主删除评论
+   */
+  async deleteComment(cid: number, uid: number) {
+    try {
+
+      // 1.查询评论是否存在
+      const [comment] = await article.selectInCommentTableByCid(cid)
+      if (comment === undefined) {
+        // 评论不存在
+        return Promise.resolve(-1)
+      }
+
+      // 2.检验是否可以删除评论
+      if (comment.uid === uid) {
+        // 2.1若该评论的创建者是当前登录的用户则可以删除记录
+        await article.deleteInCommentTableByCid(cid)
+        return Promise.resolve(1)
+      } else {
+        // 2.2不是评论的创建者 需要检查当前登录的用户是否为帖子的楼主
+        const [articleInfo] = await article.selectInArticleTableByAid(comment.aid)
+
+        if (articleInfo.uid === uid) {
+          //2.2.1 若删除评论的用户为该帖子的创建者则可以删除记录
+          await article.deleteInCommentTableByCid(cid)
+          return Promise.resolve(2)
+        } else {
+          // 2.2.2既不是评论创建者也不是楼主则不能删除评论
+          return Promise.resolve(0)
+        }
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 点赞评论
+   * 1.通过cid查询评论是否存在
+   * 2.通过cid和uid查询用户是否点赞过评论
+   * 3.未点赞则插入记录 点赞过则不能重复点赞
+   * @param cid 
+   * @param uid 
+   * @returns -1:评论不存在 0:已经点赞过了 1:点赞成功
+   */
+  async likeComment(cid: number, uid: number) {
+    try {
+      // 1.通过cid来查询评论是否存在
+      const [comment] = await article.selectInCommentTableByCid(cid)
+      if (comment === undefined) {
+        // 评论不存在
+        return Promise.resolve(-1)
+      } else {
+        // 评论存在
+        // 2.查询用户是否点赞过评论
+        const resExist = await article.selectInLikeCommentTableByCidAndUid(cid, uid)
+        if (resExist.length) {
+          // 点赞过了 不能重复点赞
+          return Promise.resolve(0)
+        } else {
+          // 未点赞 插入记录
+          await article.insertInLikeCommentTable(cid, uid)
+          return Promise.resolve(1)
+        }
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+
+  /**
+ * 取消点赞评论
+ * 1.通过cid查询评论是否存在
+ * 2.通过cid和uid查询用户是否点赞过评论
+ * 3.未点赞则不能取消点赞评论 点赞过则删除记录
+ * @param cid 
+ * @param uid 
+ * @returns -1:评论不存在 0:未点赞过评论 1:取消点赞成功
+ */
+  async cancelLikeComment(cid: number, uid: number) {
+    try {
+      // 1.通过cid来查询评论是否存在
+      const [comment] = await article.selectInCommentTableByCid(cid)
+      if (comment === undefined) {
+        // 评论不存在
+        return Promise.resolve(-1)
+      } else {
+        // 评论存在
+        // 2.查询用户是否点赞过评论
+        const resExist = await article.selectInLikeCommentTableByCidAndUid(cid, uid)
+        if (resExist.length) {
+          // 点赞过 则删除点赞记录
+          await article.deleteInLikeCommentTableByCidAndUid(cid, uid)
+          return Promise.resolve(1)
+        } else {
+          // 未点赞过 则不能取消点赞
+          return Promise.resolve(0)
+        }
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+
 }
 
 export default ArticleService

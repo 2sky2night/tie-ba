@@ -1,14 +1,14 @@
 // types
 import type { Context } from 'koa';
 import type { Token } from '../user/types'
-import type { CreateArticleBody } from '../../model/article/types';
+import type { CreateArticleBody, CreateCommentBody, InserCommentBody } from '../../model/article/types';
 // service层
 import ArticleService from '../../service/article';
 // 工具函数
 import response from '../../utils/tools/response'
 
 
-const acrticleService = new ArticleService()
+const articleService = new ArticleService()
 
 /**
  * 创建帖子
@@ -23,7 +23,7 @@ async function toCreateArticle(ctx: Context) {
     return
   }
   try {
-    const res = await acrticleService.createArticle({ ...body, uid: token.uid })
+    const res = await articleService.createArticle({ ...body, uid: token.uid })
     if (res) {
       ctx.body = response(null, '发帖成功!')
     } else {
@@ -57,7 +57,7 @@ async function getArticleInfo(ctx: Context) {
   }
 
   try {
-    const res = await acrticleService.getArticleInfo(aid)
+    const res = await articleService.getArticleInfo(aid)
     if (res.length) {
       // 请求文章存在
       ctx.body = response(res, 'ok', 404)
@@ -99,7 +99,7 @@ async function toLikeArticle(ctx: Context) {
   }
 
   try {
-    const res = await acrticleService.likeArticle(token.uid, aid)
+    const res = await articleService.likeArticle(token.uid, aid)
     if (res === -1) {
       ctx.status = 400;
       ctx.body = response(null, '点赞帖子失败,帖子不存在!', 400)
@@ -142,7 +142,7 @@ async function toCancelLikeArticle(ctx: Context) {
   }
 
   try {
-    const res = await acrticleService.cancelLikeArticle(token.uid, aid)
+    const res = await articleService.cancelLikeArticle(token.uid, aid)
     if (res === -1) {
       ctx.status = 400;
       ctx.body = response(null, '取消点赞帖子失败,帖子不存在!', 400)
@@ -181,7 +181,7 @@ async function toStarArticle(ctx: Context) {
   }
 
   try {
-    const res = await acrticleService.starArticle(token.uid, aid);
+    const res = await articleService.starArticle(token.uid, aid);
     if (res === -1) {
       ctx.status = 400;
       ctx.body = response(null, '收藏帖子失败,帖子不存在!', 400)
@@ -220,7 +220,7 @@ async function toCancelStarArticle(ctx: Context) {
   }
 
   try {
-    const res = await acrticleService.cancelStarArticle(token.uid, aid);
+    const res = await articleService.cancelStarArticle(token.uid, aid);
     if (res === -1) {
       ctx.status = 400;
       ctx.body = response(null, '取消收藏帖子失败,帖子不存在!', 400)
@@ -237,6 +237,157 @@ async function toCancelStarArticle(ctx: Context) {
   }
 
 }
+/**
+ * 发送评论
+ * @param ctx 
+ * @returns 
+ */
+async function toCreateComment(ctx: Context) {
+  const token = ctx.state.user as Token;
+  // 检验参数是否携带
+  const body = (ctx.request as any).body as CreateCommentBody
+  if (body.aid === undefined || body.content === undefined) {
+    // 必要参数未携带
+    ctx.status = 400
+    return ctx.body = response(null, '有参数未携带', 400)
+  }
+  // 校验参数是否合法
+  if (isNaN(body.aid)) {
+    // 帖子参数非法
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法', 400)
+  }
+  const inertBody: InserCommentBody = {
+    uid: token.uid,
+    content: body.content,
+    aid: body.aid
+  }
+  // 是否携带了photo字段?
+  if (body.photo) {
+    // 携带了photo字段
+    if (body.photo instanceof Array) {
+      // 若传入的是数组 则需要转换为字符串
+      inertBody.photo = body.photo.join(',')
+    } else {
+      // 传入的是字符串
+      inertBody.photo = body.photo
+    }
+  }
+
+  try {
+    const res = await articleService.createComment(inertBody)
+    if (res) {
+      // 发送评论成功
+      ctx.body = response(null, '发送评论成功!')
+    } else {
+      // 发送评论失败 帖子不存在
+      ctx.status = 400;
+      ctx.body = response(null, '发送评论失败,帖子不存在', 400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
+/**
+ * 删除评论
+ * @param ctx 
+ */
+async function toDeleteComment(ctx: Context) {
+  const token = ctx.state.user as Token;
+
+  // 检验评论id参数
+  if (ctx.query.cid === undefined) { ctx.status = 400; return ctx.body = response(null, '参数未携带!', 400) }
+
+  const cid = + ctx.query.cid
+  if (isNaN(cid)) { ctx.status = 400; return ctx.body = response(null, '参数非法!', 400) }
+
+  try {
+    const res = await articleService.deleteComment(cid, token.uid)
+    if (res === -1) {
+      ctx.status = 400
+      ctx.body = response(null, '删除评论失败,评论不存在', 400)
+    } else if (res === 0) {
+      ctx.status = 400
+      ctx.body = response(null, '删除评论失败,不是评论创建者或楼主', 400)
+    } else if (res === 1) {
+      ctx.body = response(null, '删除评论成功,评论创建者删除评论')
+    } else if (res === 2) {
+      ctx.body = response(null, '删除评论成功,楼主删除评论')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+/**
+ * 点赞评论
+ * @param ctx 
+ * @returns 
+ */
+async function toLikeComment(ctx: Context) {
+  const token = ctx.state.user as Token;
+
+  // 检验评论id参数
+  if (ctx.query.cid === undefined) { ctx.status = 400; return ctx.body = response(null, '参数未携带!', 400) }
+
+  const cid = + ctx.query.cid
+  if (isNaN(cid)) { ctx.status = 400; return ctx.body = response(null, '参数非法!', 400) }
+
+  try {
+    const res = await articleService.likeComment(cid, token.uid)
+    if (res === -1) {
+      ctx.status = 400
+      ctx.body = response(null, '点赞评论失败,评论不存在', 400)
+    } else if (res === 0) {
+      ctx.status = 400
+      ctx.body = response(null, '点赞评论失败,请勿重复点赞', 400)
+    } else {
+      ctx.body = response(null, '点赞评论成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+/**
+ * 取消点赞评论
+ * @param ctx 
+ * @returns 
+ */
+async function toCancelLikeComment(ctx: Context) {
+  const token = ctx.state.user as Token;
+
+  // 检验评论id参数
+  if (ctx.query.cid === undefined) { ctx.status = 400; return ctx.body = response(null, '参数未携带!', 400) }
+
+  const cid = + ctx.query.cid
+  if (isNaN(cid)) { ctx.status = 400; return ctx.body = response(null, '参数非法!', 400) }
+
+  try {
+    const res = await articleService.cancelLikeComment(cid, token.uid)
+    if (res === -1) {
+      ctx.status = 400
+      ctx.body = response(null, '取消点赞评论失败,评论不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400
+      ctx.body = response(null, '取消点赞评论失败,还未点赞过评论!', 400)
+    } else {
+      ctx.body = response(null, '取消点赞评论成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
 
 export default {
   toCreateArticle,
@@ -244,5 +395,9 @@ export default {
   toLikeArticle,
   toCancelLikeArticle,
   toStarArticle,
-  toCancelStarArticle
+  toCancelStarArticle,
+  toCreateComment,
+  toDeleteComment,
+  toLikeComment,
+  toCancelLikeComment
 }
