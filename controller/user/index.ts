@@ -132,16 +132,17 @@ async function testToken(ctx: Context) {
 }
 
 /**
- * 获取用户信息 (需要token 未完成)
+ * 通过token来获取用户信息 (需要token 未完成)
  * @param ctx 
  */
-async function getUserInfo(ctx: Context) {
-    // token中有用户名称,解析token后,使用用户名称查询用户数据
+async function getUserInfoByToken(ctx: Context) {
+
     const user = ctx.state.user as Token;
+
     try {
         if (user.uid) {
             // 通过用户的id查询用户数据
-            const res = await userService.findUserByUid(user.uid)
+            const res = await userService.getUserInfo(user.uid)
             if (res) {
                 // 查询到了
                 ctx.body = response(res, 'ok', 200)
@@ -381,7 +382,7 @@ export default {
     checkUser,
     register,
     testToken,
-    getUserInfo,
+    getUserInfoByToken,
     followUser,
     cancelFollowUser,
     getUserFollowList,

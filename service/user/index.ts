@@ -1,10 +1,18 @@
 // model层
 import UserModel from '../../model/user'
+import ArticleModel from '../../model/article'
+import BarModel from '../../model/bar'
 // 类型
 import type { User, UserBody, UserWithout } from '../../model/user/types'
+import type { ArticleBaseItem } from '../../model/article/types'
 
 // 用户模型
 const user = new UserModel()
+// 文章模型
+const article = new ArticleModel()
+// 吧模型
+const bar = new BarModel()
+
 
 /**
  * 用户service层
@@ -15,7 +23,7 @@ class UserService {
      * @param username 
      * @returns 用户信息
      */
-    async findUserByUsername(username: string) {
+    async findUserByUsername (username: string) {
         try {
             const res = await user.selectDataByUsername(username)
             return Promise.resolve(res)
@@ -28,7 +36,7 @@ class UserService {
      * @param data 
      * @returns 0注册失败 1注册成功
      */
-    async createUser(data: UserBody): Promise<0 | 1> {
+    async createUser (data: UserBody): Promise<0 | 1> {
         try {
             // 查询当前需要注册的用户名称是否存在
             const resExist = await user.selectByUsername(data.username)
@@ -50,7 +58,7 @@ class UserService {
      * @param data 
      * @returns 0:用户名不存在 1:密码错误 用户信息:登录成功
      */
-    async checkLogin(data: UserBody): Promise<0 | 1 | User> {
+    async checkLogin (data: UserBody): Promise<0 | 1 | User> {
         try {
             // 查询登录用户是否存在
             const resExit = await user.selectByUsername(data.username)
@@ -62,7 +70,7 @@ class UserService {
             const resUser = await user.selectByUsernameAndPassword(data.username, data.password)
             if (resUser.length) {
                 // 匹配成功 返回用户的数据 token中保存用户的id和用户名称
-                return Promise.resolve(resUser[0])
+                return Promise.resolve(resUser[ 0 ])
             } else {
                 // 密码错误
                 return Promise.resolve(1)
@@ -72,16 +80,96 @@ class UserService {
         }
     }
     /**
-     * 通过uid获取用户信息
+     * 通过uid获取用户（我的）信息 (未完成)
+     * 1.获取用户基本信息
+     * 2.获取用户发帖数量、发帖被点赞数量、用户收藏的数量
+     * 3.获取用户发送评论数量、评论被点赞数量
+     * 4.获取用户粉丝、关注数量
+     * 5.获取我最近10条点赞、收藏的帖子
+     * 6.获取用户关注吧的数量
      * @param uid 
      * @returns 0查无此人 用户信息:查询数据成功
      */
-    async findUserByUid(uid: number): Promise<0 | UserWithout> {
+    async getUserInfo (uid: number) {
         try {
-            const res = await user.selectByUid(uid)
-            if (res.length) {
+            // 1.获取用户基本信息
+            const [ userInfo ] = await user.selectByUid(uid)
+            if (userInfo) {
                 // 查询到了
-                return Promise.resolve(res[0])
+                // 2.获取用户发帖数量
+                const [ articleCount ] = await article.countInArticleTableByUid(uid)
+                // 3.获取用户发送评论数量
+                const [ commentCount ] = await article.countInCommentTableByUid(uid)
+                // 4.获取用户粉丝数量
+                const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+                // 5.获取用户关注数量
+                const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+                // 6.获取用户所有的帖子列表来查询每个帖子的点赞数量
+                const userArticleList = await article.selectInArticleTableByUid(uid)
+                // 用户所有帖子被点赞的总数
+                let articleLikeCount = 0;
+                for (let i = 0; i < userArticleList.length; i++) {
+                    const [ count ] = await article.countInLikeArticleTableByAid(userArticleList[ i ].aid)
+                    if (count && count.total) {
+                        articleLikeCount += count.total
+                    }
+                }
+                // 7.获取用户所有的评论来查询被点赞的总数
+                const userCommentList = await article.selectInCommentTableByUid(uid)
+                // 所有评论被点赞的总数
+                let commentLikeCount = 0;
+                for (let i = 0; i < userCommentList.length; i++) {
+                    const [ count ] = await article.countInLikeCommentTabeByCid(userCommentList[ i ].cid)
+                    if (count && count.total) {
+                        commentLikeCount += count.total
+                    }
+                }
+
+                // 8.获取用户收藏帖子的总数
+                const [ starArticleCount ] = await article.countInStarArticleTableByUid(uid)
+
+                // 9.获取用户关注吧的总数
+                const [ followBarCount ] = await bar.selectFollowByUidCount(uid)
+
+                // 10.获取用户最近10条点赞的帖子
+                const recentlyLikeArticleList = await article.selectInLikeArticleTableByUidLimit(uid, 10, 0)
+                // 这十条帖子数据
+                const articleLikeList: any[] = [];
+                for (let i = 0; i < recentlyLikeArticleList.length; i++) {
+                    // 获取帖子的数据
+                    const [ articleInfo ] = await article.selectInArticleTableByAid(recentlyLikeArticleList[ i ].aid)
+                    if (articleInfo) {
+                        // 帖子存在
+                        // 1.则获取对应帖子创建者信息
+                        const [ userInfo ] = await user.selectByUid(articleInfo.uid)
+                        
+                        articleLikeList.push({
+                            ...articleInfo,
+
+                            user:userInfo
+                        })
+                    }
+                }
+
+                return Promise.resolve({
+                    ...userInfo,
+                    fans_count: fansCount.total,
+                    follow_count: followCount.total,
+                    follow_bar_count: followBarCount.total,
+                    article: {
+                        article_count: articleCount.total,
+                        article_like_count: articleLikeCount,
+                        article_star_count: starArticleCount.total
+                    },
+                    comment: {
+                        comment_count: commentCount.total,
+                        comment_like_count: commentLikeCount
+                    },
+                    recently: {
+                        article_like_list:articleLikeList
+                    }
+                })
+
             } else {
                 // 查无此人
                 return Promise.resolve(0)
@@ -96,7 +184,7 @@ class UserService {
      * @param uidIsFollowed 被关注者
      * @returns -2不能自己关注自己 -1被关注者不存在 0已经关注了 1关注成功 
      */
-    async toFollowUser(uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+    async toFollowUser (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
         if (uid === uidIsFollowed) {
             return Promise.resolve(-2)
         }
@@ -127,7 +215,7 @@ class UserService {
      * @param uidIsFollowed 被关注者的id
      * @returns -2：自己不能取消关注自己 -1：被关注者不存在 0：还未关注不能取消关注 1：取关成功
      */
-    async toCancelFollow(uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+    async toCancelFollow (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
         if (uid === uidIsFollowed) {
             // 自己不能取消关注自己
             return Promise.resolve(-2)
@@ -159,7 +247,7 @@ class UserService {
      * @param offset 从第几条开始获取数据
      * @returns 
      */
-    async getFollowList(uid: number, limit: number, offset: number) {
+    async getFollowList (uid: number, limit: number, offset: number) {
         try {
             // 获取通过当前uid来获取被关注的用户列表 (分页的数据)
             const resIdList = await user.selectByUidScopedFollowLimit(uid, limit, offset)
@@ -167,15 +255,15 @@ class UserService {
             // 遍历获取用户数据
             for (let i = 0; i < resIdList.length; i++) {
                 // 通过被关注者的id获取被关注者数据
-                const userItem = await user.selectByUid(resIdList[i].uid_is_followed)
+                const userItem = await user.selectByUid(resIdList[ i ].uid_is_followed)
                 if (userItem.length) {
                     // 若查询到了 保存该数据
-                    userList.push(userItem[0])
+                    userList.push(userItem[ 0 ])
                 }
             }
             // 获取关注数量
             const total = await user.selectByUidScopedFollowCount(uid)
-            return Promise.resolve({ list: userList, total: total[0].total, limit, offset })
+            return Promise.resolve({ list: userList, total: total[ 0 ].total, limit, offset })
         } catch (error) {
             return Promise.reject(error)
         }
@@ -187,7 +275,7 @@ class UserService {
      * @param offset 从第几条开始获取数据
      * @returns 
      */
-    async getFansList(uidIsFollowed: number, limit: number, offset: number) {
+    async getFansList (uidIsFollowed: number, limit: number, offset: number) {
         try {
             // 获取通过当前uid来获取粉丝列表 (分页的数据)
             const resIdList = await user.selectByUidFollowedScopedFollowLimit(uidIsFollowed, limit, offset)
@@ -195,15 +283,15 @@ class UserService {
             // 遍历获取用户数据
             for (let i = 0; i < resIdList.length; i++) {
                 // 通过关注者的id获取粉丝数据
-                const userItem = await user.selectByUid(resIdList[i].uid)
+                const userItem = await user.selectByUid(resIdList[ i ].uid)
                 if (userItem.length) {
                     // 若查询到了 保存该数据
-                    userList.push(userItem[0])
+                    userList.push(userItem[ 0 ])
                 }
             }
             // 获取粉丝数量
             const total = await user.selectByUidFollowedScopedFollowCount(uidIsFollowed)
-            return Promise.resolve({ list: userList, total: total[0].total, limit, offset })
+            return Promise.resolve({ list: userList, total: total[ 0 ].total, limit, offset })
         } catch (error) {
             return Promise.reject(error)
         }
@@ -217,7 +305,7 @@ class UserService {
      * @param username 用户名称
      * @returns 0:用户名已经存在了 1:修改成功
      */
-    async updateUserData(uid: number, avatar: string, username: string): Promise<0 | 1> {
+    async updateUserData (uid: number, avatar: string, username: string): Promise<0 | 1> {
         try {
             const resExist = await user.selectByUsername(username)
             if (resExist.length) {
@@ -239,9 +327,9 @@ class UserService {
      * @param oldPassword 旧密码
      * @returns -1:旧密码对不上 0:新旧密码一致 1:修改密码成功
      */
-    async updateUserPassword(uid: number, password: string, oldPassword: string): Promise<-1 | 0 | 1> {
+    async updateUserPassword (uid: number, password: string, oldPassword: string): Promise<-1 | 0 | 1> {
         try {
-            const [userInfo] = await user.selectInUserTableByUid(uid)
+            const [ userInfo ] = await user.selectInUserTableByUid(uid)
             if (userInfo) {
                 // 用户存在
                 if (userInfo.password === oldPassword) {
@@ -263,6 +351,18 @@ class UserService {
             }
         } catch (error) {
             return Promise.reject(error)
+        }
+    }
+    /**
+     * 通过查询参数uid 来获取用户信息 （一般指访问别人的主页）
+     * @param uid 用户的id
+     * @param currentUid 当前登录的用户id
+     */
+    async getUserProfile (uid: number, currentUid: number | undefined) {
+        try {
+            // const [userInfo] = await 
+        } catch (error) {
+
         }
     }
 }

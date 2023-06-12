@@ -40,6 +40,7 @@ class ArticleService {
     3.通过帖子详情数据的bid查询帖子所属吧的详情数据，以及当前登录用户对吧的关注状态
     4.通过aid来查询帖子点赞数量，以及当前登录用户对帖子的点赞状态
     5.通过aid来查询帖子的收藏数量，以及当前登录用户对帖子的收藏状态
+    6.通过aid来查询帖子的评论总数
    * @param aid 
    * @returns 
    */
@@ -86,6 +87,9 @@ class ArticleService {
           articleInfo.photo.split(',').forEach(ele => photo.push(ele))
         }
 
+        // 7.查询帖子的评论总数
+        const [commentsCount]=await article.countInCommentTableByAid(aid)
+
         return Promise.resolve({
           aid: articleInfo.aid,
           title: articleInfo.title,
@@ -98,6 +102,7 @@ class ArticleService {
           is_liked: isLiked,
           star_count: resStarCount.total,
           is_star: isStar,
+          comment_count:commentsCount.total,
           user: userInfo,
           bar: barInfo
         })

@@ -20,7 +20,7 @@ userRouter.post('user', `${baseRouteURL}/login`, UserController.login)
 userRouter.get('user', `${baseRouteURL}/token`, UserController.testToken)
 
 // 通过token获取用户信息 (需要token)
-userRouter.get('user', `${baseRouteURL}/info`, UserController.getUserInfo)
+userRouter.get('user', `${baseRouteURL}/info`, UserController.getUserInfoByToken)
 
 // 关注用户 (需要token) query:{uid:number}
 userRouter.get('user', `${baseRouteURL}/follow`, UserController.followUser)
