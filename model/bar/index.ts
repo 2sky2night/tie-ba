@@ -35,6 +35,19 @@ class BarModel extends BaseModel {
         }
     }
     /**
+     * 在吧表中 通过uid来查询用户创建的吧数量
+     * @param uid 用户id
+     * @returns 
+     */
+    async countInBarTableByUid (uid: number) {
+        try {
+            const res = await this.runSql<CountRes>(`select count(*) as total from bar where uid=${ uid }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
      * 在吧表中通过吧的名称来查询吧
      * @param bname 吧的名称
      * @returns 查询结果

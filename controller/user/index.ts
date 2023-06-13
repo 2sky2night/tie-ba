@@ -18,7 +18,7 @@ const userService = new UserService()
  * 通过用户名查询用户 (测试用)
  * @param ctx 
  */
-async function checkUser(ctx: Context) {
+async function checkUser (ctx: Context) {
     const username = ctx.query.username
     if (!username) {
         ctx.status = 400
@@ -27,7 +27,7 @@ async function checkUser(ctx: Context) {
     try {
         const res = await userService.findUserByUsername(username as string)
         if (res.length) {
-            ctx.body = response(res[0], 'ok', 200)
+            ctx.body = response(res[ 0 ], 'ok', 200)
         } else {
             ctx.body = response(null, '查无此人', 400)
         }
@@ -41,7 +41,7 @@ async function checkUser(ctx: Context) {
  * 用户登录
  * @param ctx 
  */
-async function login(ctx: Context) {
+async function login (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -84,7 +84,7 @@ async function login(ctx: Context) {
  * 用户注册
  * @param ctx 
  */
-async function register(ctx: Context) {
+async function register (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -126,7 +126,7 @@ async function register(ctx: Context) {
  * 测试解析token
  * @param ctx 
  */
-async function testToken(ctx: Context) {
+async function testToken (ctx: Context) {
     console.log(ctx.state)
     ctx.body = response(ctx.state, 'ok', 200)
 }
@@ -135,24 +135,22 @@ async function testToken(ctx: Context) {
  * 通过token来获取用户信息 (需要token 未完成)
  * @param ctx 
  */
-async function getUserInfoByToken(ctx: Context) {
+async function getUserInfoByToken (ctx: Context) {
 
     const user = ctx.state.user as Token;
 
     try {
-        if (user.uid) {
-            // 通过用户的id查询用户数据
-            const res = await userService.getUserInfo(user.uid)
-            if (res) {
-                // 查询到了
-                ctx.body = response(res, 'ok', 200)
-            } else {
-                // 查无此人
-                ctx.body = response(null, '查无此人', 400)
-            }
+
+        // 通过用户的id查询用户数据
+        const res = await userService.getUserInfo(user.uid)
+        if (res) {
+            // 查询到了
+            ctx.body = response(res, 'ok', 200)
         } else {
-            await Promise.reject()
+            // 查无此人
+            ctx.body = response(null, '查无此人', 400)
         }
+
     } catch (error) {
         ctx.status = 500
         ctx.body = response(null, '服务器出错了!', 500)
@@ -164,7 +162,7 @@ async function getUserInfoByToken(ctx: Context) {
  * 关注用户 （需要token）
  * @param ctx 
  */
-async function followUser(ctx: Context) {
+async function followUser (ctx: Context) {
     const token = ctx.state.user as Token
     const query = ctx.query
     if (query.uid === undefined) {
@@ -208,7 +206,7 @@ async function followUser(ctx: Context) {
  * 取消关注用户
  * @param ctx 
  */
-async function cancelFollowUser(ctx: Context) {
+async function cancelFollowUser (ctx: Context) {
     const token = ctx.state.user as Token;
 
     if (ctx.query.uid === undefined) {
@@ -247,7 +245,7 @@ async function cancelFollowUser(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFollowList(ctx: Context) {
+async function getUserFollowList (ctx: Context) {
     if (ctx.query.uid === undefined) {
         // 未携带参数
         ctx.status = 400;
@@ -280,7 +278,7 @@ async function getUserFollowList(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFansList(ctx: Context) {
+async function getUserFansList (ctx: Context) {
     if (ctx.query.uid === undefined) {
         // 未携带参数
         ctx.status = 400;
@@ -311,7 +309,7 @@ async function getUserFansList(ctx: Context) {
  * 修改用户信息 (不包含密码)
  * @param ctx 
  */
-async function toUpdateUser(ctx: Context) {
+async function toUpdateUser (ctx: Context) {
     const token = ctx.state.user as Token
     const body = (ctx.request as any).body as UserUpdateBody
     if (body === undefined || body.avatar === undefined || body.username === undefined) {
@@ -344,7 +342,7 @@ async function toUpdateUser(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toUpdateUserPassword(ctx: Context) {
+async function toUpdateUserPassword (ctx: Context) {
     const token = ctx.state.user as Token
     const body = (ctx.request as any).body as UserUpdatePasswordBody
 
@@ -377,6 +375,63 @@ async function toUpdateUserPassword(ctx: Context) {
 
 }
 
+/**
+ * 获取用户信息（通过查询参数的uid）
+ */
+async function toGetUserProfile (ctx: Context) {
+
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+
+    if (ctx.query.uid === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '有参数未携带!', 400)
+    }
+    const uid = +ctx.query.uid
+    if (isNaN(uid)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法!', 400)
+    }
+    try {
+        const res = await userService.getUserProfile(uid, currentUid)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 400
+            ctx.body = response(null, '获取用户信息失败,该用户不存在!', 400)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 通过token来获取用户信息 (需要token)
+ * @param ctx 
+ */
+async function toGetUserInfo (ctx: Context) {
+
+    const user = ctx.state.user as Token;
+
+    try {
+
+        // 通过用户的id查询用户数据
+        const res = await userService.getUserInfoV2(user.uid)
+        if (res) {
+            // 查询到了
+            ctx.body = response(res, 'ok', 200)
+        } else {
+            // 查无此人
+            ctx.body = response(null, '查无此人', 400)
+        }
+
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     login,
     checkUser,
@@ -388,5 +443,7 @@ export default {
     getUserFollowList,
     getUserFansList,
     toUpdateUser,
-    toUpdateUserPassword
+    toUpdateUserPassword,
+    toGetUserProfile,
+    toGetUserInfo
 }

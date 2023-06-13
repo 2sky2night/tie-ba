@@ -3,6 +3,7 @@ import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleSt
 import type { CountRes } from '../../types'
 import BaseModel from '../base/index'
 import { getNowTimeString } from '../../utils/tools/time'
+import { off } from 'process'
 
 /**
  * 在某个表用 in
@@ -148,6 +149,19 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在点赞帖子表中 通过uid来查询用户点赞文章的总数量
+   * @param uid 用户id
+   * @returns 
+   */
+  async countInLikeArticleTableByUid (uid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_article where uid=${ uid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在点赞帖子表中 通过uid倒叙获取用户点赞的帖子 （分页限制）
    * @param uid 用户id
    * @param limit 获取多少条数据
@@ -155,7 +169,7 @@ class ArticleModel extends BaseModel {
    * @param desc true降序 false升序
    * @returns 
    */
-  async selectInLikeArticleTableByUidLimit (uid: number, limit: number, offset: number, desc: true | false = true) {
+  async selectInLikeArticleTableByUidLimit (uid: number, limit: number, offset: number, desc: boolean) {
     try {
       const res = await this.runSql<ArticleLikeBaseItem[]>(`select * from user_like_article where uid=${ uid } ORDER BY createTime ${ desc ? 'DESC' : 'ASC' } limit ${ limit } OFFSET ${ offset }`)
       return Promise.resolve(res)
@@ -234,6 +248,21 @@ class ArticleModel extends BaseModel {
   async countInStarArticleTableByUid (uid: number) {
     try {
       const res = await this.runSql<CountRes>(`select count(*) as total from user_star_article where uid=${ uid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在收藏帖子中 通过uid来查询用户收藏的帖子 （分页限制）
+   * @param uid 用户id
+   * @param limit 一次查询多少条数据
+   * @param offset 从偏移量多少开始查询
+   * @param desc 降序还是升序
+   */
+  async selectInStarArticleTableByUidLimit (uid: number, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleStarBaseItem[]>(`SELECT * FROM user_star_article where uid=${ uid } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
@@ -340,6 +369,19 @@ class ArticleModel extends BaseModel {
   async selectInCommentTableByUid (uid: number) {
     try {
       const res = await this.runSql<CommentBaseItem[]>(`select * from comment where uid=${ uid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在点赞评论表中 通过uid来查询用户点赞评论的总数
+   * @param uid 
+   * @returns 
+   */
+  async countInLikeCommentTableByUid (uid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_comment where uid=${uid}`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
