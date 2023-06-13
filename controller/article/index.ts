@@ -14,7 +14,7 @@ const articleService = new ArticleService()
  * 创建帖子
  * @param ctx 
  */
-async function toCreateArticle(ctx: Context) {
+async function toCreateArticle (ctx: Context) {
   const token = ctx.state.user as Token;
   const body = (ctx.request as any).body as CreateArticleBody
   if (isNaN(body.bid) || body.content === undefined || body.title === undefined) {
@@ -62,7 +62,7 @@ async function toCreateArticle(ctx: Context) {
  * 获取帖子的详情数据
  * @param ctx 
  */
-async function getArticleInfo(ctx: Context) {
+async function getArticleInfo (ctx: Context) {
 
   const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
@@ -102,7 +102,7 @@ async function getArticleInfo(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toLikeArticle(ctx: Context) {
+async function toLikeArticle (ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -145,7 +145,7 @@ async function toLikeArticle(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCancelLikeArticle(ctx: Context) {
+async function toCancelLikeArticle (ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -187,7 +187,7 @@ async function toCancelLikeArticle(ctx: Context) {
  * 收藏帖子
  * @param ctx 
  */
-async function toStarArticle(ctx: Context) {
+async function toStarArticle (ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 验证帖子aid参数
@@ -226,7 +226,7 @@ async function toStarArticle(ctx: Context) {
  * 取消收藏帖子
  * @param ctx 
  */
-async function toCancelStarArticle(ctx: Context) {
+async function toCancelStarArticle (ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 验证帖子aid参数
@@ -265,7 +265,7 @@ async function toCancelStarArticle(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCreateComment(ctx: Context) {
+async function toCreateComment (ctx: Context) {
   const token = ctx.state.user as Token;
   // 检验参数是否携带
   const body = (ctx.request as any).body as CreateCommentBody
@@ -318,7 +318,7 @@ async function toCreateComment(ctx: Context) {
  * 删除评论
  * @param ctx 
  */
-async function toDeleteComment(ctx: Context) {
+async function toDeleteComment (ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -352,7 +352,7 @@ async function toDeleteComment(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toLikeComment(ctx: Context) {
+async function toLikeComment (ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -384,7 +384,7 @@ async function toLikeComment(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCancelLikeComment(ctx: Context) {
+async function toCancelLikeComment (ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -416,7 +416,7 @@ async function toCancelLikeComment(ctx: Context) {
  * 获取帖子的评论 分页数据
  * @param ctx 
  */
-async function getArticleCommentList(ctx: Context) {
+async function getArticleCommentList (ctx: Context) {
 
   // 根据是否携带token来获取当前登录的用户id
   const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
@@ -447,6 +447,41 @@ async function getArticleCommentList(ctx: Context) {
 
 }
 
+async function toGetUserLikeArticleList (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+
+  // 校验查询参数uid
+  if (ctx.query.uid === undefined) {
+    ctx.status = 400
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+  const uid = +ctx.query.uid
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+
+  if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+    ctx.status = 400
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await articleService.getUserLikeArticleList(uid, currentUid, limit, offset)
+    if (res) {
+      ctx.body = response(res, 'ok')
+    } else {
+      ctx.status = 400
+      ctx.body = response(null, '获取用户点赞的帖子列表失败,用户不存在!', 400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
   getArticleInfo,
@@ -458,5 +493,6 @@ export default {
   toDeleteComment,
   toLikeComment,
   toCancelLikeComment,
-  getArticleCommentList
+  getArticleCommentList,
+  toGetUserLikeArticleList
 }

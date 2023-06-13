@@ -87,6 +87,22 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在帖子表中 通过uid来查询用户发送的帖子列表 （分页限制）
+   * @param uid 
+   * @param limit 
+   * @param offset 
+   * @param desc 升序还是降序
+   * @returns 
+   */
+  async selectInArticleTableByUidLimit (uid: number, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where uid=${ uid } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在点赞帖子表中 插入一条记录
    * @param uid 
    * @param aid 
@@ -162,7 +178,7 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
-   * 在点赞帖子表中 通过uid倒叙获取用户点赞的帖子 （分页限制）
+   * 在点赞帖子表中 通过uid获取用户点赞的帖子 （分页限制）
    * @param uid 用户id
    * @param limit 获取多少条数据
    * @param offset 从多少偏移量开始获取数据
@@ -381,7 +397,7 @@ class ArticleModel extends BaseModel {
    */
   async countInLikeCommentTableByUid (uid: number) {
     try {
-      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_comment where uid=${uid}`)
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_comment where uid=${ uid }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

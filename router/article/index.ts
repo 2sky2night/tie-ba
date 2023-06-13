@@ -38,6 +38,10 @@ articleRouter.get('article', `${baseRouteURL}/comment/like`, ArticleController.t
 articleRouter.delete('article', `${baseRouteURL}/comment/like`, ArticleController.toCancelLikeComment)
 
 // 获取帖子的评论列表 (单独解析token) query {aid:number;limit?number=20;offset?:number=0}
-articleRouter.get('article', `${baseRouteURL}/comment/list`, Middleware.tokenParse, ArticleController.getArticleCommentList)
+articleRouter.get('article', `${ baseRouteURL }/comment/list`, Middleware.tokenParse, ArticleController.getArticleCommentList)
+
+// 获取用户点赞的帖子列表
+articleRouter.get('article', `${baseRouteURL}/user/like/list`, Middleware.tokenParse, ArticleController.toGetUserLikeArticleList)
+
 
 export default articleRouter
