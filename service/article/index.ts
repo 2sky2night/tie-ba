@@ -428,7 +428,8 @@ class ArticleService {
         total: count.total,
         offset,
         limit,
-        has_more: count.total > limit * offset + limit
+        // 计算是否还有更多 若偏移量+limit+1大于等总数说明没有更多了
+        has_more: count.total > offset + 1 + limit
       })
     } catch (error) {
       return Promise.reject(error)
@@ -446,14 +447,15 @@ class ArticleService {
    * 6.当前用户对楼主的关注状态
    * 7.当前用户对帖子的点赞、收藏状态
    * 7.5 当前用户对帖子所属对应吧的关注状态
-   * 8.计算是否还有更多 若总数<limit*offset+limit则没有更多了
+   * 8.计算是否还有更多 若总数<offset+limit则没有更多了
    * @param uid 用户id
    * @param currentUid 当前登录的用户id 
    * @param limit pageSize
-   * @param offset 从第几页开始获取数据
+   * @param offset 从第几条开始获取数据
+   * @param desc 根据点赞的时间升序还是降序
    * @returns 
    */
-  async getUserLikeArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number) {
+  async getUserLikeArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.获取用户信息
       const [ userInfo ] = await user.selectByUid(uid)
@@ -464,7 +466,7 @@ class ArticleService {
       // 2.获取用户点赞帖子的总数
       const [ total ] = await article.countInLikeArticleTableByUid(uid)
       // 3.获取点赞帖子列表
-      const likeArticleList = await article.selectInLikeArticleTableByUidLimit(uid, limit, offset, true)
+      const likeArticleList = await article.selectInLikeArticleTableByUidLimit(uid, limit, offset, desc)
       // 3.5 获取帖子信息列表
       const articleList: any[] = []
       for (let i = 0; i < likeArticleList.length; i++) {
@@ -492,7 +494,13 @@ class ArticleService {
         const isFollowedBar = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(articleInfo.bid, currentUid)).length ? true : false
 
         articleList.push({
-          ...articleInfo,
+          aid: articleInfo.aid,
+          title: articleInfo.title,
+          content: articleInfo.content,
+          createTime: articleInfo.createTime,
+          bid: articleInfo.bid,
+          uid: articleInfo.uid,
+          photo: articleInfo.photo ? articleInfo.photo.split(',') : null,
           like_count: likeCount.total,
           is_liked: isLiked,
           star_count: starCount.total,
@@ -515,8 +523,99 @@ class ArticleService {
         total: total.total,
         limit,
         offset,
-        has_more: total.total < limit * offset + limit ? true : false
+        has_more: total.total > offset + limit,
+        desc
       })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取用户收藏列表
+   * 1.查询用户是否存在
+   * 2.查询用户收藏的总数
+   * 3.查询用户收藏帖子的记录
+   * 4.根据这些记录查询帖子详情数据：帖子点赞、收藏、评论数量，当前用户对帖子的点赞、收藏状态，以及帖子创建者信息、当前用户对楼主的关注状态、粉丝状态，帖子所属吧的信息，当前用户是否关注吧？
+   * 5.计算是否还有更多 total>offset+limit
+   * @param uid 用户id
+   * @param currentUid 当前登录的用户id 
+   * @param limit 需要多少条数据
+   * @param offset 从第几条开始获取数据
+   * @param desc 是否降序 根据时间降序
+   */
+  async getUserStarArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    try {
+      // 1.查询用户记录
+      const [ userInfor ] = await user.selectByUid(uid)
+      // 用户不存在
+      if (!userInfor) return Promise.resolve(0)
+      // 2.查询用户收藏的帖子总数
+      const [ count ] = await article.countInStarArticleTableByUid(uid)
+      // 3.查询收藏的帖子记录
+      const articleStarList = (await article.selectInStarArticleTableByUidLimit(uid, limit, offset, desc)).map(ele => ele.aid)
+      // 4.根据收藏的帖子记录查询帖子详情信息
+      const articleInforList: any[] = []
+      for (let i = 0; i < articleStarList.length; i++) {
+        const aid = articleStarList[ i ]
+        // 1.查询帖子信息
+        const [ articleInfo ] = await article.selectInArticleTableByAid(aid)
+        // 2.获取帖子点赞数量
+        const [ likeCount ] = await article.countInLikeArticleTableByAid(aid)
+        // 3.获取帖子收藏数量
+        const [ starCount ] = await article.countInStarArticleTableByAid(aid)
+        // 4.获取帖子评论数量
+        const [ commentCount ] = await article.countInCommentTableByAid(aid)
+        // 5.获取当前用户对帖子的点赞状态
+        const isLiked = currentUid === undefined ? false : (await article.selectInLikeArticleTableByAidAndUid(currentUid, aid)).length ? true : false
+        // 6.获取当前用户对帖子的收藏状态
+        const isStar = currentUid === undefined ? false : (await article.selectInStarArticleTableByUidAndAid(currentUid, aid)).length ? true : false
+        // 7.帖子所属吧的信息
+        const [ barInfo ] = await bar.selectByBid(articleInfo.bid)
+        // 8.获取吧关注的状态
+        const isFollowedBar = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(articleInfo.bid, currentUid)).length ? true : false
+        // 9.获取楼主信息
+        const [ userInfo ] = await user.selectByUid(articleInfo.uid)
+        // 10.获取对楼主的关注状态
+        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false
+        // 10.楼主是否关注了我？
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false
+
+        articleInforList.push({
+          aid: articleInfo.aid,
+          title: articleInfo.title,
+          content: articleInfo.content,
+          createTime: articleInfo.createTime,
+          bid: articleInfo.bid,
+          uid: articleInfo.uid,
+          photo: articleInfo.photo ? articleInfo.photo.split(',') : null,
+          like_count: likeCount.total,
+          star_count: starCount.total,
+          comment_count: commentCount.total,
+          is_liked: isLiked,
+          is_star: isStar,
+          bar: {
+            ...barInfo,
+            is_followed: isFollowedBar
+          },
+          user: {
+            ...userInfo,
+            is_followed: isFollowedUser,
+            is_fans: isFollowedMe
+          }
+        })
+
+      }
+
+      return Promise.resolve({
+        list: articleInforList,
+        offset,
+        limit,
+        total: count.total,
+        has_more: count.total > offset + limit,
+        desc
+      })
+
 
     } catch (error) {
       return Promise.reject(error)

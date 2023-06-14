@@ -8,40 +8,43 @@ const articleRouter = new Router()
 const baseRouteURL = '/article'
 
 // 获取帖子的详情数据  (单独解析token)  query {aid:number}
-articleRouter.get('article', `${baseRouteURL}/info`, Middleware.tokenParse, ArticleController.getArticleInfo)
+articleRouter.get('article', `${ baseRouteURL }/info`, Middleware.tokenParse, ArticleController.getArticleInfo)
 
 // 发帖 (需要token) json {bid:number;content:string;photo?:string;title:string}
-articleRouter.post('article', `${baseRouteURL}/post`, ArticleController.toCreateArticle)
+articleRouter.post('article', `${ baseRouteURL }/post`, ArticleController.toCreateArticle)
 
 // 点赞文章 (需要token) query {aid:number}
-articleRouter.get('article', `${baseRouteURL}/like`, ArticleController.toLikeArticle)
+articleRouter.get('article', `${ baseRouteURL }/like`, ArticleController.toLikeArticle)
 
 // 取消点赞文章 (需要token) query {aid:number}
-articleRouter.delete('article', `${baseRouteURL}/like`, ArticleController.toCancelLikeArticle)
+articleRouter.delete('article', `${ baseRouteURL }/like`, ArticleController.toCancelLikeArticle)
 
 // 收藏文章 (需要token) query {aid:number}
-articleRouter.get('article', `${baseRouteURL}/star`, ArticleController.toStarArticle)
+articleRouter.get('article', `${ baseRouteURL }/star`, ArticleController.toStarArticle)
 
 // 取消收藏文章 (需要token) query {aid:number}
-articleRouter.delete('article', `${baseRouteURL}/star`, ArticleController.toCancelStarArticle)
+articleRouter.delete('article', `${ baseRouteURL }/star`, ArticleController.toCancelStarArticle)
 
 // 发送评论 (需要token) json {aid:number,photo?:string|string[],content:string}
-articleRouter.post('article', `${baseRouteURL}/comment`, ArticleController.toCreateComment)
+articleRouter.post('article', `${ baseRouteURL }/comment`, ArticleController.toCreateComment)
 
 // 删除评论 (需要token)  query {cid:number}
-articleRouter.delete('article', `${baseRouteURL}/comment`, ArticleController.toDeleteComment)
+articleRouter.delete('article', `${ baseRouteURL }/comment`, ArticleController.toDeleteComment)
 
 // 点赞评论 (需要token) query {cid:number}
-articleRouter.get('article', `${baseRouteURL}/comment/like`, ArticleController.toLikeComment)
+articleRouter.get('article', `${ baseRouteURL }/comment/like`, ArticleController.toLikeComment)
 
 // 取消点赞评论 (需要token) query {cid:number}
-articleRouter.delete('article', `${baseRouteURL}/comment/like`, ArticleController.toCancelLikeComment)
+articleRouter.delete('article', `${ baseRouteURL }/comment/like`, ArticleController.toCancelLikeComment)
 
 // 获取帖子的评论列表 (单独解析token) query {aid:number;limit?number=20;offset?:number=0}
-articleRouter.get('article', `${ baseRouteURL }/comment/list`, Middleware.tokenParse, ArticleController.getArticleCommentList)
+articleRouter.get('article', `${ baseRouteURL }/comment/list`, Middleware.tokenParse, ArticleController.toGetArticleCommentList)
 
-// 获取用户点赞的帖子列表
-articleRouter.get('article', `${baseRouteURL}/user/like/list`, Middleware.tokenParse, ArticleController.toGetUserLikeArticleList)
+// 获取用户点赞的帖子列表 (单独解析token) query {uid:number;limit?number=20;offset?:number=0,desc:number}
+articleRouter.get('article', `${ baseRouteURL }/user/like/list`, Middleware.tokenParse, ArticleController.toGetUserLikeArticleList)
+
+// 获取用户收藏的帖子列表 (单独解析token) query {uid:number;limit?number=20;offset?:number=0,desc:number}
+articleRouter.get('article', `${ baseRouteURL }/user/star/list`, Middleware.tokenParse, ArticleController.toGetUserStarArticleList)
 
 
 export default articleRouter

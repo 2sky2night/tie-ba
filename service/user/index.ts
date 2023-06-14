@@ -330,7 +330,7 @@ class UserService {
         }
     }
     /**
-     * 获取用户的关注列表
+     * 获取用户的关注列表 (未写完)
      * @param uid 用户id
      * @param limit 多少条数据
      * @param offset 从第几条开始获取数据
@@ -352,13 +352,19 @@ class UserService {
             }
             // 获取关注数量
             const total = await user.selectByUidScopedFollowCount(uid)
-            return Promise.resolve({ list: userList, total: total[ 0 ].total, limit, offset })
+            return Promise.resolve({
+                list: userList,
+                total: total[ 0 ].total,
+                limit,
+                offset,
+                has_more: total[ 0 ].total > offset + limit
+            })
         } catch (error) {
             return Promise.reject(error)
         }
     }
     /**
-     * 获取粉丝列表
+     * 获取粉丝列表 (未写完)
      * @param uidIsFollowed 被关注者的id
      * @param limit 多少条数据
      * @param offset 从第几条开始获取数据
@@ -380,7 +386,13 @@ class UserService {
             }
             // 获取粉丝数量
             const total = await user.selectByUidFollowedScopedFollowCount(uidIsFollowed)
-            return Promise.resolve({ list: userList, total: total[ 0 ].total, limit, offset })
+            return Promise.resolve({
+                list: userList,
+                total: total[ 0 ].total,
+                limit,
+                offset,
+                has_more: total[ 0 ].total > offset + limit
+            })
         } catch (error) {
             return Promise.reject(error)
         }

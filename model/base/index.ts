@@ -46,6 +46,8 @@ class BaseModel {
         // 连接数据库
         await this.connect()
         // 查询
+        // 打印sql语句
+        console.log(sqlString)
         return new Promise((resolve, reject) => {
             this.pool.query(sqlString, (err, res) => {
                 if (err) {
@@ -53,7 +55,7 @@ class BaseModel {
                     console.log(err)
                 } else {
                     // 打印sql查询结果
-                    console.log(res)
+                    // console.log(res)
                     resolve(res)
                 }
                 //  查询无论成功与否都关闭数据库的连接 节约服务器资源
