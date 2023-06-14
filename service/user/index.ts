@@ -331,34 +331,65 @@ class UserService {
     }
     /**
      * 获取用户的关注列表 (未写完)
+     * 1.查询用户是否存在
+     * 2.查询用户关注的列表
+     * 3.查询每个用户的基本信息，关注数量、粉丝数量、发帖数量、关注吧的数量
+     * 4.查询当前用户对这些用户的关注状态、粉丝状态
      * @param uid 用户id
+     * @param currentUid 当前登录的用户id
      * @param limit 多少条数据
      * @param offset 从第几条开始获取数据
      * @returns 
      */
-    async getFollowList (uid: number, limit: number, offset: number) {
+    async getFollowList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
+            // 1.查询用户是否存在
+            const resExist = await user.selectByUid(uid)
+            // uid用户不存在
+            if (!resExist.length) return Promise.resolve(0)
+
+            // 用户存在
             // 获取通过当前uid来获取被关注的用户列表 (分页的数据)
-            const resIdList = await user.selectByUidScopedFollowLimit(uid, limit, offset)
-            const userList: UserWithout[] = []
-            // 遍历获取用户数据
+            const resIdList = await user.selectByUidScopedFollowLimit(uid, limit, offset, desc)
+            const userInfoList: any[] = []
+            // 遍历关注信息获取被关注者的数据
             for (let i = 0; i < resIdList.length; i++) {
-                // 通过被关注者的id获取被关注者数据
-                const userItem = await user.selectByUid(resIdList[ i ].uid_is_followed)
-                if (userItem.length) {
-                    // 若查询到了 保存该数据
-                    userList.push(userItem[ 0 ])
-                }
+                // 被关注者的用户id
+                const uidIsFollowed = resIdList[ i ].uid_is_followed
+                // 1.查询被关注者的基本信息
+                const [ userInfo ] = await user.selectByUid(uidIsFollowed)
+                // 2.查询被关注者的关注数量
+                const [ followUserCount ] = await user.selectByUidScopedFollowCount(uidIsFollowed)
+                // 3.查询被关注者的粉丝数量
+                const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uidIsFollowed)
+                // 4.查询被关注者的发帖数量
+                const [ articleCount ] = await article.countInArticleTableByUid(uidIsFollowed)
+                // 5.查询被关注则的关注吧的数量
+                const [ followBarCount ] = await bar.selectFollowByUidCount(uidIsFollowed)
+                // 6.查询当前用户对此用户的关注、粉丝状态
+                const isFollowed = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uidIsFollowed)).length ? true : false
+                const isFans = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uidIsFollowed, currentUid)).length ? true : false
+                userInfoList.push({
+                    ...userInfo,
+                    follow_user_count: followUserCount.total,
+                    fans_count: fansCount.total,
+                    article_count: articleCount.total,
+                    follow_bar_count: followBarCount.total,
+                    is_followe: isFollowed,
+                    is_fans: isFans
+                })
             }
             // 获取关注数量
             const total = await user.selectByUidScopedFollowCount(uid)
+
             return Promise.resolve({
-                list: userList,
+                list: userInfoList,
                 total: total[ 0 ].total,
                 limit,
                 offset,
                 has_more: total[ 0 ].total > offset + limit
             })
+
         } catch (error) {
             return Promise.reject(error)
         }

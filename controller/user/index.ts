@@ -246,6 +246,7 @@ async function cancelFollowUser (ctx: Context) {
  * @returns 
  */
 async function getUserFollowList (ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
     if (ctx.query.uid === undefined) {
         // 未携带参数
         ctx.status = 400;
@@ -257,16 +258,25 @@ async function getUserFollowList (ctx: Context) {
     const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
     // 获取的偏移量默认从0开始
     const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+    // 是否按照关注的时间降序排序 0升序 其他数字降序
+    const desc = ctx.query.desc ? +ctx.query.desc : 1
 
-    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
         // 参数非法
         ctx.status = 400;
         ctx.body = response(null, '参数非法!', 400)
         return
     }
     try {
-        const res = await userService.getFollowList(uid, limit, offset)
-        ctx.body = response(res, 'ok')
+        const res = await userService.getFollowList(uid, currentUid, limit, offset, desc ? true : false)
+        if (res) {
+            // 用户存在
+            ctx.body = response(res, 'ok')
+        } else {
+            // 用户不存在
+            ctx.status = 400
+            ctx.body = response(null, '获取用户的关注列表失败,用户不存在', 400)
+        }
     } catch (error) {
         ctx.status = 500
         ctx.body = response(null, '服务器出错了!', 500)

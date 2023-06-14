@@ -521,7 +521,7 @@ async function toGetUserStarArticleList (ctx: Context) {
       ctx.body = response(res, 'ok')
     } else {
       ctx.status = 400
-      ctx.body = response(null, '获取用户点赞的帖子列表失败,用户不存在!', 400)
+      ctx.body = response(null, '获取用户收藏的帖子列表失败,用户不存在!', 400)
     }
   } catch (error) {
     console.log(error)
