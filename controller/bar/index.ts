@@ -17,7 +17,7 @@ const barService = new BarService()
  * @param ctx 
  * @returns 创建吧的成功与否的信息
  */
-async function createBar (ctx: Context) {
+async function toCreateBar (ctx: Context) {
     const body = (ctx.request as any).body as BarBody
     if (!body.bname || !body.bdesc || !body.photo) {
         ctx.status = 400
@@ -72,7 +72,7 @@ async function getAllBar (ctx: Context) {
  * @param ctx 
  * @returns 返回吧和吧创建者的数据
  */
-async function getBarInfo (ctx: Context) {
+async function toGetBarInfo (ctx: Context) {
     const token = ctx.state.user as Token;
     const query = ctx.query
     if (query.bid === undefined) {
@@ -108,7 +108,7 @@ async function getBarInfo (ctx: Context) {
  * 关注吧
  * @param ctx 
  */
-async function followBar (ctx: Context) {
+async function toFollowBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
@@ -148,7 +148,7 @@ async function followBar (ctx: Context) {
  * 取消关注吧
  * @param ctx 
  */
-async function canceFollowBar (ctx: Context) {
+async function toCanceFollowBar (ctx: Context) {
     // 查询参数检验
     if (!ctx.query.bid) {
         ctx.status = 400
@@ -184,7 +184,7 @@ async function canceFollowBar (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getBarFollowUserList (ctx: Context) {
+async function toGetBarFollowUserList (ctx: Context) {
 
     // 1.检查是否携带token来获取当前登录用户的id
     let uid: undefined | null | number = null;
@@ -206,17 +206,25 @@ async function getBarFollowUserList (ctx: Context) {
     const bid = +ctx.query.bid;
     const limit = ctx.query.limit ? +ctx.query.limit : 20;
     const offset = ctx.query.offset ? +ctx.query.offset : 0;
+    const desc = ctx.query.desc ? +ctx.query.desc : 1;
 
-    if (isNaN(bid) || isNaN(limit) || isNaN(offset)) {
+
+    if (isNaN(bid) || isNaN(limit) || isNaN(offset)||isNaN(desc)) {
         ctx.status = 400
         ctx.body = response(null, '参数不合法!', 400)
         return
+
     }
 
     // 3. 调用service层获取数据
     try {
-        const res = await barService.getBarFollowUser(bid, uid, limit, offset)
-        ctx.body = response(res, 'ok')
+        const res = await barService.getFollowBarUser(bid, uid, limit, offset, desc ? true : false)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 400
+            ctx.body=response(null,'获取关注该吧的用户列表失败,该吧不存在!',400)
+        }
     } catch (error) {
         console.log(error)
         ctx.status = 500;
@@ -230,7 +238,7 @@ async function getBarFollowUserList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFollowBarList (ctx: Context) {
+async function toGetUserFollowBarList (ctx: Context) {
 
     // 1.检查是否携带token来获取当前登录用户的id
     let currentUid: undefined | null | number = null;
@@ -252,8 +260,9 @@ async function getUserFollowBarList (ctx: Context) {
     const uid = +ctx.query.uid;
     const limit = ctx.query.limit ? +ctx.query.limit : 20;
     const offset = ctx.query.offset ? +ctx.query.offset : 0;
+    const desc = ctx.query.desc ? +ctx.query.desc : 1;
 
-    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
         ctx.status = 400
         ctx.body = response(null, '参数不合法!', 400)
         return
@@ -261,8 +270,13 @@ async function getUserFollowBarList (ctx: Context) {
 
     // 3. 调用service层获取数据
     try {
-        const res = await barService.getUserFollowBar(uid, currentUid, limit, offset)
-        ctx.body = response(res, 'ok')
+        const res = await barService.getUserFollowBar(uid, currentUid, limit, offset, desc ? true : false)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 400
+            ctx.body = response(null, '获取用户关注的吧列表失败,用户不存在!')
+        }
     } catch (error) {
         console.log(error)
         ctx.status = 500;
@@ -272,11 +286,11 @@ async function getUserFollowBarList (ctx: Context) {
 }
 
 export default {
-    createBar,
+    toCreateBar,
     getAllBar,
-    getBarInfo,
-    followBar,
-    canceFollowBar,
-    getBarFollowUserList,
-    getUserFollowBarList
+    toGetBarInfo,
+    toFollowBar,
+    toCanceFollowBar,
+    toGetBarFollowUserList,
+    toGetUserFollowBarList
 }

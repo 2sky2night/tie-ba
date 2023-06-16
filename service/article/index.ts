@@ -53,22 +53,24 @@ class ArticleService {
 
         // 2.查询该文章的创建者 以及当前登录的用户对创建者的关注状态
         const [ resUserCreateArticle ] = await user.selectByUid(articleInfo.uid)
-        const userInfo: UserInfo = {
+        const userInfo = {
           ...resUserCreateArticle,
-          is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateArticle.uid)).length > 0
+          is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateArticle.uid)).length > 0,
+          is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateArticle.uid, uid)).length > 0
         }
 
         // 3.查询该帖子所属的吧详情信息 以及当前登录用户对吧的关注状态 以及吧主的详情信息以及吧主的关注状态
         const [ resBar ] = await bar.selectByBid(articleInfo.bid)
         const [ resUserCreateBar ] = await user.selectByUid(resBar.uid)
-        const barInfo: BarInfo = {
+        const barInfo = {
           ...resBar,
           // 对当前吧的关注状态
           is_followed: uid === undefined ? false : (await bar.selectFollowByUidAndBid(resBar.bid, uid)).length > 0,
           user: {
             ...resUserCreateBar,
             // 对当前吧主的关注状态
-            is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateBar.uid)).length > 0
+            is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateBar.uid)).length > 0,
+            is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateBar.uid, uid)).length > 0
           }
         }
 

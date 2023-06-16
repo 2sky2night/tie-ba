@@ -149,15 +149,16 @@ class BarModel extends BaseModel {
         }
     }
     /**
-     * 在用户关注吧表中 通过bid来查询有多少个用户关注了该吧 (分页限制)
+     * 在用户关注吧表中 通过bid来查询关注该吧的列表
      * @param bid 吧id
      * @param limit 查询多少条数据?
      * @param offset 偏移量多少开始查询数据
+     * @param desc 倒序还是升序
      * @returns 
      */
-    async selectFollowByBidLimit (bid: number, limit: number, offset: number) {
+    async selectFollowByBidLimit (bid: number, limit: number, offset: number,desc:boolean) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${ bid }  limit ${ limit } offset ${ offset }`)
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${ bid } order by createTime ${desc?'desc':'asc'} limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -182,11 +183,12 @@ class BarModel extends BaseModel {
      * @param uid 用户id
      * @param limit 查询多少条数据?
      * @param offset 偏移量多少开始查询数据
+     * @param desc 降序或升序
      * @returns 
      */
-    async selectFollowByUidLimit (uid: number, limit: number, offset: number) {
+    async selectFollowByUidLimit (uid: number, limit: number, offset: number,desc:boolean) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where uid=${ uid }  limit ${ limit } offset ${ offset }`)
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where uid=${ uid } order by createTime ${desc?'desc':'asc'} limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
