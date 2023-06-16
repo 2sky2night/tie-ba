@@ -30,5 +30,6 @@ export const NO_AUTH = [
     '/article/user/like/list',
     '/article/user/star/list',
     '/article/liked/list',
-    '/article/star/list'
+    '/article/star/list',
+    '/article/user/list'
 ]

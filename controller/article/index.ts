@@ -615,6 +615,46 @@ async function toGetStarArticleUserList (ctx: Context) {
 
 }
 
+/**
+ * 获取用户的帖子列表 （分页限制）
+ * @param ctx 
+ * @returns 
+ */
+async function toGetUserArticleList (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+  // 校验查询参数uid
+  if (ctx.query.uid === undefined) {
+    ctx.status = 400
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+  const uid = +ctx.query.uid
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  // 是否根据收藏降序 默认降序
+  const desc = ctx.query.desc ? +ctx.query.desc : 1
+
+  if (isNaN(uid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+    ctx.status = 400
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await articleService.getUserArticleList(uid, currentUid, limit, offset, desc ? true : false)
+    if (res) {
+      ctx.body = response(res, 'ok')
+    } else {
+      ctx.status = 400
+      ctx.body = response(null, '获取用户的帖子列表失败,用户不存在!', 400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
 export default {
   toCreateArticle,
   toGetArticleInfo,
@@ -630,5 +670,6 @@ export default {
   toGetUserLikeArticleList,
   toGetUserStarArticleList,
   toGetLikeArticleUserList,
-  toGetStarArticleUserList
+  toGetStarArticleUserList,
+  toGetUserArticleList
 }
