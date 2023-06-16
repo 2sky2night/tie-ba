@@ -62,7 +62,7 @@ async function toCreateArticle (ctx: Context) {
  * 获取帖子的详情数据
  * @param ctx 
  */
-async function getArticleInfo (ctx: Context) {
+async function toGetArticleInfo (ctx: Context) {
 
   const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
@@ -426,13 +426,16 @@ async function toGetArticleCommentList (ctx: Context) {
   const aid = + ctx.query.aid
   const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
   const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
-  if (isNaN(aid) || isNaN(offset) || isNaN(limit)) {
+  const desc = ctx.query.desc === undefined ? 20 : +ctx.query.desc;
+
+
+  if (isNaN(aid) || isNaN(offset) || isNaN(limit) || isNaN(desc)) {
     ctx.status = 400;
     return ctx.body = response(null, '参数非法!', 400)
   }
 
   try {
-    const res = await articleService.getArticleCommentList(aid, uid, limit, offset)
+    const res = await articleService.getArticleCommentList(aid, uid, limit, offset, desc ? true : false)
     if (res === 0) {
       ctx.status = 400;
       ctx.body = response(null, '获取评论失败,帖子不存在!', 400)
@@ -496,7 +499,6 @@ async function toGetUserLikeArticleList (ctx: Context) {
  */
 async function toGetUserStarArticleList (ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
-  console.log(ctx.query)
   // 校验查询参数uid
   if (ctx.query.uid === undefined) {
     ctx.status = 400
@@ -530,9 +532,92 @@ async function toGetUserStarArticleList (ctx: Context) {
   }
 }
 
+/**
+ * 点赞帖子的用户列表（分页限制）
+ * @param ctx 
+ */
+async function toGetLikeArticleUserList (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+  // 校验查询参数aid
+  if (ctx.query.aid === undefined) {
+    ctx.status = 400
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+  const aid = +ctx.query.aid
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  // 是否根据收藏降序 默认降序
+  const desc = ctx.query.desc ? +ctx.query.desc : 1
+
+  // 非法校验
+  if (isNaN(aid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+    ctx.status = 400
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await articleService.getArticleLikedUserList(aid, currentUid, limit, offset, desc ? true : false)
+    if (res) {
+      ctx.body=response(res,'ok')
+    } else {
+      ctx.status = 400
+      ctx.body = response(null,'获取点赞帖子的用户列表失败,帖子不存在!',400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
+/**
+ * 收藏帖子的用户列表 （分页限制)
+ * @param ctx 
+ * @returns 
+ */
+async function toGetStarArticleUserList (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+  // 校验查询参数aid
+  if (ctx.query.aid === undefined) {
+    ctx.status = 400
+    ctx.body = response(null, '参数未携带!', 400)
+    return
+  }
+  const aid = +ctx.query.aid
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  // 是否根据收藏降序 默认降序
+  const desc = ctx.query.desc ? +ctx.query.desc : 1
+
+  // 非法校验
+  if (isNaN(aid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+    ctx.status = 400
+    ctx.body = response(null, '参数非法!', 400)
+    return
+  }
+
+  try {
+    const res = await articleService.getStarArticleUserList(aid, currentUid, limit, offset, desc ? true : false)
+    if (res) {
+      ctx.body=response(res,'ok')
+    } else {
+      ctx.status = 400
+      ctx.body = response(null,'获取收藏帖子的用户列表失败,帖子不存在!',400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
-  getArticleInfo,
+  toGetArticleInfo,
   toLikeArticle,
   toCancelLikeArticle,
   toStarArticle,
@@ -543,5 +628,7 @@ export default {
   toCancelLikeComment,
   toGetArticleCommentList,
   toGetUserLikeArticleList,
-  toGetUserStarArticleList
+  toGetUserStarArticleList,
+  toGetLikeArticleUserList,
+  toGetStarArticleUserList
 }

@@ -88,9 +88,9 @@ class ArticleModel extends BaseModel {
   }
   /**
    * 在帖子表中 通过uid来查询用户发送的帖子列表 （分页限制）
-   * @param uid 
-   * @param limit 
-   * @param offset 
+   * @param uid 用户id
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取查询
    * @param desc 升序还是降序
    * @returns 
    */
@@ -194,6 +194,22 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在点赞帖子表中 通过aid来查询点赞帖子的用户 （分页限制）
+   * @param aid 帖子id
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据创建时间升序降序
+   * @returns 
+   */
+  async selectInLikeArticleTableByAidLimit (aid: number, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleLikeBaseItem[]>(`select * from user_like_article where aid=${ aid } ORDER BY createTime ${ desc ? 'DESC' : 'ASC' } limit ${ limit } OFFSET ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在收藏帖子表中 通过uid和aid插入一条记录
    * @param uid 用户id
    * @param aid 帖子id
@@ -285,6 +301,22 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在收藏帖子中 通过aid来查询收藏帖子的用户
+   * @param aid 用户id
+   * @param limit 一次查询多少条数据
+   * @param offset  从偏移量多少开始查询
+   * @param desc 降序还是升序
+   * @returns 
+   */
+  async selectInStarArticleTableByAidLimit (aid: number, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleStarBaseItem[]>(`SELECT * FROM user_star_article where aid=${ aid } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在评论表中 插入一条记录
    * @param data 评论的请求体
    * @returns 
@@ -312,9 +344,9 @@ class ArticleModel extends BaseModel {
    * @param aid 帖子id
    * @returns 
    */
-  async selectInCommentTableByAidLimit (aid: number, limit: number, offset: number) {
+  async selectInCommentTableByAidLimit (aid: number, limit: number, offset: number, desc: boolean) {
     try {
-      const res = await this.runSql<CommentBaseItem[]>(`select * from comment where aid=${ aid } limit ${ limit } offset ${ offset }`)
+      const res = await this.runSql<CommentBaseItem[]>(`select * from comment where aid=${ aid } order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

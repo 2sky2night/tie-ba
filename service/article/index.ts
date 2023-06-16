@@ -384,7 +384,7 @@ class ArticleService {
    * @param limit 
    * @param offset 
    */
-  async getArticleCommentList (aid: number, uid: number | undefined, limit: number, offset: number) {
+  async getArticleCommentList (aid: number, uid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.查询帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -395,9 +395,9 @@ class ArticleService {
       // 2.存在则通过aid查询该帖子的评论总数
       const [ count ] = await article.countInCommentTableByAid(aid)
       // 3.查询当前页的评论列表
-      const commentList = await article.selectInCommentTableByAidLimit(aid, limit, offset)
+      const commentList = await article.selectInCommentTableByAidLimit(aid, limit, offset, desc)
       // 4.遍历评论列表,查询相关数据
-      const resList: CommentItem[] = []
+      const resList: any[] = []
       for (let i = 0; i < commentList.length; i++) {
         // 4.1 查询用户数据
         const [ userInfo ] = await user.selectByUid(commentList[ i ].uid)
@@ -412,6 +412,8 @@ class ArticleService {
         if (commentList[ i ].photo !== null) {
           commentList[ i ].photo.split(',').map(ele => photo.push(ele))
         }
+        // 4.6 查询评论创建者是否关注了当前用户
+        const isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[ i ].uid, uid)).length ? true : false
         resList.push({
           cid: commentList[ i ].cid,
           content: commentList[ i ].content,
@@ -419,7 +421,7 @@ class ArticleService {
           aid: commentList[ i ].aid,
           uid: commentList[ i ].uid,
           photo: commentList[ i ].photo ? photo : null,
-          user: { ...userInfo, is_followed: isFollowed },
+          user: { ...userInfo, is_followed: isFollowed, is_fans: isFollowedMe },
           is_liked: isLiked,
           like_count: count.total
         })
@@ -430,8 +432,8 @@ class ArticleService {
         total: count.total,
         offset,
         limit,
-        // 计算是否还有更多 若偏移量+limit+1大于等总数说明没有更多了
-        has_more: count.total > offset + 1 + limit
+        has_more: count.total > offset + limit,
+        desc
       })
     } catch (error) {
       return Promise.reject(error)
@@ -618,6 +620,114 @@ class ArticleService {
         desc
       })
 
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取点赞帖子的用户列表
+   * 1.查询帖子是否存在
+   * 2.查询点赞帖子的总数
+   * 3.查询点赞帖子列表
+   * 4.遍历列表 查询用户数据
+   * @param aid 帖子id 
+   * @param currentUid 当前登录的用户 
+   * @param limit 多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 降序还是升序
+   */
+  async getArticleLikedUserList (aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    try {
+      // 1.帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      // 不存在
+      if (!resExist.length) return Promise.resolve(0)
+      // 2.存在 查询点赞总数
+      const [ likeCount ] = await article.countInLikeArticleTableByAid(aid)
+      // 3.查询用户点赞列表
+      const likeList = await article.selectInLikeArticleTableByAidLimit(aid, limit, offset, desc)
+      // 4.遍历点赞列表 获取用户信息
+      const userList: any[] = []
+      for (let i = 0; i < likeList.length; i++) {
+        const uid = likeList[ i ].uid
+        // 1.查询用户数据
+        const [ userInfo ] = await user.selectByUid(uid)
+        // 2.查询当前用户对此用户的状态
+        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false;
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false;
+        // 3.查询粉丝、关注数量
+        const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+        const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+        userList.push({
+          ...userInfo,
+          is_followed: isFollowedUser,
+          is_fans: isFollowedMe,
+          fans_count: fansCount.total,
+          follow_user_count:followCount.total
+        })
+      }
+
+      return Promise.resolve({
+        list: userList,
+        limit,
+        offset,
+        total: likeCount.total,
+        has_more: likeCount.total > limit + offset,
+        desc
+      })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取收藏帖子的用户列表
+   * @param aid 帖子id
+   * @param currentUid 当前登录的用户 
+   * @param limit 获取多少体数据
+   * @param offset  从多少偏移量开始获取数据
+   * @param desc 根据收藏时间降序还是升序
+   */
+  async getStarArticleUserList (aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    try {
+      // 1.帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      // 不存在
+      if (!resExist.length) return Promise.resolve(0)
+      // 2.存在 查询收藏总数
+      const [ starCount ] = await article.countInStarArticleTableByAid(aid)
+      // 3.查询用户收藏列表
+      const starList = await article.selectInStarArticleTableByAidLimit(aid, limit, offset, desc)
+      // 4.遍历收藏列表 获取用户信息
+      const userList: any[] = []
+      for (let i = 0; i < starList.length; i++) {
+        const uid = starList[ i ].uid
+        // 1.查询用户数据
+        const [ userInfo ] = await user.selectByUid(uid)
+        // 2.查询当前用户对此用户的状态
+        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false;
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false;
+        // 3.查询粉丝、关注数量
+        const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+        const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+        userList.push({
+          ...userInfo,
+          is_followed: isFollowedUser,
+          is_fans: isFollowedMe,
+          fans_count: fansCount.total,
+          follow_user_count:followCount.total
+        })
+      }
+
+      return Promise.resolve({
+        list: userList,
+        limit,
+        offset,
+        total: starCount.total,
+        has_more: starCount.total > limit + offset,
+        desc
+      })
 
     } catch (error) {
       return Promise.reject(error)

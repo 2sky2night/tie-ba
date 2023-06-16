@@ -8,7 +8,7 @@ const articleRouter = new Router()
 const baseRouteURL = '/article'
 
 // 获取帖子的详情数据  (单独解析token)  query {aid:number}
-articleRouter.get('article', `${ baseRouteURL }/info`, Middleware.tokenParse, ArticleController.getArticleInfo)
+articleRouter.get('article', `${ baseRouteURL }/info`, Middleware.tokenParse, ArticleController.toGetArticleInfo)
 
 // 发帖 (需要token) json {bid:number;content:string;photo?:string;title:string}
 articleRouter.post('article', `${ baseRouteURL }/post`, ArticleController.toCreateArticle)
@@ -45,6 +45,12 @@ articleRouter.get('article', `${ baseRouteURL }/user/like/list`, Middleware.toke
 
 // 获取用户收藏的帖子列表 (单独解析token) query {uid:number;limit?number=20;offset?:number=0,desc:number}
 articleRouter.get('article', `${ baseRouteURL }/user/star/list`, Middleware.tokenParse, ArticleController.toGetUserStarArticleList)
+
+// 获取点赞帖子的用户列表  (单独解析token) query {aid:number;limit?number=20;offset?:number=0,desc:number}
+articleRouter.get('article', `${ baseRouteURL }/liked/list`, Middleware.tokenParse, ArticleController.toGetLikeArticleUserList)
+
+// 获取收藏帖子的用户列表 (单独解析token) query {aid:number;limit?number=20;offset?:number=0,desc:number}
+articleRouter.get('article', `${ baseRouteURL }/star/list`, Middleware.tokenParse, ArticleController.toGetStarArticleUserList)
 
 
 export default articleRouter
