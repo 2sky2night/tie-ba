@@ -30,14 +30,13 @@ userRouter.get('user', `${ baseRouteURL }/follow`, UserController.followUser)
 // 取消关注用户 (需要token) query:{uid:number}
 userRouter.delete('user', `${ baseRouteURL }/follow`, UserController.cancelFollowUser)
 
-//  获取关注列表 query:{uid:number,limit?:number,offset?:number}
-userRouter.get('user', `${ baseRouteURL }/follow/list`, UserController.getUserFollowList)
+//  获取关注列表 (中间件解析token) query:{uid:number,limit?:number,offset?:number}
+userRouter.get('user', `${ baseRouteURL }/follow/list`, Middleware.tokenParse, UserController.toGetUserFollowList)
 
-//  获取粉丝列表 query:{uid:number,limit?:number,offset?:number}
-userRouter.get('user', `${ baseRouteURL }/fans/list`, UserController.getUserFansList)
+//  获取粉丝列表 （中间件解析token） query:{uid:number,limit?:number,offset?:number}
+userRouter.get('user', `${ baseRouteURL }/fans/list`,Middleware.tokenParse, UserController.toGetUserFansList)
 
 //  修改用户信息 (需要token) query:{avatar:string;username:string}
-
 userRouter.put('user', `${ baseRouteURL }/info`, UserController.toUpdateUser)
 
 // 修改用户密码  (需要token) query:{password:string;oldPassword:string}

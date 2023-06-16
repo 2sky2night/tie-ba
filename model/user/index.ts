@@ -168,11 +168,12 @@ class UserModel extends BaseModel {
  * @param uidIsFollowed 被关注者的id
  * @param limit 需要查询多少条记录
  * @param offset 从第几条数据开始查询数据
+ * @param desc 是否按照关注的时间降序或升序
  * @returns 
  */
-    async selectByUidFollowedScopedFollowLimit (uidIsFollowed: number, limit: number, offset: number) {
+    async selectByUidFollowedScopedFollowLimit (uidIsFollowed: number, limit: number, offset: number,desc: boolean) {
         try {
-            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid_is_followed=${ uidIsFollowed } limit ${ limit } OFFSET ${ offset }`)
+            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid_is_followed=${ uidIsFollowed } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } OFFSET ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

@@ -245,7 +245,7 @@ async function cancelFollowUser (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFollowList (ctx: Context) {
+async function toGetUserFollowList (ctx: Context) {
     const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
     if (ctx.query.uid === undefined) {
         // 未携带参数
@@ -275,7 +275,7 @@ async function getUserFollowList (ctx: Context) {
         } else {
             // 用户不存在
             ctx.status = 400
-            ctx.body = response(null, '获取用户的关注列表失败,用户不存在', 400)
+            ctx.body = response(null, '获取用户关注列表失败,用户不存在!', 400)
         }
     } catch (error) {
         ctx.status = 500
@@ -288,7 +288,9 @@ async function getUserFollowList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function getUserFansList (ctx: Context) {
+async function toGetUserFansList (ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+    
     if (ctx.query.uid === undefined) {
         // 未携带参数
         ctx.status = 400;
@@ -300,16 +302,24 @@ async function getUserFansList (ctx: Context) {
     const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
     // 获取的偏移量默认从0开始
     const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
+    // 获取升序或降序参数 (默认降序)
+    const desc = ctx.query.desc === undefined ? 1 : +ctx.query.desc
 
-    if (isNaN(uid) || isNaN(limit) || isNaN(offset)) {
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
         // 参数非法
         ctx.status = 400;
         ctx.body = response(null, '参数非法!', 400)
         return
     }
+
     try {
-        const res = await userService.getFansList(uid, limit, offset)
-        ctx.body = response(res, 'ok')
+        const res = await userService.getFansList(uid, currentUid, limit, offset, desc ? true : false)
+        if (res) {
+            ctx.body=response(res,'ok')
+        } else {
+            ctx.status=400
+            ctx.body=response(null,'获取用户粉丝列表失败,用户不存在!',400)
+        }
     } catch (error) {
         ctx.status = 500
         ctx.body = response(null, '服务器出错了!', 500)
@@ -450,8 +460,8 @@ export default {
     getUserInfoByToken,
     followUser,
     cancelFollowUser,
-    getUserFollowList,
-    getUserFansList,
+    toGetUserFollowList,
+    toGetUserFansList,
     toUpdateUser,
     toUpdateUserPassword,
     toGetUserProfile,
