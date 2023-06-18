@@ -119,6 +119,33 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在帖子表中 根据创建时间来浏览帖子 (分页限制)
+   * @param limit 获取多少条数据
+   * @param offset 多少便宜量
+   * @param desc 根据创建时间升序或降序
+   * @returns 
+   */
+  async selectInArticleTableLimit(limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 查询帖子总数
+   * @returns 
+   */
+  async countInArticleTable() {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from article`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在点赞帖子表中 插入一条记录
    * @param uid 
    * @param aid 

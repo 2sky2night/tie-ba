@@ -3,9 +3,10 @@ import ArticleModel from '../../model/article';
 import BarModel from '../../model/bar'
 import UserModel from '../../model/user'
 // types
-import type { InserCommentBody, InsertArticleBody, CommentItem, ArticleBaseItem } from '../../model/article/types';
-import type { UserInfo } from '../../model/user/types';
-import { BarInfo } from '../../model/bar/types';
+import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
+import type { ArticleItem } from './types'
+// 统一封装的处理函数
+import { getArticleList, getArticleListWithId } from './actions'
 
 const user = new UserModel()
 const article = new ArticleModel()
@@ -124,7 +125,7 @@ class ArticleService {
    * 2.若文章存在即查询是否有对应的点赞记录了
    * 3.有就不能点赞 没有则插入记录
    * @param uid 用户id
-   * @param aid 帖子id
+    * @param aid 帖子id
    * @returns -1：文章不存在 0：已经点赞了 1：点赞成功
    */
   async likeArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
@@ -472,7 +473,7 @@ class ArticleService {
       // 3.获取点赞帖子列表
       const likeArticleList = await article.selectInLikeArticleTableByUidLimit(uid, limit, offset, desc)
       // 3.5 获取帖子信息列表
-      const articleList: any[] = []
+      const articleList: ArticleItem[] = []
       for (let i = 0; i < likeArticleList.length; i++) {
         const aid = likeArticleList[i].aid
         const [articleInfo] = await article.selectInArticleTableByAid(aid)
@@ -559,57 +560,7 @@ class ArticleService {
       // 3.查询收藏的帖子记录
       const articleStarList = (await article.selectInStarArticleTableByUidLimit(uid, limit, offset, desc)).map(ele => ele.aid)
       // 4.根据收藏的帖子记录查询帖子详情信息
-      const articleInforList: any[] = []
-      for (let i = 0; i < articleStarList.length; i++) {
-        const aid = articleStarList[i]
-        // 1.查询帖子信息
-        const [articleInfo] = await article.selectInArticleTableByAid(aid)
-        // 2.获取帖子点赞数量
-        const [likeCount] = await article.countInLikeArticleTableByAid(aid)
-        // 3.获取帖子收藏数量
-        const [starCount] = await article.countInStarArticleTableByAid(aid)
-        // 4.获取帖子评论数量
-        const [commentCount] = await article.countInCommentTableByAid(aid)
-        // 5.获取当前用户对帖子的点赞状态
-        const isLiked = currentUid === undefined ? false : (await article.selectInLikeArticleTableByAidAndUid(currentUid, aid)).length ? true : false
-        // 6.获取当前用户对帖子的收藏状态
-        const isStar = currentUid === undefined ? false : (await article.selectInStarArticleTableByUidAndAid(currentUid, aid)).length ? true : false
-        // 7.帖子所属吧的信息
-        const [barInfo] = await bar.selectByBid(articleInfo.bid)
-        // 8.获取吧关注的状态
-        const isFollowedBar = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(articleInfo.bid, currentUid)).length ? true : false
-        // 9.获取楼主信息
-        const [userInfo] = await user.selectByUid(articleInfo.uid)
-        // 10.获取对楼主的关注状态
-        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false
-        // 10.楼主是否关注了我？
-        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false
-
-        articleInforList.push({
-          aid: articleInfo.aid,
-          title: articleInfo.title,
-          content: articleInfo.content,
-          createTime: articleInfo.createTime,
-          bid: articleInfo.bid,
-          uid: articleInfo.uid,
-          photo: articleInfo.photo ? articleInfo.photo.split(',') : null,
-          like_count: likeCount.total,
-          star_count: starCount.total,
-          comment_count: commentCount.total,
-          is_liked: isLiked,
-          is_star: isStar,
-          bar: {
-            ...barInfo,
-            is_followed: isFollowedBar
-          },
-          user: {
-            ...userInfo,
-            is_followed: isFollowedUser,
-            is_fans: isFollowedMe
-          }
-        })
-
-      }
+      const articleInforList= await getArticleListWithId(articleStarList,currentUid)
 
       return Promise.resolve({
         list: articleInforList,
@@ -756,7 +707,7 @@ class ArticleService {
       // 2.接口存在 获取帖子列表
       const articleList = await article.selectInArticleTableByUidLimit(uid, limit, offset, desc)
       // 3.遍历帖子列表 查询相关帖子信息
-      const list: any[] = []
+      const list: ArticleItem[] = []
       for (let i = 0; i < articleList.length; i++) {
         const aid = articleList[i].aid
         const articleInfo = articleList[i]
@@ -773,7 +724,7 @@ class ArticleService {
         const [userInfo] = await user.selectByUid(articleList[i].uid)
         // 当前用户对楼主的状态
         const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, articleList[i].uid)).length ? true : false;
-        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(articleList[i].uid, currentUid))
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(articleList[i].uid, currentUid)).length ? true : false;
         // 6.查询吧的信息
         const [barInfo] = await bar.selectByBid(articleList[i].bid)
         // 当前用户对吧的关注状态
@@ -841,6 +792,34 @@ class ArticleService {
           return Promise.resolve(0)
         }
       }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 浏览帖子列表
+   * @param uid 当前登录的用户id
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据帖子创建时间升序还是降序
+   * @returns 
+   */
+  async getArticleList(uid: number | undefined, limit: number, offset: number, desc: boolean) {
+    try {
+      // 1.获取帖子总数
+      const [count] = await article.countInArticleTable()
+      // 2.获取帖子列表
+      const articleList = await article.selectInArticleTableLimit(limit, offset, desc)
+      // 3.遍历帖子列表 查询对应帖子信息
+      const list =await getArticleList(articleList, uid)
+      return Promise.resolve({
+        list,
+        offset,
+        limit,
+        desc,
+        total: count.total,
+        has_more: count.total > limit + offset
+      })
     } catch (error) {
       return Promise.reject(error)
     }

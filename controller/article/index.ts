@@ -14,7 +14,7 @@ const articleService = new ArticleService()
  * 创建帖子
  * @param ctx 
  */
-async function toCreateArticle (ctx: Context) {
+async function toCreateArticle(ctx: Context) {
   const token = ctx.state.user as Token;
   const body = (ctx.request as any).body as CreateArticleBody
   if (isNaN(body.bid) || body.content === undefined || body.title === undefined) {
@@ -62,7 +62,7 @@ async function toCreateArticle (ctx: Context) {
  * 获取帖子的详情数据
  * @param ctx 
  */
-async function toGetArticleInfo (ctx: Context) {
+async function toGetArticleInfo(ctx: Context) {
 
   const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
@@ -102,7 +102,7 @@ async function toGetArticleInfo (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toLikeArticle (ctx: Context) {
+async function toLikeArticle(ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -145,7 +145,7 @@ async function toLikeArticle (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCancelLikeArticle (ctx: Context) {
+async function toCancelLikeArticle(ctx: Context) {
   const token = ctx.state.user as Token
 
   // 验证帖子aid参数
@@ -187,7 +187,7 @@ async function toCancelLikeArticle (ctx: Context) {
  * 收藏帖子
  * @param ctx 
  */
-async function toStarArticle (ctx: Context) {
+async function toStarArticle(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 验证帖子aid参数
@@ -226,7 +226,7 @@ async function toStarArticle (ctx: Context) {
  * 取消收藏帖子
  * @param ctx 
  */
-async function toCancelStarArticle (ctx: Context) {
+async function toCancelStarArticle(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 验证帖子aid参数
@@ -265,7 +265,7 @@ async function toCancelStarArticle (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCreateComment (ctx: Context) {
+async function toCreateComment(ctx: Context) {
   const token = ctx.state.user as Token;
   // 检验参数是否携带
   const body = (ctx.request as any).body as CreateCommentBody
@@ -318,7 +318,7 @@ async function toCreateComment (ctx: Context) {
  * 删除评论
  * @param ctx 
  */
-async function toDeleteComment (ctx: Context) {
+async function toDeleteComment(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -352,7 +352,7 @@ async function toDeleteComment (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toLikeComment (ctx: Context) {
+async function toLikeComment(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -384,7 +384,7 @@ async function toLikeComment (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toCancelLikeComment (ctx: Context) {
+async function toCancelLikeComment(ctx: Context) {
   const token = ctx.state.user as Token;
 
   // 检验评论id参数
@@ -416,7 +416,7 @@ async function toCancelLikeComment (ctx: Context) {
  * 获取帖子的评论 分页数据
  * @param ctx 
  */
-async function toGetArticleCommentList (ctx: Context) {
+async function toGetArticleCommentList(ctx: Context) {
 
   // 根据是否携带token来获取当前登录的用户id
   const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
@@ -455,7 +455,7 @@ async function toGetArticleCommentList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserLikeArticleList (ctx: Context) {
+async function toGetUserLikeArticleList(ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
 
   // 校验查询参数uid
@@ -497,7 +497,7 @@ async function toGetUserLikeArticleList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserStarArticleList (ctx: Context) {
+async function toGetUserStarArticleList(ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
   // 校验查询参数uid
   if (ctx.query.uid === undefined) {
@@ -536,7 +536,7 @@ async function toGetUserStarArticleList (ctx: Context) {
  * 点赞帖子的用户列表（分页限制）
  * @param ctx 
  */
-async function toGetLikeArticleUserList (ctx: Context) {
+async function toGetLikeArticleUserList(ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
   // 校验查询参数aid
   if (ctx.query.aid === undefined) {
@@ -560,10 +560,10 @@ async function toGetLikeArticleUserList (ctx: Context) {
   try {
     const res = await articleService.getArticleLikedUserList(aid, currentUid, limit, offset, desc ? true : false)
     if (res) {
-      ctx.body=response(res,'ok')
+      ctx.body = response(res, 'ok')
     } else {
       ctx.status = 400
-      ctx.body = response(null,'获取点赞帖子的用户列表失败,帖子不存在!',400)
+      ctx.body = response(null, '获取点赞帖子的用户列表失败,帖子不存在!', 400)
     }
   } catch (error) {
     console.log(error)
@@ -578,7 +578,7 @@ async function toGetLikeArticleUserList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetStarArticleUserList (ctx: Context) {
+async function toGetStarArticleUserList(ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
   // 校验查询参数aid
   if (ctx.query.aid === undefined) {
@@ -602,10 +602,10 @@ async function toGetStarArticleUserList (ctx: Context) {
   try {
     const res = await articleService.getStarArticleUserList(aid, currentUid, limit, offset, desc ? true : false)
     if (res) {
-      ctx.body=response(res,'ok')
+      ctx.body = response(res, 'ok')
     } else {
       ctx.status = 400
-      ctx.body = response(null,'获取收藏帖子的用户列表失败,帖子不存在!',400)
+      ctx.body = response(null, '获取收藏帖子的用户列表失败,帖子不存在!', 400)
     }
   } catch (error) {
     console.log(error)
@@ -620,7 +620,7 @@ async function toGetStarArticleUserList (ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserArticleList (ctx: Context) {
+async function toGetUserArticleList(ctx: Context) {
   const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
   // 校验查询参数uid
   if (ctx.query.uid === undefined) {
@@ -662,25 +662,50 @@ async function toGetUserArticleList (ctx: Context) {
 async function toDeleteArticle(ctx: Context) {
   const token = ctx.state.user as Token
   if (ctx.query.aid === undefined) {
-    ctx.status=400
-    return ctx.body=response(null,'参数未携带!',400)
+    ctx.status = 400
+    return ctx.body = response(null, '参数未携带!', 400)
   }
   const aid = +ctx.query.aid
   if (isNaN(aid)) {
-    ctx.status=400
+    ctx.status = 400
     return ctx.body = response(null, '参数非法!', 400)
   }
   try {
     const res = await articleService.deleteArticle(aid, token.uid)
     if (res === 1) {
-      ctx.body=response(null,'删除帖子成功!')
+      ctx.body = response(null, '删除帖子成功!')
     } else if (res === -1) {
       ctx.status = 400
-      ctx.body=response(null,'删除帖子失败,帖子不存在!',400)
-    } else if (res == 0) {
+      ctx.body = response(null, '删除帖子失败,帖子不存在!', 400)
+    } else if (res === 0) {
       ctx.status = 400
       ctx.body = response(null, '删除帖子失败,您不是帖子创建者!', 400)
     }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
+/**
+ * 获取帖子列表
+ * @param ctx 
+ */
+async function toGetArticleList(ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+  // 解析参数
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  const desc = ctx.query.desc ? +ctx.query.desc : 1
+  // 校验参数是否合法
+  if (isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+    ctx.status=400
+    return ctx.body = response(null,'参数非法',400)
+  }
+  try {
+    const res = await articleService.getArticleList(currentUid, limit, offset, desc?true:false)
+    ctx.body=response(res,'ok')
   } catch (error) {
     console.log(error)
     ctx.status = 500;
@@ -705,5 +730,6 @@ export default {
   toGetLikeArticleUserList,
   toGetStarArticleUserList,
   toGetUserArticleList,
-  toDeleteArticle
+  toDeleteArticle,
+  toGetArticleList
 }

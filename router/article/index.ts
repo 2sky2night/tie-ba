@@ -56,6 +56,9 @@ articleRouter.get('article', `${ baseRouteURL }/star/list`, Middleware.tokenPars
 articleRouter.get('article', `${baseRouteURL}/user/list`, Middleware.tokenParse, ArticleController.toGetUserArticleList)
 
 // 删除帖子 (需要token) query:{aid:number}
-articleRouter.delete('article',`${baseRouteURL}/delete`,ArticleController.toDeleteArticle)
+articleRouter.delete('article', `${baseRouteURL}/delete`, ArticleController.toDeleteArticle)
+
+// 获取帖子列表 (单独解析token) query:{limit?:number;offset?:number,desc?number}
+articleRouter.get('article', `${baseRouteURL}/list`, Middleware.tokenParse, ArticleController.toGetArticleList)
 
 export default articleRouter

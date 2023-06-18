@@ -11,7 +11,7 @@ export interface ArticleBaseItem {
   /**
    * 帖子内容
    */
-  content: number;
+  content: string;
   /**
    * 帖子创建时间
    */
