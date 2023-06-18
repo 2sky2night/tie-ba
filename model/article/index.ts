@@ -3,7 +3,6 @@ import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleSt
 import type { CountRes } from '../../types'
 import BaseModel from '../base/index'
 import { getNowTimeString } from '../../utils/tools/time'
-import { off } from 'process'
 
 /**
  * 在某个表用 in
@@ -98,6 +97,23 @@ class ArticleModel extends BaseModel {
     try {
       const res = await this.runSql<ArticleBaseItem[]>(`select * from article where uid=${ uid } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
       return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 删除帖子
+   * @param aid 帖子id
+   * @returns 
+   */
+  async delectInArticleTableByAid(aid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`delete from article where aid=${aid}`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        await Promise.reject('删除帖子失败!')
+      }
     } catch (error) {
       return Promise.reject(error)
     }

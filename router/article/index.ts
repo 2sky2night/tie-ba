@@ -53,6 +53,9 @@ articleRouter.get('article', `${ baseRouteURL }/liked/list`, Middleware.tokenPar
 articleRouter.get('article', `${ baseRouteURL }/star/list`, Middleware.tokenParse, ArticleController.toGetStarArticleUserList)
 
 // 获取用户的帖子列表 (单独解析token) query {uid:number;limit?number=20;offset?:number=0,desc:number}
-articleRouter.get('article', `${ baseRouteURL }/user/list`, Middleware.tokenParse, ArticleController.toGetUserArticleList)
+articleRouter.get('article', `${baseRouteURL}/user/list`, Middleware.tokenParse, ArticleController.toGetUserArticleList)
+
+// 删除帖子 (需要token) query:{aid:number}
+articleRouter.delete('article',`${baseRouteURL}/delete`,ArticleController.toDeleteArticle)
 
 export default articleRouter
