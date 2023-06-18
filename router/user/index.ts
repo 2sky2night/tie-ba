@@ -13,10 +13,10 @@ const baseRouteURL = '/user'
 userRouter.get('user', `${ baseRouteURL }/query`, UserController.checkUser)
 
 // 用户注册 json {username:string;password:string}
-userRouter.post('user', `${ baseRouteURL }/register`, UserController.register)
+userRouter.post('user', `${ baseRouteURL }/register`, UserController.toRegister)
 
 // 用户登录   json {username:string;password:string}
-userRouter.post('user', `${ baseRouteURL }/login`, UserController.login)
+userRouter.post('user', `${ baseRouteURL }/login`, UserController.toLogin)
 
 // 测试token (需要token)
 userRouter.get('user', `${ baseRouteURL }/token`, UserController.testToken)
@@ -25,10 +25,10 @@ userRouter.get('user', `${ baseRouteURL }/token`, UserController.testToken)
 userRouter.get('user', `${ baseRouteURL }/info`, UserController.getUserInfoByToken)
 
 // 关注用户 (需要token) query:{uid:number}
-userRouter.get('user', `${ baseRouteURL }/follow`, UserController.followUser)
+userRouter.get('user', `${ baseRouteURL }/follow`, UserController.toFollowUser)
 
 // 取消关注用户 (需要token) query:{uid:number}
-userRouter.delete('user', `${ baseRouteURL }/follow`, UserController.cancelFollowUser)
+userRouter.delete('user', `${baseRouteURL}/follow`, UserController.toCancelFollowUser)
 
 //  获取关注列表 (中间件解析token) query:{uid:number,limit?:number=20,offset?:number=0;desc?:number=1}
 userRouter.get('user', `${ baseRouteURL }/follow/list`, Middleware.tokenParse, UserController.toGetUserFollowList)
@@ -47,5 +47,11 @@ userRouter.get('user', `${ baseRouteURL }/profile`, Middleware.tokenParse, UserC
 
 // 通过token获取用户信息 (需要token)
 userRouter.get('user', `${ baseRouteURL }/info/v2`, UserController.toGetUserInfo)
+
+// 搜索用户关注列表  (中间件解析token)  query:{uid:number;keywords:string;limit?:number;offset?:number}
+userRouter.get('user', `${baseRouteURL}/search/follow`, Middleware.tokenParse, UserController.toSearchUserFollowList)
+
+// 搜索用户粉丝列表  (中间件解析token)  query:{uid:number;keywords:string;limit?:number;offset?:number}
+userRouter.get('user', `${baseRouteURL}/search/fans`, Middleware.tokenParse, UserController.toSearchUserFansList)
 
 export default userRouter

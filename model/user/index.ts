@@ -21,9 +21,9 @@ class UserModel extends BaseModel {
      * 在用户表中根据用户名查询全匹配 (返回用户所有的信息 测试用)
      * @param username 用户名称
      */
-    async selectByUsername (username: string): Promise<User[]> {
+    async selectByUsername(username: string): Promise<User[]> {
         try {
-            const res = await this.runSql<User[]>(`select * from user where username='${ username }';`)
+            const res = await this.runSql<User[]>(`select * from user where username='${username}';`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -35,9 +35,9 @@ class UserModel extends BaseModel {
      * @param password 密码
      * @returns 
      */
-    async selectByUsernameAndPassword (username: string, password: string): Promise<User[]> {
+    async selectByUsernameAndPassword(username: string, password: string): Promise<User[]> {
         try {
-            const res = await this.runSql<User[]>(`select * from user where username='${ username }' and password='${ password }';`)
+            const res = await this.runSql<User[]>(`select * from user where username='${username}' and password='${password}';`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -48,9 +48,9 @@ class UserModel extends BaseModel {
      * @param data 
      * @returns 
      */
-    async insertUser (data: UserBody) {
+    async insertUser(data: UserBody) {
         try {
-            const res = await this.runSql<OkPacket>(`INSERT INTO user (username, password, createTime) VALUES ('${ data.username }', '${ data.password }', '${ getNowTimeString() }');`)
+            const res = await this.runSql<OkPacket>(`INSERT INTO user (username, password, createTime) VALUES ('${data.username}', '${data.password}', '${getNowTimeString()}');`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -63,9 +63,9 @@ class UserModel extends BaseModel {
     /**
      * 在用户表中通过用户名查询出用户数据 (不包含密码和状态信息)
      */
-    async selectDataByUsername (username: string): Promise<UserWithout[]> {
+    async selectDataByUsername(username: string): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where username='${ username }';`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where username='${username}';`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -76,9 +76,9 @@ class UserModel extends BaseModel {
      * @param uid 用户的id
      * @returns 
      */
-    async selectByUid (uid: number): Promise<UserWithout[]> {
+    async selectByUid(uid: number): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where uid=${ uid }`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where uid=${uid}`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -89,9 +89,9 @@ class UserModel extends BaseModel {
      * @param uid 关注者的id
      * @param uidIsFollowed  被关注者的id
      */
-    async insertFollow (uid: number, uidIsFollowed: number) {
+    async insertFollow(uid: number, uidIsFollowed: number) {
         try {
-            const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_user(uid, uid_is_followed, createTime) VALUES (${ uid }, ${ uidIsFollowed }, '${ getNowTimeString() }')`)
+            const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_user(uid, uid_is_followed, createTime) VALUES (${uid}, ${uidIsFollowed}, '${getNowTimeString()}')`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -107,9 +107,9 @@ class UserModel extends BaseModel {
      * @param uidIsFollowed 被关注者的id
      * @returns 
      */
-    async selectByUidAndUidIsFollow (uid: number, uidIsFollowed: number) {
+    async selectByUidAndUidIsFollow(uid: number, uidIsFollowed: number) {
         try {
-            const res = await this.runSql<UserFollow[]>(`select * from user_follow_user where uid=${ uid } and uid_is_followed=${ uidIsFollowed }`)
+            const res = await this.runSql<UserFollow[]>(`select * from user_follow_user where uid=${uid} and uid_is_followed=${uidIsFollowed}`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -121,9 +121,9 @@ class UserModel extends BaseModel {
      * @param uidIsFollowed 
      * @returns 
      */
-    async deleteByUidAndUidIsFollowedScopedFollow (uid: number, uidIsFollowed: number) {
+    async deleteByUidAndUidIsFollowedScopedFollow(uid: number, uidIsFollowed: number) {
         try {
-            const res = await this.runSql<OkPacket>(`delete from user_follow_user where uid=${ uid } and uid_is_followed=${ uidIsFollowed }`)
+            const res = await this.runSql<OkPacket>(`delete from user_follow_user where uid=${uid} and uid_is_followed=${uidIsFollowed}`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -141,9 +141,9 @@ class UserModel extends BaseModel {
      * @param desc 是否按照关注时间降序排序
      * @returns 
      */
-    async selectByUidScopedFollowLimit (uid: number, limit: number, offset: number, desc: boolean) {
+    async selectByUidScopedFollowLimit(uid: number, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid=${ uid } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } OFFSET ${ offset }`)
+            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid=${uid} ORDER BY createTime ${desc ? 'desc' : 'asc'} limit ${limit} OFFSET ${offset}`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -154,9 +154,9 @@ class UserModel extends BaseModel {
      * @param uid 
      * @returns 
      */
-    async selectByUidScopedFollowCount (uid: number) {
+    async selectByUidScopedFollowCount(uid: number) {
         try {
-            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid=${ uid };`)
+            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid=${uid};`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -171,9 +171,9 @@ class UserModel extends BaseModel {
  * @param desc 是否按照关注的时间降序或升序
  * @returns 
  */
-    async selectByUidFollowedScopedFollowLimit (uidIsFollowed: number, limit: number, offset: number,desc: boolean) {
+    async selectByUidFollowedScopedFollowLimit(uidIsFollowed: number, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid_is_followed=${ uidIsFollowed } ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } OFFSET ${ offset }`)
+            const res = await this.runSql<UserFollow[]>(`SELECT * FROM user_follow_user where uid_is_followed=${uidIsFollowed} ORDER BY createTime ${desc ? 'desc' : 'asc'} limit ${limit} OFFSET ${offset}`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -184,9 +184,9 @@ class UserModel extends BaseModel {
      * @param uidIsFollowed 被关注者的id
      * @returns 
      */
-    async selectByUidFollowedScopedFollowCount (uidIsFollowed: number) {
+    async selectByUidFollowedScopedFollowCount(uidIsFollowed: number) {
         try {
-            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid_is_followed=${ uidIsFollowed };`)
+            const res = await this.runSql<CountRes>(`SELECT COUNT(*) as total FROM user_follow_user where uid_is_followed=${uidIsFollowed};`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -199,9 +199,9 @@ class UserModel extends BaseModel {
      * @param avatar 头像
      * @returns 
      */
-    async updateInUserTableByUid (uid: number, username: string, avatar: string) {
+    async updateInUserTableByUid(uid: number, username: string, avatar: string) {
         try {
-            const res = await this.runSql<OkPacket>(`UPDATE user SET username = '${ username }', avatar='${ avatar }'  WHERE uid = ${ uid }`)
+            const res = await this.runSql<OkPacket>(`UPDATE user SET username = '${username}', avatar='${avatar}'  WHERE uid = ${uid}`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -217,9 +217,9 @@ class UserModel extends BaseModel {
      * @param password 密码
      * @returns 
      */
-    async updateInUserTableByUidWithPassword (uid: number, password: string) {
+    async updateInUserTableByUidWithPassword(uid: number, password: string) {
         try {
-            const res = await this.runSql<OkPacket>(`UPDATE user SET password = '${ password }' WHERE uid = ${ uid }`)
+            const res = await this.runSql<OkPacket>(`UPDATE user SET password = '${password}' WHERE uid = ${uid}`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
@@ -234,9 +234,68 @@ class UserModel extends BaseModel {
      * @param uid 
      * @returns 
      */
-    async selectInUserTableByUid (uid: number) {
+    async selectInUserTableByUid(uid: number) {
         try {
-            const res = await this.runSql<User[]>(`select * from user where uid=${ uid }`)
+            const res = await this.runSql<User[]>(`select * from user where uid=${uid}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户表和用户关注表中 通过uid和keywords搜索用户的关注列表,通过username进行模糊匹配 (分页限制)
+     * @param uid 用户id
+     * @param keywords 用户名的关键字
+     * @param limit 多少条数据
+     * @param offset 从多少偏移量开始
+     */
+    async searchUserFollowByUsername(uid: number, keywords: string, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<User[]>(`select * from user where uid in (select uid_is_followed from user_follow_user where uid=${uid}) and username like '%${keywords}%' limit ${limit} OFFSET ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户表和用户关注表中 通过uid和keywords搜索用户的关注列表总数 (搜索依据以username进行模糊匹配)
+     * @param uid 用户id
+     * @param keywords 关键字
+     * @returns 
+     */
+    async countSearchUserFollowByUsername(uid: number, keywords: string) {
+        try {
+            const res = await this.runSql<CountRes>(`select count(*) as total from user where uid in (select uid_is_followed from user_follow_user where uid=${uid}) and username like '%${keywords}%' `)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户表和用户关注表中 通过uid和keywords 搜索用户粉丝列表 搜索依据为用户的名称进行模糊匹配 (分页限制)
+     * @param uid 用户id
+     * @param keywords 用户名的关键字
+     * @param limit  多少条数据
+     * @param offset 从多少偏移量开始
+     * @returns 
+     */
+    async searchUserFansByUsername(uid: number, keywords: string, limit: number, offset: number) {
+        try {
+            const res = await this.runSql<User[]>(`select * from user where uid in (select uid from user_follow_user where uid_is_followed=${uid}) and username like '%${keywords}%' limit ${limit} OFFSET ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     *  在用户表和用户关注表中 通过uid和keywords 搜索用户粉丝列表总数 (搜索依据以username进行模糊匹配)
+     * @param uid 用户id
+     * @param keywords 关键词
+     * @returns 
+     */
+    async countSearchUserFansByUsername(uid: number, keywords: string) {
+        try {
+            const res = await this.runSql<CountRes>(`select count(*) as total from user where uid in (select uid from user_follow_user where  uid_is_followed=${uid}) and username like '%${keywords}%' `)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
