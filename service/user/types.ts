@@ -1,11 +1,17 @@
+import { UserWithout } from "../../model/user/types";
+
 /**
  * 用户信息
  */
-export interface User {
-    uid: number;
-    username: string;
-    createTime: string;
-    avatar: string;
+export interface User extends UserWithout {
     is_followed: boolean;
     is_fans: boolean;
+}
+
+/**
+ * 用户详情信息
+ */
+export interface UserInfo  extends User {
+    fans_count: number;
+    follow_user_count: number;
 }
