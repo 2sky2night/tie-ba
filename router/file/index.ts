@@ -33,7 +33,7 @@ fileRouter.use(koaBody({
 }))
 
 // 图片上传的路由
-fileRouter.post('file', `${baseRouterURL}/image`, FileController.imageLoad)
+fileRouter.post('file', `${baseRouterURL}/image`, FileController.toImageLoad)
 
 
 export default fileRouter

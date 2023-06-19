@@ -7,8 +7,8 @@ import response from "../../utils/tools/response"
  * 上传图片 form-data中对应图片的值image
  * @param ctx 
  */
-async function imageLoad(ctx: Context) {
-    const file = ctx.request.files
+async function toImageLoad(ctx: Context) {
+    const file = (ctx.request as any).files
     if (file && file.image) {
         ctx.body = response(ctx.origin + '/img/' + (file.image as any).newFilename, '文件上传成功!', 200)
     } else {
@@ -18,5 +18,5 @@ async function imageLoad(ctx: Context) {
 }
 
 export default {
-    imageLoad
+    toImageLoad
 }

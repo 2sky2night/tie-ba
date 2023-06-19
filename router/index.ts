@@ -5,7 +5,10 @@ import userRouter from './user'
 import barRouter from "./bar";
 // 文件上传路由
 import FileRouter from './file'
+// 帖子路由
 import ArticleRouter from './article';
+// 公共路由
+import publicRouter from './public';
 
 // 统一注册路由
 const router = new Router()
@@ -18,4 +21,6 @@ router.use(barRouter.routes())
 router.use(ArticleRouter.routes())
 // 注册上传文件的路由
 router.use(FileRouter.routes())
+// 注册公共路由
+router.use(publicRouter.routes())
 export default router
