@@ -246,7 +246,7 @@ class PublicService {
         type: 'comment'
       })
     } catch (error) {
-
+      return Promise.reject(error)
     }
   }
   /**
@@ -275,7 +275,7 @@ class PublicService {
         type: 'bar'
       })
     } catch (error) {
-
+      return Promise.reject(error)
     }
   }
 }
