@@ -86,6 +86,49 @@ class BarModel extends BaseModel {
         }
     }
     /**
+     * 在吧表中 查询用户创建的吧 （分页限制）
+     * @param uid 用户id
+     * @param limit 返回多少条数据
+     * @param offset 从多少偏移量开始
+     * @param desc 根据创建时间倒序或升序排序
+     * @returns 
+     */
+    async selectInBarTableByUidLimit (uid: number, limit: number, offset: number, desc: boolean) {
+        try {
+            const res = await this.runSql<Bar[]>(`select * from bar where uid=${ uid } order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 查询当前吧的总数
+     * @returns 
+     */
+    async countInBarTable () {
+        try {
+            const res = await this.runSql<CountRes>('select count(*) as total from bar')
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 浏览所有吧 （分页限制）
+     * @param limit 返回多少条数据
+     * @param offset 从多少偏移量开始
+     * @param desc 根据创建时间倒序或升序排序
+     * @returns 
+     */
+    async selectInBarTableLimit (limit: number, offset: number,desc:boolean) {
+        try {
+            const res = await this.runSql<Bar[]>(`select * from bar order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
      * 在用户关注吧表中插入一条记录
      * @param bid 吧的id
      * @param uid 用户的id

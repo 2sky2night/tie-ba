@@ -54,7 +54,7 @@ async function toCreateBar (ctx: Context) {
  * @param ctx 
  * @returns 返回所有吧
  */
-async function getAllBar (ctx: Context) {
+async function toGetAllBar (ctx: Context) {
     try {
         const res = await barService.findAllBar()
         ctx.body = response(res, 'ok')
@@ -209,7 +209,7 @@ async function toGetBarFollowUserList (ctx: Context) {
     const desc = ctx.query.desc ? +ctx.query.desc : 1;
 
 
-    if (isNaN(bid) || isNaN(limit) || isNaN(offset)||isNaN(desc)) {
+    if (isNaN(bid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
         ctx.status = 400
         ctx.body = response(null, '参数不合法!', 400)
         return
@@ -223,7 +223,7 @@ async function toGetBarFollowUserList (ctx: Context) {
             ctx.body = response(res, 'ok')
         } else {
             ctx.status = 400
-            ctx.body=response(null,'获取关注该吧的用户列表失败,该吧不存在!',400)
+            ctx.body = response(null, '获取关注该吧的用户列表失败,该吧不存在!', 400)
         }
     } catch (error) {
         console.log(error)
@@ -285,12 +285,87 @@ async function toGetUserFollowBarList (ctx: Context) {
 
 }
 
+/**
+ * 获取用户创建的吧列表
+ * @param ctx 
+ * @returns 
+ */
+async function toGetUserBarList (ctx: Context) {
+    // 1.检查是否携带token来获取当前登录用户的id
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+
+    //  2.检验查询参数是否合法
+    if (ctx.query.uid === undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '有参数未携带!', 400)
+        return
+    }
+
+    const uid = +ctx.query.uid;
+    const limit = ctx.query.limit ? +ctx.query.limit : 20;
+    const offset = ctx.query.offset ? +ctx.query.offset : 0;
+    const desc = ctx.query.desc ? +ctx.query.desc : 1;
+
+    if (isNaN(uid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+        return
+    }
+
+    try {
+        const res = await barService.getUserBarList(uid, currentUid, limit, offset, desc ? true : false)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 400
+            ctx.body = response(null, '获取用户创建的吧列表失败,用户不存在!', 400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
+/**
+ * 获取吧列表
+ * @param ctx 
+ * @returns 
+ */
+async function toGetBarList (ctx: Context) {
+    // 检查是否携带token来获取当前登录用户的id
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+    // 解析查询参数
+    const limit = ctx.query.limit ? +ctx.query.limit : 20;
+    const offset = ctx.query.offset ? +ctx.query.offset : 0;
+    const desc = ctx.query.desc ? +ctx.query.desc : 1;
+
+    if (isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+        return
+    }
+
+    try {
+        const res = await barService.getBarList(currentUid, limit, offset, desc ? true : false)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     toCreateBar,
-    getAllBar,
+    toGetAllBar,
     toGetBarInfo,
     toFollowBar,
     toCanceFollowBar,
     toGetBarFollowUserList,
-    toGetUserFollowBarList
+    toGetUserFollowBarList,
+    toGetUserBarList,
+    toGetBarList
 }

@@ -6,6 +6,7 @@ import ArticleModel from '../../model/article';
 import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../model/bar/types";
 import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
+import { getBarList, getBarListWithId } from './actions';
 
 // 吧模型实例
 const bar = new BarModel()
@@ -192,7 +193,7 @@ class BarService {
             const followBarList = await bar.selectFollowByBidLimit(bid, limit, offset, desc)
             // 3.遍历用户列表 查询对应数据
             const userList: any[] = []
-            for (let i = 0; i<followBarList.length; i++) {
+            for (let i = 0; i < followBarList.length; i++) {
                 const uid = followBarList[ i ].uid
                 // 1.查询用户数据
                 const [ userInfo ] = await user.selectByUid(uid)
@@ -239,6 +240,7 @@ class BarService {
      * @param currentUid 当前登录的用户id
      * @param limit 响应多少条数据
      * @param offset 从多少偏移量开始获取数据
+     * @param desc 根据关注时间降序或升序
      */
     async getUserFollowBar (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
@@ -251,36 +253,11 @@ class BarService {
             const [ followCount ] = await bar.selectFollowByUidCount(uid)
 
             // 2. 获取该用户关注的吧id列表
-            const resBidList = await bar.selectFollowByUidLimit(uid, limit, offset, desc)
+            const bidList = (await bar.selectFollowByUidLimit(uid, limit, offset, desc)).map(ele => ele.bid)
 
-            const barList: any[] = []
             // 3.遍历用户关注的吧列表 查询吧的数据
-            for (let i = 0; i < resBidList.length; i++) {
-                const bid = resBidList[ i ].bid
-                // 1.获取吧的数据
-                const [ barInfo ] = await bar.selectByBid(bid)
-                // 2.获取吧主的信息
-                const [ userInfo ] = await user.selectByUid(barInfo.uid)
-                // 3.获取当前用户对吧主的关注状态
-                const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userInfo.uid)).length ? true : false;
-                const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userInfo.uid, currentUid)).length ? true : false;
-                // 4.获取该吧发帖数量
-                const [ articleCount ] = await article.countInArticleTableByBid(bid)
-                // 5.获取该吧的关注数量
-                const [ userFollowedCount ] = await bar.selectFollowByBidCount(bid)
+            const barList = await getBarListWithId(bidList, currentUid)
 
-                barList.push({
-                    ...barInfo,
-                    article_count: articleCount.total,
-                    user_follow_count: userFollowedCount.total,
-                    user: {
-                        ...userInfo,
-                        is_followed: isFollowedUser,
-                        is_fans: isFollowedMe
-                    },
-                })
-
-            }
 
             return Promise.resolve({
                 list: barList,
@@ -289,6 +266,69 @@ class BarService {
                 total: followCount.total,
                 has_more: followCount.total > limit + offset,
                 desc
+            })
+
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取用户创建的吧
+     * 1.查询用户是否存在
+     * 2.查询创建的吧列表 并查询吧相关的信息
+     * 3.查询用户创建吧的总数
+     * @param uid 要查询的用户id
+     * @param currentUid  当前登录的用户id
+     * @param limit 响应多少条数据
+     * @param offset 从多少偏移量开始获取数据
+     * @param desc 根据创建时间降序或升序
+     */
+    async getUserBarList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+        try {
+            // 1.查询用户是否存在
+            const resExist = await user.selectByUid(uid)
+            // 用户不存在
+            if (!resExist.length) return Promise.resolve(0)
+            // 2.用户存在 查询该用户创建吧的总数
+            const [ count ] = await bar.countInBarTableByUid(uid)
+            // 3.查询该页的吧信息列表
+            const barList = await bar.selectInBarTableByUidLimit(uid, limit, offset, desc)
+            const list = await getBarList(barList, currentUid)
+            return Promise.resolve({
+                list,
+                limit,
+                offset,
+                total: count.total,
+                has_more: count.total > limit + offset,
+                desc
+            })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取吧列表
+     * 1.查询吧列表
+     * 2.获取当前吧总数
+     * 3.遍历吧列表 查询吧的其他信息
+     * @param currentUid  当前登录的用户id
+     * @param limit 响应多少条数据
+     * @param offset 从多少偏移量开始获取数据
+     * @param desc 根据创建时间降序或升序
+     */
+    async getBarList (currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+        try {
+            const barList = await bar.selectInBarTableLimit(limit, offset, desc)
+            const [ count ] = await bar.countInBarTable()
+            const list = await getBarList(barList, currentUid)
+
+            return Promise.resolve({
+                list,
+                limit,
+                offset,
+                total: count.total,
+                desc,
+                has_more:count.total>limit+offset
             })
 
         } catch (error) {
