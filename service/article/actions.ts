@@ -33,7 +33,7 @@ export async function getArticleList (articleList: ArticleBaseItem[], uid: numbe
             // 5.查询该帖子的创建者信息
             // 查询是否已经存在该用户信息了
             const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
-            const userInfo = userExist ? {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar} : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -171,33 +171,46 @@ export async function getArticleListWithId (articleIdList: number[], uid: number
 export async function getCommentList (commentList: CommentBaseItem[], uid: number | undefined) {
     try {
         const list: CommentInfo[] = []
-        
-        for (let i = 0; i < commentList.length; i++){
-            const cid = commentList[i].cid
+
+        for (let i = 0; i < commentList.length; i++) {
+            const cid = commentList[ i ].cid
             // 查询评论被点赞的数量
             const [ likeCount ] = await article.countInLikeCommentTabeByCid(cid)
             // 查询当前评论者的信息
-            const [ userInfo ] = await user.selectByUid(commentList[ i ].uid)
-            const isFollowedUser = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[ i ].uid)).length ? true : false;
-            const isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[ i ].uid, uid)).length ? true : false;
+            // 若当前已经记录过该用户信息了 则直接复用用户信息
+            const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            let isFollowedUser = false
+            let isFollowedMe = false
+            if (userExist) {
+                // 若当前有用户记录 则直接复用关注状态
+                isFollowedUser = userExist.user.is_followed
+                isFollowedMe = userExist.user.is_fans
+            } else {
+                // 没有用户记录 需要查询来获取用户对其关注状态
+                isFollowedUser = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[ i ].uid)).length ? true : false;
+                isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[ i ].uid, uid)).length ? true : false;
+            }
             // 是否点赞该评论
             const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
+
             list.push({
-                cid:  commentList[i].cid,
-                content:  commentList[i].content,
-                aid: commentList[i].aid,
+                cid: commentList[ i ].cid,
+                content: commentList[ i ].content,
+                aid: commentList[ i ].aid,
                 uid: commentList[ i ].uid,
                 // @ts-ignore
-                photo: commentList[i].photo===null?null:commentList[i].photo.split(','),
-                createTime:commentList[i].createTime,
+                photo: commentList[ i ].photo === null ? null : commentList[ i ].photo.split(','),
+                createTime: commentList[ i ].createTime,
                 is_liked: isLiked,
-                like_count:likeCount.total,
+                like_count: likeCount.total,
                 user: {
                     ...userInfo,
-                    is_followed:isFollowedUser,
-                    is_fans:isFollowedMe
+                    is_followed: isFollowedUser,
+                    is_fans: isFollowedMe
                 }
             })
+            
         }
 
         return Promise.resolve(list)

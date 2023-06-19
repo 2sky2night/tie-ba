@@ -6,7 +6,7 @@ import UserModel from '../../model/user'
 import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
-import { getArticleList, getArticleListWithId } from './actions'
+import { getArticleList, getArticleListWithId, getCommentList } from './actions'
 import { getUserListById } from '../user/actions';
 
 const user = new UserModel()
@@ -19,7 +19,7 @@ class ArticleService {
    * @param data 
    * @returns 0所在吧不存在 1发帖成功
    */
-  async createArticle(data: InsertArticleBody): Promise<1 | 0> {
+  async createArticle (data: InsertArticleBody): Promise<1 | 0> {
     try {
       // 1.需要先查询发帖所在的吧是否存在
       const res = await bar.selectByBid(data.bid)
@@ -46,15 +46,15 @@ class ArticleService {
    * @param aid 
    * @returns 
    */
-  async getArticleInfo(aid: number, uid: number | undefined) {
+  async getArticleInfo (aid: number, uid: number | undefined) {
     try {
       // 1.查询文章是否存在
-      const [articleInfo] = await article.selectInArticleTableByAid(aid)
+      const [ articleInfo ] = await article.selectInArticleTableByAid(aid)
       if (articleInfo) {
         // 文章存在
 
         // 2.查询该文章的创建者 以及当前登录的用户对创建者的关注状态
-        const [resUserCreateArticle] = await user.selectByUid(articleInfo.uid)
+        const [ resUserCreateArticle ] = await user.selectByUid(articleInfo.uid)
         const userInfo = {
           ...resUserCreateArticle,
           is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateArticle.uid)).length > 0,
@@ -62,8 +62,8 @@ class ArticleService {
         }
 
         // 3.查询该帖子所属的吧详情信息 以及当前登录用户对吧的关注状态 以及吧主的详情信息以及吧主的关注状态
-        const [resBar] = await bar.selectByBid(articleInfo.bid)
-        const [resUserCreateBar] = await user.selectByUid(resBar.uid)
+        const [ resBar ] = await bar.selectByBid(articleInfo.bid)
+        const [ resUserCreateBar ] = await user.selectByUid(resBar.uid)
         const barInfo = {
           ...resBar,
           // 对当前吧的关注状态
@@ -77,11 +77,11 @@ class ArticleService {
         }
 
         // 4.查询该帖子的点赞数量 以及当前用户点赞的状态
-        const [resLikeCount] = await article.countInLikeArticleTableByAid(aid)
+        const [ resLikeCount ] = await article.countInLikeArticleTableByAid(aid)
         const isLiked = uid === undefined ? false : (await article.selectInLikeArticleTableByAidAndUid(uid, aid)).length > 0
 
         // 5.查询该帖子的收藏数量 以及当前用户收藏的状态
-        const [resStarCount] = await article.countInStarArticleTableByAid(aid)
+        const [ resStarCount ] = await article.countInStarArticleTableByAid(aid)
         const isStar = uid === undefined ? false : (await article.selectInStarArticleTableByUidAndAid(uid, aid)).length > 0
 
         // 6.处理帖子配图问题
@@ -92,7 +92,7 @@ class ArticleService {
         }
 
         // 7.查询帖子的评论总数
-        const [commentsCount] = await article.countInCommentTableByAid(aid)
+        const [ commentsCount ] = await article.countInCommentTableByAid(aid)
 
         return Promise.resolve({
           aid: articleInfo.aid,
@@ -129,7 +129,7 @@ class ArticleService {
     * @param aid 帖子id
    * @returns -1：文章不存在 0：已经点赞了 1：点赞成功
    */
-  async likeArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async likeArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.查询文章是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -160,7 +160,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1：文章不存在 0：没有点赞记录 1：取消点赞成功
    */
-  async cancelLikeArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async cancelLikeArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.查询文章是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -191,7 +191,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1：帖子不存在 0：重复收藏 1：收藏成功
    */
-  async starArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async starArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过aid查询帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -222,7 +222,7 @@ class ArticleService {
    * @param aid 帖子id
    * @returns -1:帖子不存咋 0:未收藏过 1:取消收藏成功
    */
-  async cancelStarArticle(uid: number, aid: number): Promise<-1 | 0 | 1> {
+  async cancelStarArticle (uid: number, aid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过uid来查询该帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -252,7 +252,7 @@ class ArticleService {
    * @param data 
    * @returns 0:帖子不存在 1:发送评论成功
    */
-  async createComment(data: InserCommentBody): Promise<0 | 1> {
+  async createComment (data: InserCommentBody): Promise<0 | 1> {
     try {
       const resExist = await article.selectInArticleTableByAid(data.aid)
       if (!resExist.length) {
@@ -276,11 +276,11 @@ class ArticleService {
    * @param uid 
    * @returns -1:评论不存在 0:不是评论创建者和楼主 1:评论创建者删除评论 2:楼主删除评论
    */
-  async deleteComment(cid: number, uid: number): Promise<-1 | 0 | 1 | 2> {
+  async deleteComment (cid: number, uid: number): Promise<-1 | 0 | 1 | 2> {
     try {
 
       // 1.查询评论是否存在
-      const [comment] = await article.selectInCommentTableByCid(cid)
+      const [ comment ] = await article.selectInCommentTableByCid(cid)
       if (comment === undefined) {
         // 评论不存在
         return Promise.resolve(-1)
@@ -293,7 +293,7 @@ class ArticleService {
         return Promise.resolve(1)
       } else {
         // 2.2不是评论的创建者 需要检查当前登录的用户是否为帖子的楼主
-        const [articleInfo] = await article.selectInArticleTableByAid(comment.aid)
+        const [ articleInfo ] = await article.selectInArticleTableByAid(comment.aid)
 
         if (articleInfo.uid === uid) {
           //2.2.1 若删除评论的用户为该帖子的创建者则可以删除记录
@@ -317,10 +317,10 @@ class ArticleService {
    * @param uid 
    * @returns -1:评论不存在 0:已经点赞过了 1:点赞成功
    */
-  async likeComment(cid: number, uid: number): Promise<-1 | 0 | 1> {
+  async likeComment (cid: number, uid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过cid来查询评论是否存在
-      const [comment] = await article.selectInCommentTableByCid(cid)
+      const [ comment ] = await article.selectInCommentTableByCid(cid)
       if (comment === undefined) {
         // 评论不存在
         return Promise.resolve(-1)
@@ -351,10 +351,10 @@ class ArticleService {
  * @param uid 
  * @returns -1:评论不存在 0:未点赞过评论 1:取消点赞成功
  */
-  async cancelLikeComment(cid: number, uid: number): Promise<-1 | 0 | 1> {
+  async cancelLikeComment (cid: number, uid: number): Promise<-1 | 0 | 1> {
     try {
       // 1.通过cid来查询评论是否存在
-      const [comment] = await article.selectInCommentTableByCid(cid)
+      const [ comment ] = await article.selectInCommentTableByCid(cid)
       if (comment === undefined) {
         // 评论不存在
         return Promise.resolve(-1)
@@ -386,7 +386,7 @@ class ArticleService {
    * @param limit 
    * @param offset 
    */
-  async getArticleCommentList(aid: number, uid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getArticleCommentList (aid: number, uid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.查询帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
@@ -395,42 +395,14 @@ class ArticleService {
         return Promise.resolve(0)
       }
       // 2.存在则通过aid查询该帖子的评论总数
-      const [count] = await article.countInCommentTableByAid(aid)
+      const [ count ] = await article.countInCommentTableByAid(aid)
       // 3.查询当前页的评论列表
       const commentList = await article.selectInCommentTableByAidLimit(aid, limit, offset, desc)
       // 4.遍历评论列表,查询相关数据
-      const resList: any[] = []
-      for (let i = 0; i < commentList.length; i++) {
-        // 4.1 查询用户数据
-        const [userInfo] = await user.selectByUid(commentList[i].uid)
-        // 4.2查询当前登录的用户对该评论创建者的关注状态
-        const isFollowed = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[i].uid)).length ? true : false
-        // 4.3查询当前登录的用户对该评论的点赞状态
-        const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(commentList[i].cid, uid)).length ? true : false
-        // 4.4查询当前评论的点赞总数
-        const [count] = await article.countInLikeCommentTabeByCid(commentList[i].cid)
-        // 4.5 需要对评论的图片单独进行处理
-        const photo: string[] = []
-        if (commentList[i].photo !== null) {
-          commentList[i].photo.split(',').map(ele => photo.push(ele))
-        }
-        // 4.6 查询评论创建者是否关注了当前用户
-        const isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[i].uid, uid)).length ? true : false
-        resList.push({
-          cid: commentList[i].cid,
-          content: commentList[i].content,
-          createTime: commentList[i].createTime,
-          aid: commentList[i].aid,
-          uid: commentList[i].uid,
-          photo: commentList[i].photo ? photo : null,
-          user: { ...userInfo, is_followed: isFollowed, is_fans: isFollowedMe },
-          is_liked: isLiked,
-          like_count: count.total
-        })
-      }
+      const list = await getCommentList(commentList, uid)
 
       return Promise.resolve({
-        list: resList,
+        list,
         total: count.total,
         offset,
         limit,
@@ -461,16 +433,16 @@ class ArticleService {
    * @param desc 根据点赞的时间升序还是降序
    * @returns 
    */
-  async getUserLikeArticleList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getUserLikeArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.获取用户信息
-      const [userInfo] = await user.selectByUid(uid)
+      const [ userInfo ] = await user.selectByUid(uid)
       if (!userInfo) {
         // 用户不存在
         return Promise.resolve(0)
       }
       // 2.获取用户点赞帖子的总数
-      const [total] = await article.countInLikeArticleTableByUid(uid)
+      const [ total ] = await article.countInLikeArticleTableByUid(uid)
       // 3.获取点赞帖子列表
       const likeArticleList = (await article.selectInLikeArticleTableByUidLimit(uid, limit, offset, desc)).map(ele => ele.aid)
       // 3.5 获取帖子信息列表
@@ -502,14 +474,14 @@ class ArticleService {
    * @param offset 从第几条开始获取数据
    * @param desc 是否降序 根据时间降序
    */
-  async getUserStarArticleList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getUserStarArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.查询用户记录
-      const [userInfor] = await user.selectByUid(uid)
+      const [ userInfor ] = await user.selectByUid(uid)
       // 用户不存在
       if (!userInfor) return Promise.resolve(0)
       // 2.查询用户收藏的帖子总数
-      const [count] = await article.countInStarArticleTableByUid(uid)
+      const [ count ] = await article.countInStarArticleTableByUid(uid)
       // 3.查询收藏的帖子记录
       const articleStarList = (await article.selectInStarArticleTableByUidLimit(uid, limit, offset, desc)).map(ele => ele.aid)
       // 4.根据收藏的帖子记录查询帖子详情信息
@@ -541,18 +513,18 @@ class ArticleService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 降序还是升序
    */
-  async getArticleLikedUserList(aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getArticleLikedUserList (aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
       // 不存在
       if (!resExist.length) return Promise.resolve(0)
       // 2.存在 查询点赞总数
-      const [likeCount] = await article.countInLikeArticleTableByAid(aid)
+      const [ likeCount ] = await article.countInLikeArticleTableByAid(aid)
       // 3.查询用户点赞列表
-      const likeList = (await article.selectInLikeArticleTableByAidLimit(aid, limit, offset, desc)).map(ele=>ele.uid)
+      const likeList = (await article.selectInLikeArticleTableByAidLimit(aid, limit, offset, desc)).map(ele => ele.uid)
       // 4.遍历点赞列表 获取用户信息
-      const userList = await getUserListById(likeList,currentUid)
+      const userList = await getUserListById(likeList, currentUid)
 
       return Promise.resolve({
         list: userList,
@@ -575,18 +547,18 @@ class ArticleService {
    * @param offset  从多少偏移量开始获取数据
    * @param desc 根据收藏时间降序还是升序
    */
-  async getStarArticleUserList(aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getStarArticleUserList (aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.帖子是否存在
       const resExist = await article.selectInArticleTableByAid(aid)
       // 不存在
       if (!resExist.length) return Promise.resolve(0)
       // 2.存在 查询收藏总数
-      const [starCount] = await article.countInStarArticleTableByAid(aid)
+      const [ starCount ] = await article.countInStarArticleTableByAid(aid)
       // 3.查询用户收藏列表
-      const starList = (await article.selectInStarArticleTableByAidLimit(aid, limit, offset, desc)).map(ele=>ele.uid)
+      const starList = (await article.selectInStarArticleTableByAidLimit(aid, limit, offset, desc)).map(ele => ele.uid)
       // 4.遍历收藏列表 获取用户信息
-      const userList = await getUserListById(starList,currentUid)
+      const userList = await getUserListById(starList, currentUid)
 
       return Promise.resolve({
         list: userList,
@@ -615,7 +587,7 @@ class ArticleService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 根据发帖时间降序还是升序
    */
-  async getUserArticleList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getUserArticleList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.查询用户是否存在
       const resExist = await user.selectByUid(uid)
@@ -624,9 +596,9 @@ class ArticleService {
       // 2.接口存在 获取帖子列表
       const articleList = await article.selectInArticleTableByUidLimit(uid, limit, offset, desc)
       // 3.遍历帖子列表 查询相关帖子信息
-      const list =await getArticleList(articleList, currentUid)
+      const list = await getArticleList(articleList, currentUid)
       // 4.查询帖子总数
-      const [articleCount] = await article.countInArticleTableByUid(uid)
+      const [ articleCount ] = await article.countInArticleTableByUid(uid)
 
       return Promise.resolve({
         list,
@@ -647,9 +619,9 @@ class ArticleService {
    * @param aid 帖子id
    * @param uid 用户id
    */
-  async deleteArticle(aid: number, uid: number) {
+  async deleteArticle (aid: number, uid: number) {
     try {
-      const [articleInfo] = await article.selectInArticleTableByAid(aid)
+      const [ articleInfo ] = await article.selectInArticleTableByAid(aid)
       if (!articleInfo) {
         // 文章不存在
         return Promise.resolve(-1)
@@ -675,10 +647,10 @@ class ArticleService {
    * @param desc 根据帖子创建时间升序还是降序
    * @returns 
    */
-  async getArticleList(uid: number | undefined, limit: number, offset: number, desc: boolean) {
+  async getArticleList (uid: number | undefined, limit: number, offset: number, desc: boolean) {
     try {
       // 1.获取帖子总数
-      const [count] = await article.countInArticleTable()
+      const [ count ] = await article.countInArticleTable()
       // 2.获取帖子列表
       const articleList = await article.selectInArticleTableLimit(limit, offset, desc)
       // 3.遍历帖子列表 查询对应帖子信息
