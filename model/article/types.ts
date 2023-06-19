@@ -149,7 +149,7 @@ export interface CommentBaseItem {
   createTime: string;
   aid: number;
   uid: number;
-  photo: string;
+  photo: string | null;
 }
 
 /**

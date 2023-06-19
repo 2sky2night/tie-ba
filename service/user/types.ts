@@ -1,4 +1,4 @@
-import { UserWithout } from "../../model/user/types";
+import type { UserWithout } from "../../model/user/types";
 
 /**
  * 用户信息

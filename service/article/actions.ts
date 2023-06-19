@@ -1,5 +1,5 @@
-import type { ArticleBaseItem } from "../../model/article/types"
-import type { ArticleItem } from "./types"
+import type { ArticleBaseItem, CommentBaseItem } from "../../model/article/types"
+import type { ArticleItem, CommentInfo } from "./types"
 import ArticleModel from "../../model/article"
 import UserModel from "../../model/user"
 import BarModel from "../../model/bar"
@@ -154,6 +154,52 @@ export async function getArticleListWithId (articleIdList: number[], uid: number
             })
 
         }
+        return Promise.resolve(list)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+/**
+ * 遍历评论列表查询评论的其他信息
+ * 1.评论被点赞的数量
+ * 2.评论的创建者信息 以及当前用户对评论创建者的关注状态
+ * 3.当前用户对评论的点赞状态
+ * @param commentList 评论列表
+ * @param uid 当前登录的用户id
+ */
+export async function getCommentList (commentList: CommentBaseItem[], uid: number | undefined) {
+    try {
+        const list: CommentInfo[] = []
+        
+        for (let i = 0; i < commentList.length; i++){
+            const cid = commentList[i].cid
+            // 查询评论被点赞的数量
+            const [ likeCount ] = await article.countInLikeCommentTabeByCid(cid)
+            // 查询当前评论者的信息
+            const [ userInfo ] = await user.selectByUid(commentList[ i ].uid)
+            const isFollowedUser = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[ i ].uid)).length ? true : false;
+            const isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[ i ].uid, uid)).length ? true : false;
+            // 是否点赞该评论
+            const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
+            list.push({
+                cid:  commentList[i].cid,
+                content:  commentList[i].content,
+                aid: commentList[i].aid,
+                uid: commentList[ i ].uid,
+                // @ts-ignore
+                photo: commentList[i].photo===null?null:commentList[i].photo.split(','),
+                createTime:commentList[i].createTime,
+                is_liked: isLiked,
+                like_count:likeCount.total,
+                user: {
+                    ...userInfo,
+                    is_followed:isFollowedUser,
+                    is_fans:isFollowedMe
+                }
+            })
+        }
+
         return Promise.resolve(list)
     } catch (error) {
         return Promise.reject(error)

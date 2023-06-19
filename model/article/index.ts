@@ -60,6 +60,65 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在帖子表中 通过帖子标题来模糊搜索帖子列表
+   * @param keywords 关键词
+   * @param limit 返回多少体数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据创建时间升序或降序
+   * @returns 
+   */
+  async searchInArticleTableByTitle (keywords: string, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`SELECT * from article where title like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 通过帖子标题来模糊查询帖子总数
+   * @param keywords 关键词
+   * @returns 
+   */
+  async countSearchInAricleTableByTitle (keywords: string) {
+    try {
+      const res = await this.runSql<CountRes>(`SELECT count(*) as total from article where title like '%${ keywords }%'`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+  * 在帖子表中 通过帖子内容来模糊搜索帖子列表
+  * @param keywords 关键词
+  * @param limit 返回多少体数据
+  * @param offset 从多少偏移量开始获取数据
+  * @param desc 根据创建时间升序或降序
+  * @returns 
+  */
+  async searchInArticleTableByContent (keywords: string, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`SELECT * from article where content like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 通过帖子内容来模糊查询帖子总数
+   * @param keywords 关键词
+   * @returns 
+   */
+  async countSearchInAricleTableByContent (keywords: string) {
+    try {
+      const res = await this.runSql<CountRes>(`SELECT count(*) as total from article where content like '%${ keywords }%'`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+
+  /**
    * 在帖子表中 通过uid来查询该用户发帖数量
    * @param uid 用户id
    * @returns 
@@ -106,9 +165,9 @@ class ArticleModel extends BaseModel {
    * @param aid 帖子id
    * @returns 
    */
-  async delectInArticleTableByAid(aid: number) {
+  async delectInArticleTableByAid (aid: number) {
     try {
-      const res = await this.runSql<OkPacket>(`delete from article where aid=${aid}`)
+      const res = await this.runSql<OkPacket>(`delete from article where aid=${ aid }`)
       if (res.affectedRows) {
         return Promise.resolve()
       } else {
@@ -125,9 +184,9 @@ class ArticleModel extends BaseModel {
    * @param desc 根据创建时间升序或降序
    * @returns 
    */
-  async selectInArticleTableLimit(limit: number, offset: number, desc: boolean) {
+  async selectInArticleTableLimit (limit: number, offset: number, desc: boolean) {
     try {
-      const res = await this.runSql<ArticleBaseItem[]>(`select * from article order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
@@ -137,7 +196,7 @@ class ArticleModel extends BaseModel {
    * 在帖子表中 查询帖子总数
    * @returns 
    */
-  async countInArticleTable() {
+  async countInArticleTable () {
     try {
       const res = await this.runSql<CountRes>(`select count(*) as total from article`)
       return Promise.resolve(res)
@@ -378,6 +437,35 @@ class ArticleModel extends BaseModel {
         // 插入记录失败
         await Promise.reject('插入评论记录失败!')
       }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在评论表中 通过评论的内容模糊搜索
+   * @param keywords 关键字
+   * @param limit 返回多少体数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据创建时间升序降序
+   * @returns 
+   */
+  async searchInCommentTableByContent (keywords: string,limit:number,offset:number,desc:boolean) {
+    try {
+      const res = await this.runSql<CommentBaseItem[]>(`SELECT * FROM comment where content like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+       return Promise.reject(error)
+    }
+  }
+  /**
+   * 在评论表中 通过评论内容模糊匹配评论总数
+   * @param keywords 关键字
+   * @returns 
+   */
+  async countSearchInCommentTableByContent (keywords: string) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from comment where content like '%${ keywords }%'`)
+      return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
     }

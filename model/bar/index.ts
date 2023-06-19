@@ -120,9 +120,38 @@ class BarModel extends BaseModel {
      * @param desc 根据创建时间倒序或升序排序
      * @returns 
      */
-    async selectInBarTableLimit (limit: number, offset: number,desc:boolean) {
+    async selectInBarTableLimit (limit: number, offset: number, desc: boolean) {
         try {
             const res = await this.runSql<Bar[]>(`select * from bar order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 通过吧名模糊搜索吧
+     * @param keywords 关键词
+     * @param limit 返回多少条数据
+     * @param offset 从多少偏移量开始
+     * @param desc 根据创建时间倒序或升序排序
+     * @returns 
+     */
+    async searchInBarTableByBname (keywords: string, limit: number, offset: number, desc: boolean) {
+        try {
+            const res = await this.runSql<Bar[]>(`select * from bar where bname like '%${ keywords }%' order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 通过吧名来模糊搜索匹配的所有吧数量
+     * @param keywords 关键词
+     * @returns 
+     */
+    async countSearchInBarTableByBname (keywords: string) {
+        try {
+            const res = await this.runSql<CountRes>(`select count(*) as total from bar where bname like '%${ keywords }%'`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -199,9 +228,9 @@ class BarModel extends BaseModel {
      * @param desc 倒序还是升序
      * @returns 
      */
-    async selectFollowByBidLimit (bid: number, limit: number, offset: number,desc:boolean) {
+    async selectFollowByBidLimit (bid: number, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${ bid } order by createTime ${desc?'desc':'asc'} limit ${ limit } offset ${ offset }`)
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where bid=${ bid } order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -229,9 +258,9 @@ class BarModel extends BaseModel {
      * @param desc 降序或升序
      * @returns 
      */
-    async selectFollowByUidLimit (uid: number, limit: number, offset: number,desc:boolean) {
+    async selectFollowByUidLimit (uid: number, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where uid=${ uid } order by createTime ${desc?'desc':'asc'} limit ${ limit } offset ${ offset }`)
+            const res = await this.runSql<UserFollowBarItem[]>(`SELECT * FROM user_follow_bar where uid=${ uid } order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
