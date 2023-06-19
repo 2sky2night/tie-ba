@@ -14,4 +14,7 @@ export interface User extends UserWithout {
 export interface UserInfo  extends User {
     fans_count: number;
     follow_user_count: number;
+    article_count: number;
+    create_bar_count: number;
+    follow_bar_count: number;
 }

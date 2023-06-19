@@ -48,10 +48,5 @@ userRouter.get('user', `${ baseRouteURL }/profile`, Middleware.tokenParse, UserC
 // 通过token获取用户信息 (需要token)
 userRouter.get('user', `${ baseRouteURL }/info/v2`, UserController.toGetUserInfo)
 
-// 搜索用户关注列表  (中间件解析token)  query:{uid:number;keywords:string;limit?:number;offset?:number}
-userRouter.get('user', `${baseRouteURL}/search/follow`, Middleware.tokenParse, UserController.toSearchUserFollowList)
-
-// 搜索用户粉丝列表  (中间件解析token)  query:{uid:number;keywords:string;limit?:number;offset?:number}
-userRouter.get('user', `${baseRouteURL}/search/fans`, Middleware.tokenParse, UserController.toSearchUserFansList)
 
 export default userRouter

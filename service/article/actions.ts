@@ -1,6 +1,5 @@
 import type { ArticleBaseItem } from "../../model/article/types"
 import type { ArticleItem } from "./types"
-import type { User, UserInfo } from '../user/types'
 import ArticleModel from "../../model/article"
 import UserModel from "../../model/user"
 import BarModel from "../../model/bar"
@@ -156,41 +155,6 @@ export async function getArticleListWithId (articleIdList: number[], uid: number
 
         }
         return Promise.resolve(list)
-    } catch (error) {
-        return Promise.reject(error)
-    }
-}
-
-/**
- * 通过遍历用户id列表,查询:
- * 1.对应的用户信息
- * 2.当前用户对其关注状态
- * 3.该用户的粉丝关注数量
- * @param userIdList 用户id列表
- * @param currentUid 当前登录的用户id
- * @returns 
- */
-export async function getUserListById (userIdList: number[], currentUid: number | undefined) {
-    try {
-        const userList: UserInfo[] = []
-        for (let i = 0; i < userIdList.length; i++) {
-            // 1.查询用户数据
-            const [ userInfo ] = await user.selectByUid(userIdList[ i ])
-            // 2.查询当前用户对此用户的状态
-            const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userIdList[ i ])).length ? true : false;
-            const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userIdList[ i ], currentUid)).length ? true : false;
-            // 3.查询粉丝、关注数量
-            const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(userIdList[ i ])
-            const [ followCount ] = await user.selectByUidScopedFollowCount(userIdList[ i ])
-            userList.push({
-                ...userInfo,
-                is_followed: isFollowedUser,
-                is_fans: isFollowedMe,
-                fans_count: fansCount.total,
-                follow_user_count: followCount.total
-            })
-        }
-        return Promise.resolve(userList)
     } catch (error) {
         return Promise.reject(error)
     }

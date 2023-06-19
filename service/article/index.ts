@@ -6,7 +6,8 @@ import UserModel from '../../model/user'
 import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
-import { getArticleList, getArticleListWithId, getUserListById } from './actions'
+import { getArticleList, getArticleListWithId } from './actions'
+import { getUserListById } from '../user/actions';
 
 const user = new UserModel()
 const article = new ArticleModel()
