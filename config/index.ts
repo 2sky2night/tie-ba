@@ -27,6 +27,7 @@ export const NO_AUTH = [
     '/bar/user/follow/list',
     '/bar/user/list',
     '/bar/list',
+    '/bar/hot',
     '/article/info',
     '/article/comment/list',
     '/article/user/like/list',

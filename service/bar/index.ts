@@ -328,9 +328,36 @@ class BarService {
                 offset,
                 total: count.total,
                 desc,
-                has_more:count.total>limit+offset
+                has_more: count.total > limit + offset
             })
 
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 查询热门的吧 根据最近x天发帖数量进行排序
+     * @param currentUid 当前登录的用户id
+     * @param limit 响应多少条数据
+     * @param offset 从多少偏移量开始获取数据
+     * @param day 天数
+     */
+    async getHotBarList (currentUid: number | undefined, limit: number, offset: number, day: number) {
+        try {
+            // 查询热吧总数
+            const [ count ] = await bar.countFindHotBar(day)
+            // 查询热吧
+            const barList = await bar.findHotBar(day, limit, offset)
+            // 查询遍历吧列表 查询吧的其他信息
+            const list = await getBarList(barList, currentUid)
+            return Promise.resolve({
+                list,
+                limit,
+                offset,
+                day,
+                total: count.total,
+                has_more: count.total > offset + limit
+            })
         } catch (error) {
             return Promise.reject(error)
         }

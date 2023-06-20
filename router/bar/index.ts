@@ -35,4 +35,7 @@ barRouter.get('bar', `${ baseRouteURL }/user/list`, middleware.tokenParse, BarCo
 // 获取吧列表  (使用中间件解析token 需要使用token中的数据) query {limit?:number=20,offset?:number=0,desc?:number}
 barRouter.get('bar', `${ baseRouteURL }/list`, middleware.tokenParse, BarController.toGetBarList)
 
+// 发现吧  (使用中间件解析token 需要使用token中的数据) query {limit?:number=20,offset?:number=0,type?:number}
+barRouter.get('bar', `${ baseRouteURL }/hot`, middleware.tokenParse, BarController.toGetHotBarList)
+
 export default barRouter

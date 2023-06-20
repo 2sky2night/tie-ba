@@ -5,7 +5,7 @@ import type { Bar, BarCreateBody, UserFollowBarItem } from './types'
 import type { OkPacket } from 'mysql'
 import type { CountRes } from '../../types/index'
 // 工具函数
-import { getNowTimeString } from '../../utils/tools/time'
+import { getDaysBeforeTimeString, getNowTimeString, getTimeString } from '../../utils/tools/time'
 
 
 /**
@@ -123,6 +123,36 @@ class BarModel extends BaseModel {
     async selectInBarTableLimit (limit: number, offset: number, desc: boolean) {
         try {
             const res = await this.runSql<Bar[]>(`select * from bar order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 查询热门的吧 根据最近x天发帖数量进行排序
+     * @param day 天数
+     * @param limit 返回多少条数据
+     * @param offset 偏移量
+     * @returns 
+     */
+    async findHotBar (day: number, limit: number, offset: number) {
+        try {
+            const sqlString = `select bar.* from bar,(select count(*) as total,bid from article where createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }' GROUP BY bid ) as temp where bar.bid=temp.bid ORDER BY total desc limit ${ limit } offset ${ offset }`
+            const res = await this.runSql<Bar[]>(sqlString)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧表中 查询热门的吧,根据最近x天发帖数量进行排序，获取列表总数
+     * @param day 天数
+     * @returns 
+     */
+    async countFindHotBar (day: number) {
+        try {
+            const sqlString = `select count(*) as total from bar,(select count(*) as total,bid from article where createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }' GROUP BY bid ) as temp where bar.bid=temp.bid`
+            const res = await this.runSql<CountRes>(sqlString)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

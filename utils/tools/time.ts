@@ -17,7 +17,7 @@ export function getDaysBeforeTimeString (day: number) {
 }
 
 /**
- * 获取传入时间转换成的字符串 YYYY:MM:DD
+ * 获取传入时间转换成的明天的时间字符串 YYYY:MM:DD
  * @param date 时间
  * @returns 
  */
