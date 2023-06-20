@@ -351,8 +351,8 @@ class UserService {
 
             // 用户存在
             // 2.获取通过当前uid来获取被关注的用户列表 (分页的数据)
-            const resIdList = (await user.selectByUidScopedFollowLimit(uid, limit, offset, desc)).map(ele=>ele.uid_is_followed)
-            const userInfoList=await getUserListById(resIdList,currentUid)
+            const resIdList = (await user.selectByUidScopedFollowLimit(uid, limit, offset, desc)).map(ele => ele.uid_is_followed)
+            const userInfoList = await getUserListById(resIdList, currentUid)
             // 3.获取关注数量
             const total = await user.selectByUidScopedFollowCount(uid)
 
@@ -388,10 +388,10 @@ class UserService {
             // 用户不存在
             if (!resExist.length) return Promise.resolve(0)
             // 1.用户存在，获取粉丝列表
-            const fansList = (await user.selectByUidFollowedScopedFollowLimit(uid, limit, offset, desc)).map(ele=>ele.uid)
+            const fansList = (await user.selectByUidFollowedScopedFollowLimit(uid, limit, offset, desc)).map(ele => ele.uid)
 
             // 2.遍历粉丝列表 获取粉丝(关注者)的详情数据
-            const userInfoList=await getUserListById(fansList,currentUid)
+            const userInfoList = await getUserListById(fansList, currentUid)
             // 获取用户粉丝总数
             const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
 
@@ -649,6 +649,22 @@ class UserService {
                 // 查无此人
                 return Promise.resolve(0)
             }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 发现用户 (根据传入的用户该用户的哪些关注者最近10天发了帖子)
+     * @param uid 
+     * @returns 
+     */
+    async getDiscoverUserList (uid: number) {
+        try {
+            const userList = await user.discoverUser(uid, 10)
+            return Promise.resolve({
+                list: userList,
+                total: userList.length
+            })
         } catch (error) {
             return Promise.reject(error)
         }

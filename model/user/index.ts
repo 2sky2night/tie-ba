@@ -5,7 +5,7 @@ import type { User, UserBody, UserFollow, UserWithout } from "./types"
 import type { OkPacket } from 'mysql'
 import type { Count, CountRes } from "../../types"
 // 工具函数
-import { getNowTimeString } from '../../utils/tools/time'
+import { getDaysBeforeTimeString, getNowTimeString, getTimeString } from '../../utils/tools/time'
 
 /**
  * 在某个表用 in
@@ -67,6 +67,21 @@ class UserModel extends BaseModel {
     async countSearchInUserTableByUsername (keywords: string) {
         try {
             const res = await this.runSql<CountRes>(`select count(*) as total from user where  username like '%${ keywords }%'`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户表中 通过帖子表查询最近发帖的关注用户
+     * @param uid 当前用户
+     * @param day 多少天前
+     * @returns 
+     */
+    async discoverUser (uid:number,day:number) {
+        try {
+            const sqlString = `select user.uid,user.username,user.createTime,user.avatar from user,(select uid_is_followed from user_follow_user where uid = ${uid} and uid_is_followed in (select DISTINCT uid from article where  createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}' ORDER BY uid)) as temp where user.uid=temp.uid_is_followed`
+            const res = await this.runSql<UserWithout[]>(sqlString)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)

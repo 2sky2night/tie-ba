@@ -65,6 +65,9 @@ articleRouter.get('article', `${ baseRouteURL }/list`, Middleware.tokenParse, Ar
 articleRouter.get('article', `${baseRouteURL}/hot`, Middleware.tokenParse, ArticleController.toGetHotAricle)
 
 // 获取热门评论列表 (单独解析token) query:{limit?:number;offset?:number,day?:number}
-articleRouter.get('article', `${baseRouteURL}/comment/hot`, Middleware.tokenParse, ArticleController.toGetHotComment)
+articleRouter.get('article', `${baseRouteURL}/comment/discover`, Middleware.tokenParse, ArticleController.toGetHotComment)
+
+// 获取热门评论列表 (需要token) query:{limit?:number;offset?:number}
+articleRouter.get('article', `${baseRouteURL}/discover`, ArticleController.toDiscoverArticle)
 
 export default articleRouter

@@ -738,7 +738,7 @@ async function toGetHotAricle (ctx: Context) {
   }
   try {
     const res = await articleService.getHotArticleList(currentUid, limit, offset, day)
-    ctx.body=response(res,'ok')
+    ctx.body = response(res, 'ok')
   } catch (error) {
     console.log(error)
     ctx.status = 500;
@@ -772,8 +772,33 @@ async function toGetHotComment (ctx: Context) {
     case 5: day = 365; break;
   }
   try {
-    const res = await articleService.getHotCommentList(currentUid,limit,offset,day)
-    ctx.body=response(res,'ok')
+    const res = await articleService.getHotCommentList(currentUid, limit, offset, day)
+    ctx.body = response(res, 'ok')
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+/**
+ * 发现帖子
+ * @param ctx 
+ * @returns 
+ */
+async function toDiscoverArticle (ctx: Context) {
+  const currentUid = (ctx.state.user as Token).uid
+  // 解析参数
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+
+  // 校验参数是否合法
+  if (isNaN(limit) || isNaN(offset)) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法', 400)
+  }
+  try {
+    const res = await articleService.getDiscoverArticleList(currentUid, limit, offset)
+    ctx.body = response(res, 'ok')
   } catch (error) {
     console.log(error)
     ctx.status = 500;
@@ -801,5 +826,6 @@ export default {
   toDeleteArticle,
   toGetArticleList,
   toGetHotAricle,
-  toGetHotComment
+  toGetHotComment,
+  toDiscoverArticle
 }

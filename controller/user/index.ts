@@ -452,6 +452,20 @@ async function toGetUserInfo(ctx: Context) {
 
 }
 
+/**
+ * 查看当前登录的用户有哪些关注者最近十天发了新贴
+ * @param ctx 
+ */
+async function toGetDiscoverUserList (ctx: Context) {
+    const token = ctx.state.user as Token
+    try {
+        const res = await userService.getDiscoverUserList(token.uid)
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
 
 export default {
     toLogin,
@@ -466,5 +480,6 @@ export default {
     toUpdateUser,
     toUpdateUserPassword,
     toGetUserProfile,
-    toGetUserInfo
+    toGetUserInfo,
+    toGetDiscoverUserList
 }

@@ -48,5 +48,7 @@ userRouter.get('user', `${ baseRouteURL }/profile`, Middleware.tokenParse, UserC
 // 通过token获取用户信息 (需要token)
 userRouter.get('user', `${ baseRouteURL }/info/v2`, UserController.toGetUserInfo)
 
+// 通过token获取当前用户有哪些关注者发送了新贴(最近10天) (需要token)
+userRouter.get('user', `${ baseRouteURL }/discover`, UserController.toGetDiscoverUserList)
 
 export default userRouter

@@ -132,6 +132,37 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 发现帖子 查询关注者发送的帖子
+   * @param uid 当前用户
+   * @param limit 多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据帖子创建的时间升序或降序
+   * @returns 
+   */
+  async discoverAricle (uid: number, limit: number, offset: number, desc: boolean) {
+    try {
+      const sqlString = `select * from article where uid in (select uid_is_followed from user_follow_user where uid = ${ uid }) ORDER BY createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`
+      const res = await this.runSql<ArticleBaseItem[]>(sqlString)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 查询所有关注者的发帖数量
+   * @param uid 当前用户
+   * @returns 
+   */
+  async countDiscoverArticle (uid: number) {
+    try {
+      const sqlString = `select count(*) as total from article where uid in (select uid_is_followed from user_follow_user where uid=${ uid })`
+      const res = await this.runSql<CountRes>(sqlString)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在帖子表中 通过uid来查询用户所有的帖子记录
    * @param uid 用户id
    * @returns 
@@ -522,11 +553,11 @@ class ArticleModel extends BaseModel {
    */
   async findHotComment (day: number, limit: number, offset: number) {
     try {
-      const sqlString = `select comment.* from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}' ORDER BY total desc limit ${limit} offset ${offset}`
+      const sqlString = `select comment.* from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }' ORDER BY total desc limit ${ limit } offset ${ offset }`
       const res = await this.runSql<CommentBaseItem[]>(sqlString)
       return Promise.resolve(res)
     } catch (error) {
-      return Promise.reject(error)  
+      return Promise.reject(error)
     }
   }
   /**
@@ -536,11 +567,11 @@ class ArticleModel extends BaseModel {
    */
   async countFindHotComment (day: number) {
     try {
-      const sqlString = `select count(*) as total from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}'`
+      const sqlString = `select count(*) as total from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }'`
       const res = await this.runSql<CountRes>(sqlString)
       return Promise.resolve(res)
     } catch (error) {
-      return Promise.reject(error)  
+      return Promise.reject(error)
     }
   }
   /**

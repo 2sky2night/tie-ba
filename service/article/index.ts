@@ -722,6 +722,32 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 发现帖子 查询当前用户所有关注者的发帖列表(根据发帖时间降序排序)
+   * @param uid 当前登录的用户id
+   * @param limit 返回多少条数据
+   * @param offset 多少偏移量开始获取数据
+   * @returns 
+   */
+  async getDiscoverArticleList (uid: number, limit: number, offset: number) {
+    try {
+      // 查询所有关注者发帖的总数
+      const [ count ] = await article.countDiscoverArticle(uid)
+      // 查询这些关注者某一页的帖子 (根据帖子创建者时间降序排列帖子)
+      const articleList = await article.discoverAricle(uid, limit, offset, true)
+      // 查询这些帖子的其他信息
+      const list = await getArticleList(articleList, uid)
+      return Promise.resolve({
+        list,
+        total:count.total,
+        offset,
+        limit,
+        has_more:count.total>limit+offset
+      })
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleService
