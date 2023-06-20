@@ -514,6 +514,36 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在评论表中 查询热门评论（根据点赞评论的数量对评论降序排序，并指定查询某个时间段的评论）
+   * @param day 多少天前的评论
+   * @param limit 取多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @returns 
+   */
+  async findHotComment (day: number, limit: number, offset: number) {
+    try {
+      const sqlString = `select comment.* from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}' ORDER BY total desc limit ${limit} offset ${offset}`
+      const res = await this.runSql<CommentBaseItem[]>(sqlString)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)  
+    }
+  }
+  /**
+   * 在评论表中 查询热门评论的总数量
+   * @param day 多少天前的评论
+   * @returns 
+   */
+  async countFindHotComment (day: number) {
+    try {
+      const sqlString = `select count(*) as total from comment,(select count(*) as total,cid from user_like_comment GROUP BY cid) as temp where comment.cid=temp.cid and createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}'`
+      const res = await this.runSql<CountRes>(sqlString)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)  
+    }
+  }
+  /**
    *  在评论表中 通过aid查询该帖子的评论总数
    * @param aid 帖子id
    * @returns 

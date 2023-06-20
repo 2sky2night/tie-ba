@@ -676,7 +676,7 @@ class ArticleService {
    * @param offset 从多少偏移量开始获取数据
    * @param day 多少天之前的帖子
    */
-  async getHotArticleList (uid: number | undefined, limit: number, offset: number,day:number) {
+  async getHotArticleList (uid: number | undefined, limit: number, offset: number, day: number) {
     try {
       // 查询近x天评论最多的帖子总数
       const [ count ] = await article.countFindHotArticle(day)
@@ -689,7 +689,34 @@ class ArticleService {
         limit,
         offset,
         day,
-        has_more:count.total>limit+offset
+        has_more: count.total > limit + offset
+      })
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 发现热评
+   * 1.查询热门评论的总数
+   * 2.查询热评论列表
+   * 3.遍历评论列表 查询该评论的其他信息
+   * @param uid 当前登录的用户id
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param day  多少天之前的评论
+   */
+  async getHotCommentList (uid: number | undefined, limit: number, offset: number, day: number) {
+    try {
+      const [ count ] = await article.countFindHotComment(day)
+      const commentList = await article.findHotComment(day, limit, offset)
+      const list = await getCommentList(commentList, uid)
+      return Promise.resolve({
+        list,
+        offset,
+        limit,
+        total: count.total,
+        day,
+        has_more: count.total > limit + offset
       })
     } catch (error) {
       return Promise.reject(error)

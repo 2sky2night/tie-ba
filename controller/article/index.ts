@@ -746,6 +746,41 @@ async function toGetHotAricle (ctx: Context) {
   }
 }
 
+/**
+ * 发现热评
+ * @param ctx 
+ * @returns 
+ */
+async function toGetHotComment (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+  // 解析参数
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  // 查询多少天以前的热门评论 (1:24小时 2:3天 3:15天 4:3个月 5:1年)
+  const type = ctx.query.type ? +ctx.query.type : 1
+  // 校验参数是否合法
+  if (isNaN(limit) || isNaN(offset) || isNaN(type) || type > 5 || type < 1) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法', 400)
+  }
+  let day = 1;
+  switch (type) {
+    case 1: break;
+    case 2: day = 3; break;
+    case 3: day = 15; break;
+    case 4: day = 90; break;
+    case 5: day = 365; break;
+  }
+  try {
+    const res = await articleService.getHotCommentList(currentUid,limit,offset,day)
+    ctx.body=response(res,'ok')
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
 export default {
   toCreateArticle,
   toGetArticleInfo,
@@ -765,5 +800,6 @@ export default {
   toGetUserArticleList,
   toDeleteArticle,
   toGetArticleList,
-  toGetHotAricle
+  toGetHotAricle,
+  toGetHotComment
 }
