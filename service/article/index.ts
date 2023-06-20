@@ -667,6 +667,34 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 发现热帖
+   * 1.查询x天内评论最多的帖子列表中的某一页
+   * 2.查询x天内评论最多的帖子列表总数
+   * @param uid 当前登录的用户id
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param day 多少天之前的帖子
+   */
+  async getHotArticleList (uid: number | undefined, limit: number, offset: number,day:number) {
+    try {
+      // 查询近x天评论最多的帖子总数
+      const [ count ] = await article.countFindHotArticle(day)
+      // 查询近x天评论最多的帖子列表
+      const articleList = await article.findHotArticle(day, limit, offset)
+      const list = await getArticleList(articleList, uid)
+      return Promise.resolve({
+        list,
+        total: count.total,
+        limit,
+        offset,
+        day,
+        has_more:count.total>limit+offset
+      })
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleService

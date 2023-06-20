@@ -1,8 +1,8 @@
 import type { OkPacket } from 'mysql'
 import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleStarBaseItem, InserCommentBody, CommentBaseItem, LikeCommentBaseItem } from './types'
-import type { CountRes } from '../../types'
+import type { Count, CountRes } from '../../types'
 import BaseModel from '../base/index'
-import { getNowTimeString } from '../../utils/tools/time'
+import { getNowTimeString, getDaysBeforeTimeString, getTimeString } from '../../utils/tools/time'
 
 /**
  * 在某个表用 in
@@ -199,6 +199,36 @@ class ArticleModel extends BaseModel {
   async countInArticleTable () {
     try {
       const res = await this.runSql<CountRes>(`select count(*) as total from article`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 查询近x天来评论最多的帖子列表 (分页限制)
+   * @param day 多少天之前
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始查询数据
+   * @returns 帖子列表
+   */
+  async findHotArticle (day: number, limit: number, offset: number) {
+    try {
+      const sqlString = `select article.* from article,(select count(*) as total,aid from comment GROUP BY aid) as temp where article.aid=temp.aid and createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }' ORDER BY total desc  limit ${ limit } OFFSET ${ offset }`
+      const res = await this.runSql<ArticleBaseItem[]>(sqlString)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 查询近x天来评论最多的帖子列表总数
+   * @param day 多少天之前
+   * @returns 总数
+   */
+  async countFindHotArticle (day: number) {
+    try {
+      const sqlString = `select count(*) as total from article,(select count(*) as total,aid from comment GROUP BY aid) as temp where article.aid=temp.aid and createTime BETWEEN '${ getDaysBeforeTimeString(day) }' and '${ getTimeString(new Date()) }'`
+      const res = await this.runSql<CountRes>(sqlString)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
@@ -449,12 +479,12 @@ class ArticleModel extends BaseModel {
    * @param desc 根据创建时间升序降序
    * @returns 
    */
-  async searchInCommentTableByContent (keywords: string,limit:number,offset:number,desc:boolean) {
+  async searchInCommentTableByContent (keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       const res = await this.runSql<CommentBaseItem[]>(`SELECT * FROM comment where content like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
       return Promise.resolve(res)
     } catch (error) {
-       return Promise.reject(error)
+      return Promise.reject(error)
     }
   }
   /**
