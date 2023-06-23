@@ -23,7 +23,7 @@ class UserService {
      * @param username 
      * @returns 用户信息
      */
-    async findUserByUsername (username: string) {
+    async findUserByUsername(username: string) {
         try {
             const res = await user.selectDataByUsername(username)
             return Promise.resolve(res)
@@ -36,7 +36,7 @@ class UserService {
      * @param data 
      * @returns 0注册失败 1注册成功
      */
-    async createUser (data: UserBody): Promise<0 | 1> {
+    async createUser(data: UserBody): Promise<0 | 1> {
         try {
             // 查询当前需要注册的用户名称是否存在
             const resExist = await user.selectByUsername(data.username)
@@ -58,7 +58,7 @@ class UserService {
      * @param data 
      * @returns 0:用户名不存在 1:密码错误 用户信息:登录成功
      */
-    async checkLogin (data: UserBody): Promise<0 | 1 | User> {
+    async checkLogin(data: UserBody): Promise<0 | 1 | User> {
         try {
             // 查询登录用户是否存在
             const resExit = await user.selectByUsername(data.username)
@@ -70,7 +70,7 @@ class UserService {
             const resUser = await user.selectByUsernameAndPassword(data.username, data.password)
             if (resUser.length) {
                 // 匹配成功 返回用户的数据 token中保存用户的id和用户名称
-                return Promise.resolve(resUser[ 0 ])
+                return Promise.resolve(resUser[0])
             } else {
                 // 密码错误
                 return Promise.resolve(1)
@@ -90,22 +90,22 @@ class UserService {
      * @param uid 
      * @returns 0查无此人 用户信息:查询数据成功
      */
-    async getUserInfo (uid: number) {
+    async getUserInfo(uid: number) {
         try {
             // 1.获取用户基本信息
-            const [ userInfo ] = await user.selectByUid(uid)
+            const [userInfo] = await user.selectByUid(uid)
             if (userInfo) {
                 // 查询到了
                 // 2.获取用户发帖数量
-                const [ articleCount ] = await article.countInArticleTableByUid(uid)
+                const [articleCount] = await article.countInArticleTableByUid(uid)
                 // 3.获取用户发送评论数量
-                const [ commentCount ] = await article.countInCommentTableByUid(uid)
+                const [commentCount] = await article.countInCommentTableByUid(uid)
                 // 4.获取用户粉丝数量
-                const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+                const [fansCount] = await user.selectByUidFollowedScopedFollowCount(uid)
                 // 5.获取用户关注数量
-                const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+                const [followCount] = await user.selectByUidScopedFollowCount(uid)
                 // 获取点赞帖子的总数
-                const [ likeArticleCount ] = await article.countInLikeArticleTableByUid(uid)
+                const [likeArticleCount] = await article.countInLikeArticleTableByUid(uid)
                 // 6.获取用户所有的帖子列表来查询每个帖子的点赞数量以及收藏数量
                 const userArticleList = await article.selectInArticleTableByUid(uid)
                 // 用户所有帖子被点赞的总数
@@ -113,12 +113,12 @@ class UserService {
                 let articleStaredCount = 0;
                 for (let i = 0; i < userArticleList.length; i++) {
                     // 获取帖子点赞数量
-                    const [ likeCount ] = await article.countInLikeArticleTableByAid(userArticleList[ i ].aid)
+                    const [likeCount] = await article.countInLikeArticleTableByAid(userArticleList[i].aid)
                     if (likeCount.total) {
                         articleLikedCount += likeCount.total
                     }
                     // 获取帖子收藏数量
-                    const [ starCount ] = await article.countInStarArticleTableByAid(userArticleList[ i ].aid)
+                    const [starCount] = await article.countInStarArticleTableByAid(userArticleList[i].aid)
                     if (starCount.total) {
                         articleStaredCount += starCount.total
                     }
@@ -128,17 +128,17 @@ class UserService {
                 // 所有评论被点赞的总数
                 let commentLikedCount = 0;
                 for (let i = 0; i < userCommentList.length; i++) {
-                    const [ count ] = await article.countInLikeCommentTabeByCid(userCommentList[ i ].cid)
+                    const [count] = await article.countInLikeCommentTabeByCid(userCommentList[i].cid)
                     if (count && count.total) {
                         commentLikedCount += count.total
                     }
                 }
 
                 // 8.获取用户收藏帖子的总数
-                const [ starArticleCount ] = await article.countInStarArticleTableByUid(uid)
+                const [starArticleCount] = await article.countInStarArticleTableByUid(uid)
 
                 // 9.获取用户关注吧的总数
-                const [ followBarCount ] = await bar.selectFollowByUidCount(uid)
+                const [followBarCount] = await bar.selectFollowByUidCount(uid)
 
                 // 10.获取用户最近10条点赞的帖子
                 const recentlyLikeArticleList = await article.selectInLikeArticleTableByUidLimit(uid, 10, 0, true)
@@ -146,25 +146,25 @@ class UserService {
                 const articleLikeList: any[] = [];
                 for (let i = 0; i < recentlyLikeArticleList.length; i++) {
                     // 获取帖子的数据
-                    const [ articleInfo ] = await article.selectInArticleTableByAid(recentlyLikeArticleList[ i ].aid)
+                    const [articleInfo] = await article.selectInArticleTableByAid(recentlyLikeArticleList[i].aid)
                     if (articleInfo) {
                         // 帖子存在
                         // 1.则获取对应帖子创建者信息
-                        const [ userInfo ] = await user.selectByUid(articleInfo.uid)
+                        const [userInfo] = await user.selectByUid(articleInfo.uid)
                         // 2.查询当前用户是否关注了创建者
-                        const [ isFollowed ] = await user.selectByUidAndUidIsFollow(uid, userInfo.uid)
+                        const [isFollowed] = await user.selectByUidAndUidIsFollow(uid, userInfo.uid)
                         // 3.是否收藏了该帖子？
-                        const [ isStar ] = await article.selectInStarArticleTableByUidAndAid(uid, articleInfo.aid)
+                        const [isStar] = await article.selectInStarArticleTableByUidAndAid(uid, articleInfo.aid)
                         // 4.帖子收藏人数
-                        const [ isStarCount ] = await article.countInStarArticleTableByAid(articleInfo.aid)
+                        const [isStarCount] = await article.countInStarArticleTableByAid(articleInfo.aid)
                         // 5.帖子点赞人数
-                        const [ isLikeCount ] = await article.countInLikeArticleTableByAid(articleInfo.aid)
+                        const [isLikeCount] = await article.countInLikeArticleTableByAid(articleInfo.aid)
                         // 6.帖子评论数量
-                        const [ commentCount ] = await article.countInCommentTableByAid(articleInfo.aid)
+                        const [commentCount] = await article.countInCommentTableByAid(articleInfo.aid)
                         // 7.查询该帖子所属吧的信息
-                        const [ barInfo ] = await bar.selectByBid(articleInfo.bid)
+                        const [barInfo] = await bar.selectByBid(articleInfo.bid)
                         // 8.对吧的关注状态
-                        const [ isFollowedBar ] = await bar.selectFollowByUidAndBid(articleInfo.bid, uid)
+                        const [isFollowedBar] = await bar.selectFollowByUidAndBid(articleInfo.bid, uid)
 
                         articleLikeList.push({
                             aid: articleInfo.aid,
@@ -192,25 +192,25 @@ class UserService {
                 const articleStarList: any[] = []
                 for (let i = 0; i < recentlyStarArticleList.length; i++) {
                     // 获取帖子的数据
-                    const [ articleInfo ] = await article.selectInArticleTableByAid(recentlyStarArticleList[ i ].aid)
+                    const [articleInfo] = await article.selectInArticleTableByAid(recentlyStarArticleList[i].aid)
                     if (articleInfo) {
                         // 帖子存在
                         // 1.则获取对应帖子创建者信息
-                        const [ userInfo ] = await user.selectByUid(articleInfo.uid)
+                        const [userInfo] = await user.selectByUid(articleInfo.uid)
                         // 2.查询当前用户是否关注了创建者
-                        const [ isFollowed ] = await user.selectByUidAndUidIsFollow(uid, userInfo.uid)
+                        const [isFollowed] = await user.selectByUidAndUidIsFollow(uid, userInfo.uid)
                         // 3.是否点赞了该帖子？
-                        const [ isLiked ] = await article.selectInLikeArticleTableByAidAndUid(uid, articleInfo.aid)
+                        const [isLiked] = await article.selectInLikeArticleTableByAidAndUid(uid, articleInfo.aid)
                         // 4.帖子收藏人数
-                        const [ isStarCount ] = await article.countInStarArticleTableByAid(articleInfo.aid)
+                        const [isStarCount] = await article.countInStarArticleTableByAid(articleInfo.aid)
                         // 5.帖子点赞人数
-                        const [ isLikeCount ] = await article.countInLikeArticleTableByAid(articleInfo.aid)
+                        const [isLikeCount] = await article.countInLikeArticleTableByAid(articleInfo.aid)
                         // 6.帖子评论数量
-                        const [ commentCount ] = await article.countInCommentTableByAid(articleInfo.aid)
+                        const [commentCount] = await article.countInCommentTableByAid(articleInfo.aid)
                         // 7.查询该帖子所属吧的信息
-                        const [ barInfo ] = await bar.selectByBid(articleInfo.bid)
+                        const [barInfo] = await bar.selectByBid(articleInfo.bid)
                         // 8.对吧的关注状态
-                        const [ isFollowedBar ] = await bar.selectFollowByUidAndBid(articleInfo.bid, uid)
+                        const [isFollowedBar] = await bar.selectFollowByUidAndBid(articleInfo.bid, uid)
 
                         articleStarList.push({
                             aid: articleInfo.aid,
@@ -233,7 +233,7 @@ class UserService {
                 }
 
                 // 12.获取用户点赞评论的总数
-                const [ commentLikeCount ] = await article.countInLikeCommentTableByUid(uid)
+                const [commentLikeCount] = await article.countInLikeCommentTableByUid(uid)
 
 
                 return Promise.resolve({
@@ -273,7 +273,7 @@ class UserService {
      * @param uidIsFollowed 被关注者
      * @returns -2不能自己关注自己 -1被关注者不存在 0已经关注了 1关注成功 
      */
-    async toFollowUser (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+    async toFollowUser(uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
         if (uid === uidIsFollowed) {
             return Promise.resolve(-2)
         }
@@ -304,7 +304,7 @@ class UserService {
      * @param uidIsFollowed 被关注者的id
      * @returns -2：自己不能取消关注自己 -1：被关注者不存在 0：还未关注不能取消关注 1：取关成功
      */
-    async toCancelFollow (uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
+    async toCancelFollow(uid: number, uidIsFollowed: number): Promise<-2 | -1 | 0 | 1> {
         if (uid === uidIsFollowed) {
             // 自己不能取消关注自己
             return Promise.resolve(-2)
@@ -342,7 +342,7 @@ class UserService {
      * @param offset 从第几条开始获取数据
      * @returns 
      */
-    async getFollowList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getFollowList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 1.查询用户是否存在
             const resExist = await user.selectByUid(uid)
@@ -358,10 +358,10 @@ class UserService {
 
             return Promise.resolve({
                 list: userInfoList,
-                total: total[ 0 ].total,
+                total: total[0].total,
                 limit,
                 offset,
-                has_more: total[ 0 ].total > offset + limit,
+                has_more: total[0].total > offset + limit,
                 desc
             })
 
@@ -382,7 +382,7 @@ class UserService {
      * @param offset 从第几条开始获取数据
      * @returns 
      */
-    async getFansList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getFansList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             const resExist = await user.selectByUid(uid)
             // 用户不存在
@@ -393,7 +393,7 @@ class UserService {
             // 2.遍历粉丝列表 获取粉丝(关注者)的详情数据
             const userInfoList = await getUserListById(fansList, currentUid)
             // 获取用户粉丝总数
-            const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+            const [fansCount] = await user.selectByUidFollowedScopedFollowCount(uid)
 
             return Promise.resolve({
                 list: userInfoList,
@@ -417,17 +417,22 @@ class UserService {
      * @param username 用户名称
      * @returns 0:用户名已经存在了 1:修改成功
      */
-    async updateUserData (uid: number, avatar: string, username: string): Promise<0 | 1> {
+    async updateUserData(uid: number, avatar: string, username: string): Promise<0 | 1> {
         try {
             const resExist = await user.selectByUsername(username)
-            if (resExist.length) {
-                // 用户名已经存在了 不能修改
-                return Promise.resolve(0)
-            } else {
-                // 用户名不存在 则可以修改
+            if (resExist.length && resExist[0].uid === uid) {
+                // 若存在该用户名 但修改的用户就是当前用户则可以修改
                 await user.updateInUserTableByUid(uid, username, avatar)
                 return Promise.resolve(1)
+            } else if (!resExist.length) {
+                // 不存在该用户名 则可以修改
+                await user.updateInUserTableByUid(uid, username, avatar)
+                return Promise.resolve(1)
+            } else {
+                // 若用户名存在 且该用户的用户id不为当前用户则不能修改
+                return Promise.reject(0)
             }
+
         } catch (error) {
             return Promise.reject(error)
         }
@@ -439,9 +444,9 @@ class UserService {
      * @param oldPassword 旧密码
      * @returns -1:旧密码对不上 0:新旧密码一致 1:修改密码成功
      */
-    async updateUserPassword (uid: number, password: string, oldPassword: string): Promise<-1 | 0 | 1> {
+    async updateUserPassword(uid: number, password: string, oldPassword: string): Promise<-1 | 0 | 1> {
         try {
-            const [ userInfo ] = await user.selectInUserTableByUid(uid)
+            const [userInfo] = await user.selectInUserTableByUid(uid)
             if (userInfo) {
                 // 用户存在
                 if (userInfo.password === oldPassword) {
@@ -474,10 +479,10 @@ class UserService {
      * @param uid 用户的id
      * @param currentUid 当前登录的用户id
      */
-    async getUserProfile (uid: number, currentUid: number | undefined) {
+    async getUserProfile(uid: number, currentUid: number | undefined) {
         try {
             // 1.获取用户信息
-            const [ userInfo ] = await user.selectByUid(uid)
+            const [userInfo] = await user.selectByUid(uid)
             if (!userInfo) {
                 // 用户不存在
                 return Promise.resolve(0)
@@ -488,35 +493,35 @@ class UserService {
             const userIsFans = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false
             // 4.获取各种数据
             // 粉丝数量
-            const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+            const [fansCount] = await user.selectByUidFollowedScopedFollowCount(uid)
             // 关注数量
-            const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+            const [followCount] = await user.selectByUidScopedFollowCount(uid)
             // 关注吧数量
-            const [ followBarCount ] = await bar.selectFollowByUidCount(uid)
+            const [followBarCount] = await bar.selectFollowByUidCount(uid)
             // 发帖数量
-            const [ articleCount ] = await article.countInArticleTableByUid(uid)
+            const [articleCount] = await article.countInArticleTableByUid(uid)
             // 评论数量
-            const [ commentCount ] = await article.countInCommentTableByUid(uid)
+            const [commentCount] = await article.countInCommentTableByUid(uid)
             // 收藏帖子的数量
-            const [ starArticleCount ] = await article.countInStarArticleTableByUid(uid)
+            const [starArticleCount] = await article.countInStarArticleTableByUid(uid)
             // 点赞帖子的数量
-            const [ likeArticleCount ] = await article.countInLikeArticleTableByUid(uid)
+            const [likeArticleCount] = await article.countInLikeArticleTableByUid(uid)
             // 点赞评论的数量
-            const [ likeCommentCount ] = await article.countInLikeCommentTableByUid(uid)
+            const [likeCommentCount] = await article.countInLikeCommentTableByUid(uid)
             // 获取用户创建的吧数量
-            const [ barCount ] = await bar.countInBarTableByUid(uid)
+            const [barCount] = await bar.countInBarTableByUid(uid)
 
             // 5.帖子被点赞的总数 帖子被收藏的数量
             let articleLikedCount = 0
             let articleStardCount = 0
             const userArticleList = await article.selectInArticleTableByUid(uid)
             for (let i = 0; i < userArticleList.length; i++) {
-                const aid = userArticleList[ i ].aid
+                const aid = userArticleList[i].aid
                 // 查询该帖子被点赞的总数
-                const [ likeCount ] = await article.countInLikeArticleTableByAid(aid)
+                const [likeCount] = await article.countInLikeArticleTableByAid(aid)
                 articleLikedCount += likeCount.total
                 // 查询该帖子被收藏的总数
-                const [ starCount ] = await article.countInStarArticleTableByAid(aid)
+                const [starCount] = await article.countInStarArticleTableByAid(aid)
                 articleStardCount += starCount.total
             }
             // 6.评论被点赞的总数
@@ -524,7 +529,7 @@ class UserService {
             const userCommentList = await article.selectInCommentTableByUid(uid)
             for (let i = 0; i < userCommentList.length; i++) {
                 // 查询该评论被点赞的总数
-                const [ likeCount ] = await article.countInLikeCommentTabeByCid(userCommentList[ i ].cid)
+                const [likeCount] = await article.countInLikeCommentTabeByCid(userCommentList[i].cid)
                 commentLikedCount += likeCount.total
             }
 
@@ -567,22 +572,22 @@ class UserService {
      * @param uid 当前登录的用户id
      * @returns 
      */
-    async getUserInfoV2 (uid: number) {
+    async getUserInfoV2(uid: number) {
         try {
             // 1.获取用户基本信息
-            const [ userInfo ] = await user.selectByUid(uid)
+            const [userInfo] = await user.selectByUid(uid)
             if (userInfo) {
                 // 查询到了
                 // 2.获取用户发帖数量
-                const [ articleCount ] = await article.countInArticleTableByUid(uid)
+                const [articleCount] = await article.countInArticleTableByUid(uid)
                 // 3.获取用户发送评论数量
-                const [ commentCount ] = await article.countInCommentTableByUid(uid)
+                const [commentCount] = await article.countInCommentTableByUid(uid)
                 // 4.获取用户粉丝数量
-                const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
+                const [fansCount] = await user.selectByUidFollowedScopedFollowCount(uid)
                 // 5.获取用户关注数量
-                const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
+                const [followCount] = await user.selectByUidScopedFollowCount(uid)
                 // 获取点赞帖子的总数
-                const [ likeArticleCount ] = await article.countInLikeArticleTableByUid(uid)
+                const [likeArticleCount] = await article.countInLikeArticleTableByUid(uid)
                 // 6.获取用户所有的帖子列表来查询每个帖子的点赞数量以及收藏数量
                 const userArticleList = await article.selectInArticleTableByUid(uid)
                 // 用户所有帖子被点赞的总数
@@ -590,12 +595,12 @@ class UserService {
                 let articleStaredCount = 0;
                 for (let i = 0; i < userArticleList.length; i++) {
                     // 获取帖子点赞数量
-                    const [ likeCount ] = await article.countInLikeArticleTableByAid(userArticleList[ i ].aid)
+                    const [likeCount] = await article.countInLikeArticleTableByAid(userArticleList[i].aid)
                     if (likeCount.total) {
                         articleLikedCount += likeCount.total
                     }
                     // 获取帖子收藏数量
-                    const [ starCount ] = await article.countInStarArticleTableByAid(userArticleList[ i ].aid)
+                    const [starCount] = await article.countInStarArticleTableByAid(userArticleList[i].aid)
                     if (starCount.total) {
                         articleStaredCount += starCount.total
                     }
@@ -605,23 +610,23 @@ class UserService {
                 // 所有评论被点赞的总数
                 let commentLikedCount = 0;
                 for (let i = 0; i < userCommentList.length; i++) {
-                    const [ count ] = await article.countInLikeCommentTabeByCid(userCommentList[ i ].cid)
+                    const [count] = await article.countInLikeCommentTabeByCid(userCommentList[i].cid)
                     if (count && count.total) {
                         commentLikedCount += count.total
                     }
                 }
 
                 // 8.获取用户收藏帖子的总数
-                const [ starArticleCount ] = await article.countInStarArticleTableByUid(uid)
+                const [starArticleCount] = await article.countInStarArticleTableByUid(uid)
 
                 // 9.获取用户关注吧的总数
-                const [ followBarCount ] = await bar.selectFollowByUidCount(uid)
+                const [followBarCount] = await bar.selectFollowByUidCount(uid)
 
                 // 10.获取用户点赞评论的总数
-                const [ commentLikeCount ] = await article.countInLikeCommentTableByUid(uid)
+                const [commentLikeCount] = await article.countInLikeCommentTableByUid(uid)
 
                 // 11.获取用户创建的吧数量
-                const [ barCount ] = await bar.countInBarTableByUid(uid)
+                const [barCount] = await bar.countInBarTableByUid(uid)
 
                 return Promise.resolve({
                     ...userInfo,
@@ -658,7 +663,7 @@ class UserService {
      * @param uid 
      * @returns 
      */
-    async getDiscoverUserList (uid: number) {
+    async getDiscoverUserList(uid: number) {
         try {
             const userList = await user.discoverUser(uid, 10)
             return Promise.resolve({
