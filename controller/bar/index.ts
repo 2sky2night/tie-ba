@@ -35,6 +35,7 @@ async function toCreateBar (ctx: Context) {
                 ctx.body = response(null, '创建吧成功!', 200)
             } else {
                 // 吧名重复
+                ctx.status = 400; 
                 ctx.body = response(null, '吧名重复!', 400)
             }
         } else {
@@ -90,6 +91,7 @@ async function toGetBarInfo (ctx: Context) {
                 // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
                 const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
                 if (res === 0) {
+                    ctx.status = 400; 
                     ctx.body = response(null, '获取吧数据失败,该吧不存在!', 400)
                 } else {
                     ctx.body = response(res, 'ok')
@@ -129,6 +131,7 @@ async function toFollowBar (ctx: Context) {
                 if (res) {
                     return ctx.body = response(null, '关注成功!')
                 } else {
+                    ctx.status = 400; 
                     return ctx.body = response(null, '关注吧失败,已经关注了!', 400)
                 }
             } else {
@@ -169,6 +172,7 @@ async function toCanceFollowBar (ctx: Context) {
             ctx.body = response(null, '取消关注成功!')
         } else {
             // 当前未关注吧 不能取消关注
+            ctx.status = 400; 
             ctx.body = response(null, '取消关注吧失败,当前未关注该吧!', 400)
         }
     } catch (error) {

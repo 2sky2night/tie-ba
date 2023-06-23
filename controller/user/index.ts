@@ -66,8 +66,8 @@ async function toLogin(ctx: Context) {
     try {
         const res = await userService.checkLogin(body)
         switch (res) {
-            case 0: return ctx.body = response(null, '用户名不存在', 400);
-            case 1: return ctx.body = response(null, '密码错误', 400);
+            case 0: ctx.status = 400; return ctx.body = response(null, '用户名不存在', 400);
+            case 1: ctx.status = 400; return ctx.body = response(null, '密码错误', 400);
             default: {
                 // const token = jwt.sign({ username: body.username, password: body.password }, SECRET_KEY, { expiresIn: '2h' });
                 const token = jwt.sign({ username: body.username, uid: res.uid }, SECRET_KEY, { expiresIn: '2h' });
@@ -114,7 +114,7 @@ async function toRegister(ctx: Context) {
         } else {
             // 用户名重复
             ctx.status = 400;
-            ctx.body = response(null, '用户名重复!', 400)
+            ctx.body = response(null, '用户名已被占用!', 400)
         }
     } catch (error) {
         ctx.status = 500
@@ -148,6 +148,7 @@ async function getUserInfoByToken(ctx: Context) {
             ctx.body = response(res, 'ok', 200)
         } else {
             // 查无此人
+            ctx.status = 400;
             ctx.body = response(null, '查无此人', 400)
         }
 
@@ -185,12 +186,15 @@ async function toFollowUser(ctx: Context) {
                     ctx.body = response(null, '关注成功!')
                 } else if (res === 0) {
                     // 重复关注的提示
+                    ctx.status = 400;
                     ctx.body = response(null, '关注用户失败,已经关注了!', 400)
                 } else if (res === -2) {
                     // 不能自己关注自己
+                    ctx.status = 400;
                     ctx.body = response(null, '关注用户失败,不能自己关注自己!', 400)
                 } else if (res === -1) {
                     // 被关注者不存在
+                    ctx.status = 400;
                     ctx.body = response(null, '关注用户失败,被关注者不存在!', 400)
                 }
             } catch (error) {
@@ -350,6 +354,7 @@ async function toUpdateUser(ctx: Context) {
             ctx.body = response(null, '修改用户信息成功!')
         } else {
             // 用户名已经存在了
+            ctx.status = 400;
             ctx.body = response(null, '修改用户信息失败,用户名已经存在了!', 400)
         }
     } catch (error) {
@@ -442,6 +447,7 @@ async function toGetUserInfo(ctx: Context) {
             ctx.body = response(res, 'ok', 200)
         } else {
             // 查无此人
+            ctx.status = 400;
             ctx.body = response(null, '查无此人', 400)
         }
 
@@ -456,7 +462,7 @@ async function toGetUserInfo(ctx: Context) {
  * 查看当前登录的用户有哪些关注者最近十天发了新贴
  * @param ctx 
  */
-async function toGetDiscoverUserList (ctx: Context) {
+async function toGetDiscoverUserList(ctx: Context) {
     const token = ctx.state.user as Token
     try {
         const res = await userService.getDiscoverUserList(token.uid)

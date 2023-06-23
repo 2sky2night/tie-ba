@@ -86,8 +86,8 @@ async function toGetArticleInfo (ctx: Context) {
       ctx.body = response(res, 'ok')
     } else {
       // 请求文章不存在
-      ctx.status = 404;
-      ctx.body = response(null, '帖子不存在!', 404)
+      ctx.status = 400;
+      ctx.body = response(null, '帖子不存在!', 400)
     }
   } catch (error) {
     console.log(error)
