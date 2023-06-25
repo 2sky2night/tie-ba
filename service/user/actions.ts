@@ -95,3 +95,26 @@ export async function getUserList (userList: UserWithout[], currentUid: number |
     return Promise.reject(error)
   }
 }
+
+/**
+ * 获取用户收到的赞数 评论总数和文章总数 (需要先查询当前用户是否存在才能调用该方法) 
+ * @param uid 用户id
+ */
+export async function getUserLikeCount(uid: number) {
+  try {
+    const articleList = await article.selectInArticleTableByUid(uid)
+    const commentList = await article.selectInCommentTableByUid(uid)
+    let likeCount = 0
+    for (let i = 0; i < articleList.length; i++){
+      const [count] = await article.countInLikeArticleTableByAid(articleList[i].aid)
+      likeCount+=count.total
+    }
+    for (let i = 0; i < commentList.length; i++){
+      const [count] = await article.countInLikeCommentTabeByCid(commentList[i].cid)
+      likeCount += count.total
+    }
+    return Promise.resolve(likeCount)
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}

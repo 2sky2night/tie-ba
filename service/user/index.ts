@@ -4,7 +4,7 @@ import ArticleModel from '../../model/article'
 import BarModel from '../../model/bar'
 // 类型
 import type { User, UserBody } from '../../model/user/types'
-import { getUserListById } from './actions'
+import { getUserListById, getUserLikeCount } from './actions'
 
 // 用户模型
 const user = new UserModel()
@@ -670,6 +670,43 @@ class UserService {
                 list: userList,
                 total: userList.length
             })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+
+    /**
+     * 查询用户简要信息
+     * 1.查询用户是否存在
+     * 2.查询用户粉丝 关注 获赞数量
+     * 3.查询当前用户对用户的关注状态
+     * @param uid 用户id
+     * @param currentUid 当前用户id 
+     */
+    async getUserCardInfo(uid: number, currentUid: number | undefined) {
+        try {
+            // 1. 查询用户是否存在
+            const [userInfo] = await user.selectByUid(uid)
+            // 用户不存在
+            if (!userInfo) return Promise.resolve(0)
+            // 2.用户存在查询相关信息
+            const [followCount] = await user.selectByUidScopedFollowCount(uid)
+            const [fansCount] = await user.selectByUidFollowedScopedFollowCount(uid)
+            // 点赞总数
+            const likeCount = await getUserLikeCount(uid)
+            // 3.查询关注状态
+            const isFollowUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false
+            const isFollowMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false
+
+            return Promise.resolve({
+                ...userInfo,
+                follow_count: followCount.total,
+                fans_count: fansCount.total,
+                like_count: likeCount,
+                is_follow: isFollowUser,
+                is_fans: isFollowMe
+            })
+
         } catch (error) {
             return Promise.reject(error)
         }

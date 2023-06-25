@@ -101,7 +101,7 @@ async function toRegister(ctx: Context) {
         ctx.status = 400;
         return ctx.body = response(null, '用户名不能为空!', 400)
     }
-    if (body.password.length < 5 || body.password.length > 14) {
+    if (body.password.length < 6 || body.password.length > 14) {
         // 密码长度非法
         ctx.status = 400;
         return ctx.body = response(null, '密码长度必须为6-14位!', 400)
@@ -473,6 +473,36 @@ async function toGetDiscoverUserList(ctx: Context) {
     }
 }
 
+/**
+ * 获取用户简要信息
+ * @param ctx 
+ * @returns 
+ */
+async function toGetUserCardInfo(ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+    if (ctx.query.uid === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带!', 400)
+    }
+    const uid = +ctx.query.uid
+    if (isNaN(uid)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法!', 400)
+    }
+    try {
+        const res = await userService.getUserCardInfo(uid, currentUid)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 400
+            ctx.body = response(null, '获取用户资料失败,用户不存在!', 400)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
 export default {
     toLogin,
     checkUser,
@@ -487,5 +517,6 @@ export default {
     toUpdateUserPassword,
     toGetUserProfile,
     toGetUserInfo,
-    toGetDiscoverUserList
+    toGetDiscoverUserList,
+    toGetUserCardInfo
 }
