@@ -605,7 +605,8 @@ class ArticleService {
         limit,
         offset,
         total: articleCount.total,
-        has_more: articleCount.total > offset + limit
+        has_more: articleCount.total > offset + limit,
+        desc
       })
     } catch (error) {
       return Promise.reject(error)
