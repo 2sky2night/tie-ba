@@ -1,9 +1,9 @@
-import type { ConnectionConfig } from 'mysql'
+import type { PoolOptions } from 'mysql2'
 
 /**
  * 连接数据库的配置项
  */
-const databaseConfig: ConnectionConfig = {
+const databaseConfig: PoolOptions = {
     database: 'tie_bar_lower',
     user: 'root',
     password: '1234',
