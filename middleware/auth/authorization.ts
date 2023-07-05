@@ -34,6 +34,11 @@ export default async function authorizationCatcher (ctx: Context, next: Next) {
                             } else if (err.message === "jwt expired") {
                                 // token过期
                                 rejected(1)
+                            } else if (err.message === 'invalid token') {
+                                // 无效的token
+                                rejected(2)
+                            } else {
+                                rejected()
                             }
                         } else {
                             // token解析成功
