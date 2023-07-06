@@ -48,8 +48,8 @@ async function toCreateArticle (ctx: Context) {
     if (res) {
       ctx.body = response(null, '发帖成功!')
     } else {
-      ctx.status = 400;
-      ctx.body = response(null, '发帖失败,所在的吧不存在!', 500)
+      ctx.status = 404;
+      ctx.body = response(null, '发帖失败,所在的吧不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -86,8 +86,8 @@ async function toGetArticleInfo (ctx: Context) {
       ctx.body = response(res, 'ok')
     } else {
       // 请求文章不存在
-      ctx.status = 400;
-      ctx.body = response(null, '帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '帖子不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -124,8 +124,8 @@ async function toLikeArticle (ctx: Context) {
   try {
     const res = await articleService.likeArticle(token.uid, aid)
     if (res === -1) {
-      ctx.status = 400;
-      ctx.body = response(null, '点赞帖子失败,帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '点赞帖子失败,帖子不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400;
       ctx.body = response(null, '点赞帖子失败,请勿重复点赞!', 400)
@@ -167,8 +167,8 @@ async function toCancelLikeArticle (ctx: Context) {
   try {
     const res = await articleService.cancelLikeArticle(token.uid, aid)
     if (res === -1) {
-      ctx.status = 400;
-      ctx.body = response(null, '取消点赞帖子失败,帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '取消点赞帖子失败,帖子不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400;
       ctx.body = response(null, '取消点赞帖子失败,还未对该帖子点赞!', 400)
@@ -206,8 +206,8 @@ async function toStarArticle (ctx: Context) {
   try {
     const res = await articleService.starArticle(token.uid, aid);
     if (res === -1) {
-      ctx.status = 400;
-      ctx.body = response(null, '收藏帖子失败,帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '收藏帖子失败,帖子不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400;
       ctx.body = response(null, '收藏帖子失败,请勿重复收藏帖子!', 400)
@@ -245,8 +245,8 @@ async function toCancelStarArticle (ctx: Context) {
   try {
     const res = await articleService.cancelStarArticle(token.uid, aid);
     if (res === -1) {
-      ctx.status = 400;
-      ctx.body = response(null, '取消收藏帖子失败,帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '取消收藏帖子失败,帖子不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400;
       ctx.body = response(null, '取消收藏帖子失败,未收藏帖子!', 400)
@@ -304,8 +304,8 @@ async function toCreateComment (ctx: Context) {
       ctx.body = response(null, '发送评论成功!')
     } else {
       // 发送评论失败 帖子不存在
-      ctx.status = 400;
-      ctx.body = response(null, '发送评论失败,帖子不存在', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '发送评论失败,帖子不存在', 404)
     }
   } catch (error) {
     console.log(error)
@@ -330,8 +330,8 @@ async function toDeleteComment (ctx: Context) {
   try {
     const res = await articleService.deleteComment(cid, token.uid)
     if (res === -1) {
-      ctx.status = 400
-      ctx.body = response(null, '删除评论失败,评论不存在', 400)
+      ctx.status = 404
+      ctx.body = response(null, '删除评论失败,评论不存在', 404)
     } else if (res === 0) {
       ctx.status = 400
       ctx.body = response(null, '删除评论失败,不是评论创建者或楼主', 400)
@@ -364,8 +364,8 @@ async function toLikeComment (ctx: Context) {
   try {
     const res = await articleService.likeComment(cid, token.uid)
     if (res === -1) {
-      ctx.status = 400
-      ctx.body = response(null, '点赞评论失败,评论不存在', 400)
+      ctx.status = 404
+      ctx.body = response(null, '点赞评论失败,评论不存在', 404)
     } else if (res === 0) {
       ctx.status = 400
       ctx.body = response(null, '点赞评论失败,请勿重复点赞', 400)
@@ -396,8 +396,8 @@ async function toCancelLikeComment (ctx: Context) {
   try {
     const res = await articleService.cancelLikeComment(cid, token.uid)
     if (res === -1) {
-      ctx.status = 400
-      ctx.body = response(null, '取消点赞评论失败,评论不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '取消点赞评论失败,评论不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400
       ctx.body = response(null, '取消点赞评论失败,还未点赞过评论!', 400)
@@ -437,8 +437,8 @@ async function toGetArticleCommentList (ctx: Context) {
   try {
     const res = await articleService.getArticleCommentList(aid, uid, limit, offset, desc ? true : false)
     if (res === 0) {
-      ctx.status = 400;
-      ctx.body = response(null, '获取评论失败,帖子不存在!', 400)
+      ctx.status = 404;
+      ctx.body = response(null, '获取评论失败,帖子不存在!', 404)
     } else {
       ctx.body = response(res, 'ok')
     }
@@ -481,8 +481,8 @@ async function toGetUserLikeArticleList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '获取用户点赞的帖子列表失败,用户不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '获取用户点赞的帖子列表失败,用户不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -522,8 +522,8 @@ async function toGetUserStarArticleList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '获取用户收藏的帖子列表失败,用户不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '获取用户收藏的帖子列表失败,用户不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -562,8 +562,8 @@ async function toGetLikeArticleUserList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '获取点赞帖子的用户列表失败,帖子不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '获取点赞帖子的用户列表失败,帖子不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -604,8 +604,8 @@ async function toGetStarArticleUserList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '获取收藏帖子的用户列表失败,帖子不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '获取收藏帖子的用户列表失败,帖子不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -645,8 +645,8 @@ async function toGetUserArticleList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '获取用户的帖子列表失败,用户不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '获取用户的帖子列表失败,用户不存在!', 404)
     }
   } catch (error) {
     console.log(error)
@@ -675,8 +675,8 @@ async function toDeleteArticle (ctx: Context) {
     if (res === 1) {
       ctx.body = response(null, '删除帖子成功!')
     } else if (res === -1) {
-      ctx.status = 400
-      ctx.body = response(null, '删除帖子失败,帖子不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '删除帖子失败,帖子不存在!', 404)
     } else if (res === 0) {
       ctx.status = 400
       ctx.body = response(null, '删除帖子失败,您不是帖子创建者!', 400)

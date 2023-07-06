@@ -91,8 +91,8 @@ async function toGetBarInfo (ctx: Context) {
                 // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
                 const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
                 if (res === 0) {
-                    ctx.status = 400; 
-                    ctx.body = response(null, '获取吧数据失败,该吧不存在!', 400)
+                    ctx.status = 404; 
+                    ctx.body = response(null, '获取吧数据失败,该吧不存在!', 404)
                 } else {
                     ctx.body = response(res, 'ok')
                 }
@@ -226,8 +226,8 @@ async function toGetBarFollowUserList (ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取关注该吧的用户列表失败,该吧不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取关注该吧的用户列表失败,该吧不存在!', 404)
         }
     } catch (error) {
         console.log(error)
@@ -278,8 +278,8 @@ async function toGetUserFollowBarList (ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取用户关注的吧列表失败,用户不存在!')
+            ctx.status = 404
+            ctx.body = response(null, '获取用户关注的吧列表失败,用户不存在!',404)
         }
     } catch (error) {
         console.log(error)
@@ -321,8 +321,8 @@ async function toGetUserBarList (ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取用户创建的吧列表失败,用户不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取用户创建的吧列表失败,用户不存在!', 404)
         }
     } catch (error) {
         console.log(error)

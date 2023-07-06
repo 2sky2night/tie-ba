@@ -81,8 +81,8 @@ async function toSearchUserFollowList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '搜索用户关注列表失败,用户不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '搜索用户关注列表失败,用户不存在!', 404)
     }
   } catch (error) {
     ctx.status = 500
@@ -120,8 +120,8 @@ async function toSearchUserFansList (ctx: Context) {
     if (res) {
       ctx.body = response(res, 'ok')
     } else {
-      ctx.status = 400
-      ctx.body = response(null, '搜索用户粉丝列表失败,用户不存在!', 400)
+      ctx.status = 404
+      ctx.body = response(null, '搜索用户粉丝列表失败,用户不存在!', 404)
     }
   } catch (error) {
     ctx.status = 500

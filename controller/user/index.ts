@@ -194,8 +194,8 @@ async function toFollowUser(ctx: Context) {
                     ctx.body = response(null, '关注用户失败,不能自己关注自己!', 400)
                 } else if (res === -1) {
                     // 被关注者不存在
-                    ctx.status = 400;
-                    ctx.body = response(null, '关注用户失败,被关注者不存在!', 400)
+                    ctx.status = 404;
+                    ctx.body = response(null, '关注用户失败,被关注者不存在!', 404)
                 }
             } catch (error) {
                 ctx.status = 500
@@ -235,7 +235,7 @@ async function toCancelFollowUser(ctx: Context) {
             case 0: { ctx.status = 400; ctx.body = response(null, '取消关注失败,还未关注此用户!', 400); break; }
             case -2: { ctx.status = 400; ctx.body = response(null, '取消关注失败,不能取消关注自己!', 400); break; }
             case 1: { ctx.status = 200; ctx.body = response(null, '取消关注成功!'); break; }
-            case -1: { ctx.status = 400; ctx.body = response(null, '取消关注失败,被关注者不存在!', 400); break; }
+            case -1: { ctx.status = 400; ctx.body = response(null, '取消关注失败,被关注者不存在!', 404); break; }
         }
     } catch (error) {
         ctx.status = 500
@@ -278,8 +278,8 @@ async function toGetUserFollowList(ctx: Context) {
             ctx.body = response(res, 'ok')
         } else {
             // 用户不存在
-            ctx.status = 400
-            ctx.body = response(null, '获取用户关注列表失败,用户不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取用户关注列表失败,用户不存在!', 404)
         }
     } catch (error) {
         ctx.status = 500
@@ -321,8 +321,8 @@ async function toGetUserFansList(ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取用户粉丝列表失败,用户不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取用户粉丝列表失败,用户不存在!', 404)
         }
     } catch (error) {
         ctx.status = 500
@@ -421,8 +421,8 @@ async function toGetUserProfile(ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取用户信息失败,该用户不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取用户信息失败,该用户不存在!', 404)
         }
     } catch (error) {
         ctx.status = 500
@@ -494,8 +494,8 @@ async function toGetUserCardInfo(ctx: Context) {
         if (res) {
             ctx.body = response(res, 'ok')
         } else {
-            ctx.status = 400
-            ctx.body = response(null, '获取用户资料失败,用户不存在!', 400)
+            ctx.status = 404
+            ctx.body = response(null, '获取用户资料失败,用户不存在!', 404)
         }
     } catch (error) {
         ctx.status = 500
