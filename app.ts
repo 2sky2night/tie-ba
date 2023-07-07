@@ -12,7 +12,13 @@ import middleware from './middleware'
 const app = new Koa()
 
 /*********注册全局中间件*****/
-
+// app.use(async (c, next) => {
+//     // 模拟真实请求响应时间
+//     await new Promise(r => {
+//         setTimeout(()=>r('opk'),(Math.random()*5)*1000)
+//    })
+//     await next()
+// })
 // 挂载静态资源
 app.use(koaStatic('static'))
 // 注册解析请求体

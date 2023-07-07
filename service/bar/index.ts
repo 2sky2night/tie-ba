@@ -362,6 +362,39 @@ class BarService {
             return Promise.reject(error)
         }
     }
+    /**
+     * 获取吧的简要信息
+     * 1.吧的基本数据
+     * 2.当前用户对吧的关注状态
+     * 3.吧的帖子、关注数量
+     * 4.获取吧主简要信息
+     * @param bid 
+     * @param currentUid 
+     * @returns 
+     */
+    async getBarBrieflyInfo (bid: number, currentUid: number | undefined) {
+        try {
+            const [ barInfo ] = await bar.selectByBid(bid)
+            // 吧不存在
+            if (barInfo === undefined) return Promise.resolve(0)
+            // 关注状态
+            const isFollowed = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(bid, currentUid)).length > 0
+            // 帖子数量、关注数量
+            const [ articleCount ] = await article.countInArticleTableByBid(bid)
+            const [ followCount ] = await bar.selectFollowByBidCount(bid)
+            // 获取吧主数据
+            const [userInfo] = await user.selectByUid(barInfo.uid)
+            return Promise.resolve({
+                ...barInfo,
+                is_followed: isFollowed,
+                article_count: articleCount.total,
+                followCount: followCount.total,
+                user:userInfo
+            })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 export default BarService

@@ -39,7 +39,7 @@ class ArticleService {
    * 获取文章详情数据
    1.通过查询参数aid获取帖子详情数据
     2.通过帖子详情数据的uid查询帖子创建者详情数据，以及当前登录用户对帖子创建者的关注状态
-    3.通过帖子详情数据的bid查询帖子所属吧的详情数据，以及当前登录用户对吧的关注状态
+    3.通过帖子详情数据的bid查询帖子所属吧的详情数据
     4.通过aid来查询帖子点赞数量，以及当前登录用户对帖子的点赞状态
     5.通过aid来查询帖子的收藏数量，以及当前登录用户对帖子的收藏状态
     6.通过aid来查询帖子的评论总数
@@ -61,20 +61,9 @@ class ArticleService {
           is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateArticle.uid, uid)).length > 0
         }
 
-        // 3.查询该帖子所属的吧详情信息 以及当前登录用户对吧的关注状态 以及吧主的详情信息以及吧主的关注状态
+        // 3.查询该帖子所属的吧详情信息
         const [ resBar ] = await bar.selectByBid(articleInfo.bid)
-        const [ resUserCreateBar ] = await user.selectByUid(resBar.uid)
-        const barInfo = {
-          ...resBar,
-          // 对当前吧的关注状态
-          is_followed: uid === undefined ? false : (await bar.selectFollowByUidAndBid(resBar.bid, uid)).length > 0,
-          user: {
-            ...resUserCreateBar,
-            // 对当前吧主的关注状态
-            is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateBar.uid)).length > 0,
-            is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateBar.uid, uid)).length > 0
-          }
-        }
+        const barInfo = resBar
 
         // 4.查询该帖子的点赞数量 以及当前用户点赞的状态
         const [ resLikeCount ] = await article.countInLikeArticleTableByAid(aid)

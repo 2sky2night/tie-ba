@@ -10,5 +10,5 @@
     "outDir": "dist", //仅用来控制输出的目录结构
     "baseUrl": "."
   },
-  "include": ["src/**/*", "index.ts"]
+  "include": ["src/**/*", "app.ts"]
 }

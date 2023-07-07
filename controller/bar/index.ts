@@ -396,6 +396,41 @@ async function toGetHotBarList (ctx: Context) {
     }
 }
 
+/**
+ * 获取吧的简要信息
+ * @param ctx 
+ */
+async function toGetBarBrieflyInfo (ctx:Context) {
+    const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+    // 未携带参数
+    if (ctx.query.bid === undefined) {
+        ctx.status=400
+        return ctx.body = response(null, '有参数未携带!', 400)
+    }
+    // 简要参数类型
+    const bid = +ctx.query.bid
+    if (isNaN(bid)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+    }
+
+    try {
+        const res = await barService.getBarBrieflyInfo(bid, uid)
+        if (res) {
+            ctx.body=response(res,'ok')
+        } else {
+            // 吧不存在
+            ctx.status = 404
+            ctx.body=response(null,'获取吧简要数据失败,吧不存在!',404)
+            
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
 export default {
     toCreateBar,
     toGetAllBar,
@@ -406,5 +441,6 @@ export default {
     toGetUserFollowBarList,
     toGetUserBarList,
     toGetBarList,
-    toGetHotBarList
+    toGetHotBarList,
+    toGetBarBrieflyInfo
 }
