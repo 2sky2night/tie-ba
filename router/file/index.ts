@@ -25,7 +25,9 @@ fileRouter.use(koaBody({
                     }
                 }
             }
-            const newName = `${file.originalFilename}_${Date.now()}_${file.newFilename}`
+            const temp = file.originalFilename.split('.')
+            temp.pop()
+            const newName = `${temp.join('.')}_${Date.now()}_${file.newFilename}`
             file.filepath = file.filepath.replace(file.newFilename, newName)
             file.newFilename = newName
         },
