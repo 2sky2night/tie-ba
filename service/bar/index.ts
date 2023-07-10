@@ -7,6 +7,7 @@ import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../m
 import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
 import { getBarList, getBarListWithId } from './actions';
+import { getArticleList } from '../article/actions'
 
 // 吧模型实例
 const bar = new BarModel()
@@ -383,13 +384,47 @@ class BarService {
             const [ articleCount ] = await article.countInArticleTableByBid(bid)
             const [ followCount ] = await bar.selectFollowByBidCount(bid)
             // 获取吧主数据
-            const [userInfo] = await user.selectByUid(barInfo.uid)
+            const [ userInfo ] = await user.selectByUid(barInfo.uid)
             return Promise.resolve({
                 ...barInfo,
                 is_followed: isFollowed,
                 article_count: articleCount.total,
                 followCount: followCount.total,
-                user:userInfo
+                user: userInfo
+            })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取该吧的帖子列表
+     * @param bid 吧id
+     * @param currentUid 当前登录的用户id 
+     * @param limit 获取多少条数据
+     * @param offset 偏移量
+     * @param desc 根据创建时间降序或升序
+     * @returns 
+     */
+    async getBarArticleList (bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+        try {
+            // 查询该吧是否存在
+            const resExist = await bar.selectByBid(bid)
+            // 吧不存在
+            if (!resExist.length) return Promise.resolve(0)
+            // 吧存在 获取帖子列表
+            const articleList = await article.selectInArticleTableByBidLimit(bid, limit, offset, desc)
+            // 获取该吧的帖子总数
+            const [ count ] = await article.countInArticleTableByBid(bid)
+            // 获取帖子列表其他信息
+            const list = await getArticleList(articleList, currentUid)
+
+            return Promise.resolve({
+                list,
+                limit,
+                offset,
+                desc,
+                total: count.total,
+                has_more: limit + offset < count.total
             })
         } catch (error) {
             return Promise.reject(error)

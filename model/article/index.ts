@@ -724,12 +724,28 @@ class ArticleModel extends BaseModel {
   }
   /**
    * 在评论表中 通过aid获取该帖子中的评论
-   * @param aid 
+   * @param aid 帖子id
    * @returns 
    */
   async selectInCommentTableByAid (aid: number) {
     try {
       const res = await this.runSql<CommentBaseItem[]>(`select * from comment where aid = ${ aid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 分页查询该吧的帖子列表
+   * @param bid 吧id
+   * @param limit 获取多少条数据
+   * @param offset 偏移量
+   * @param desc 根据创建时间降序
+   * @returns 
+   */
+  async selectInArticleTableByBidLimit (bid: number, limit: number, offset: number,desc:boolean) {
+    try {
+      const res =await this.runSql<ArticleBaseItem[]>(`select * from article where bid=${bid} order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

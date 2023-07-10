@@ -35,7 +35,7 @@ async function toCreateBar (ctx: Context) {
                 ctx.body = response(null, '创建吧成功!', 200)
             } else {
                 // 吧名重复
-                ctx.status = 400; 
+                ctx.status = 400;
                 ctx.body = response(null, '吧名重复!', 400)
             }
         } else {
@@ -91,7 +91,7 @@ async function toGetBarInfo (ctx: Context) {
                 // 获取吧的数据 (根据是否传入token来查询当前用户是否关注了吧)
                 const res = await barService.getBarInfo(bid, ctx.header.authorization ? token.uid : undefined)
                 if (res === 0) {
-                    ctx.status = 404; 
+                    ctx.status = 404;
                     ctx.body = response(null, '获取吧数据失败,该吧不存在!', 404)
                 } else {
                     ctx.body = response(res, 'ok')
@@ -131,7 +131,7 @@ async function toFollowBar (ctx: Context) {
                 if (res) {
                     return ctx.body = response(null, '关注成功!')
                 } else {
-                    ctx.status = 400; 
+                    ctx.status = 400;
                     return ctx.body = response(null, '关注吧失败,已经关注了!', 400)
                 }
             } else {
@@ -172,7 +172,7 @@ async function toCanceFollowBar (ctx: Context) {
             ctx.body = response(null, '取消关注成功!')
         } else {
             // 当前未关注吧 不能取消关注
-            ctx.status = 400; 
+            ctx.status = 400;
             ctx.body = response(null, '取消关注吧失败,当前未关注该吧!', 400)
         }
     } catch (error) {
@@ -279,7 +279,7 @@ async function toGetUserFollowBarList (ctx: Context) {
             ctx.body = response(res, 'ok')
         } else {
             ctx.status = 404
-            ctx.body = response(null, '获取用户关注的吧列表失败,用户不存在!',404)
+            ctx.body = response(null, '获取用户关注的吧列表失败,用户不存在!', 404)
         }
     } catch (error) {
         console.log(error)
@@ -375,24 +375,24 @@ async function toGetHotBarList (ctx: Context) {
     const type = ctx.query.type ? +ctx.query.type : 1
     // 校验参数是否合法
     if (isNaN(limit) || isNaN(offset) || isNaN(type) || type > 5 || type < 1) {
-      ctx.status = 400
-      return ctx.body = response(null, '参数非法', 400)
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
     }
     let day = 1;
     switch (type) {
-      case 1: break;
-      case 2: day = 3; break;
-      case 3: day = 15; break;
-      case 4: day = 90; break;
-      case 5: day = 365; break;
+        case 1: break;
+        case 2: day = 3; break;
+        case 3: day = 15; break;
+        case 4: day = 90; break;
+        case 5: day = 365; break;
     }
     try {
-      const res = await barService.getHotBarList(currentUid, limit, offset, day)
-      ctx.body=response(res,'ok')
+        const res = await barService.getHotBarList(currentUid, limit, offset, day)
+        ctx.body = response(res, 'ok')
     } catch (error) {
-      console.log(error)
-      ctx.status = 500;
-      ctx.body = response(null, '服务器出错了!', 500)
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
     }
 }
 
@@ -400,11 +400,11 @@ async function toGetHotBarList (ctx: Context) {
  * 获取吧的简要信息
  * @param ctx 
  */
-async function toGetBarBrieflyInfo (ctx:Context) {
+async function toGetBarBrieflyInfo (ctx: Context) {
     const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
     // 未携带参数
     if (ctx.query.bid === undefined) {
-        ctx.status=400
+        ctx.status = 400
         return ctx.body = response(null, '有参数未携带!', 400)
     }
     // 简要参数类型
@@ -417,12 +417,51 @@ async function toGetBarBrieflyInfo (ctx:Context) {
     try {
         const res = await barService.getBarBrieflyInfo(bid, uid)
         if (res) {
-            ctx.body=response(res,'ok')
+            ctx.body = response(res, 'ok')
         } else {
             // 吧不存在
             ctx.status = 404
-            ctx.body=response(null,'获取吧简要数据失败,吧不存在!',404)
-            
+            ctx.body = response(null, '获取吧简要数据失败,吧不存在!', 404)
+
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 获取吧的帖子列表
+ * @param ctx 
+ */
+async function toGetBarArticleList (ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+    // 校验查询参数bid
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '参数未携带!', 400)
+        return
+    }
+    const bid = +ctx.query.bid
+    const limit = ctx.query.limit ? +ctx.query.limit : 20
+    const offset = ctx.query.offset ? +ctx.query.offset : 0
+    // 排序方式 默认降序
+    const desc = ctx.query.desc ? +ctx.query.desc : 1
+
+    if (isNaN(bid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数非法!', 400)
+        return
+    }
+
+    try {
+        const res = await barService.getBarArticleList(bid, currentUid, limit, offset, desc ? true : false)
+        if (res) {
+            ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 404
+            ctx.body = response(null, '获取吧的帖子列表失败,吧不存在!', 404)
         }
     } catch (error) {
         console.log(error)
@@ -442,5 +481,6 @@ export default {
     toGetUserBarList,
     toGetBarList,
     toGetHotBarList,
-    toGetBarBrieflyInfo
+    toGetBarBrieflyInfo,
+    toGetBarArticleList
 }
