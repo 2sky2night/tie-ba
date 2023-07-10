@@ -3,10 +3,10 @@ import ArticleModel from '../../model/article';
 import BarModel from '../../model/bar'
 import UserModel from '../../model/user'
 // types
-import type { InserCommentBody, InsertArticleBody } from '../../model/article/types';
+import type { CommentBaseItem, InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
-import { getArticleList, getArticleListWithId, getCommentList } from './actions'
+import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount } from './actions'
 import { getUserListById } from '../user/actions';
 
 const user = new UserModel()
@@ -729,11 +729,77 @@ class ArticleService {
       const list = await getArticleList(articleList, uid)
       return Promise.resolve({
         list,
-        total:count.total,
+        total: count.total,
         offset,
         limit,
-        has_more:count.total>limit+offset
+        has_more: count.total > limit + offset
       })
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 查询帖子的热门评论
+   * @param aid 
+   * @param currentUid 
+   * @param limit 
+   * @param offset 
+   * @param desc
+   */
+  async getArticleHotComment (aid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    try {
+      // 1.帖子是否存在
+      const resExist = await article.selectInArticleTableByAid(aid)
+      if (!resExist.length) {
+        // 帖子不存在
+        return Promise.resolve(0)
+      }
+      // 2.帖子存在 获取帖子所有的评论
+      const _commentList = await article.selectInCommentTableByAid(aid)
+      const commentList = _commentList.map(ele => ({ ...ele, like_count: 0 }))
+      // 3.遍历评论 查询评论所有的点赞数量
+      for (let i = 0; i < commentList.length; i++) {
+        const [ likeCount ] = await article.countInLikeCommentTabeByCid(commentList[ i ].cid)
+        // 保存该评论的点赞总数
+        commentList[ i ].like_count = likeCount.total
+      }
+      // 4.遍历获取到的点赞总数的评论列表 根据点赞总数进行降序排序
+      if (desc) {
+        // 降序    
+        for (let i = 0; i < commentList.length; i++) {
+          for (let j = 0; j < commentList.length - 1; j++) {
+            if (commentList[ j ].like_count < commentList[ j + 1 ].like_count) {
+              const temp = commentList[ j ]
+              commentList[ j ] = commentList[ j + 1 ]
+              commentList[ j + 1 ] = temp
+            }
+          }
+        }
+      } else {
+        // 升序
+        for (let i = 0; i < commentList.length; i++) {
+          for (let j = 0; j < commentList.length - 1; j++) {
+            if (commentList[ j ].like_count > commentList[ j + 1 ].like_count) {
+              const temp = commentList[ j ]
+              commentList[ j ] = commentList[ j + 1 ]
+              commentList[ j + 1 ] = temp
+            }
+          }
+        }
+      }
+      // 5.根据接口请求的limit和offset进行截取 评论列表
+      const _list = commentList.slice(offset, offset + limit)
+      // 遍历列表获取评论相关信息
+      const list = await getCommentListWithOutLikeCount(_list, currentUid)
+
+      return Promise.resolve({
+        list,
+        total: commentList.length,
+        offset,
+        limit,
+        has_more: limit + offset < commentList.length
+      })
+
     } catch (error) {
       return Promise.reject(error)
     }

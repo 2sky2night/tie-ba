@@ -722,6 +722,19 @@ class ArticleModel extends BaseModel {
       return Promise.reject(error)
     }
   }
+  /**
+   * 在评论表中 通过aid获取该帖子中的评论
+   * @param aid 
+   * @returns 
+   */
+  async selectInCommentTableByAid (aid: number) {
+    try {
+      const res = await this.runSql<CommentBaseItem[]>(`select * from comment where aid = ${ aid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleModel

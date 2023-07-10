@@ -426,16 +426,20 @@ async function toGetArticleCommentList (ctx: Context) {
   const aid = + ctx.query.aid
   const offset = ctx.query.offset === undefined ? 0 : +ctx.query.offset;
   const limit = ctx.query.limit === undefined ? 20 : +ctx.query.limit;
-  const desc = ctx.query.desc === undefined ? 20 : +ctx.query.desc;
+  // type ===1 根据点赞数量排序 type===2 根据创建数量排序
+  const type = ctx.query.type === undefined ? 1 : +ctx.query.type;
+  // 升序还是降序
+  const desc = ctx.query.desc === undefined ? 1 : +ctx.query.desc;
 
-
-  if (isNaN(aid) || isNaN(offset) || isNaN(limit) || isNaN(desc)) {
+  if (isNaN(aid) || isNaN(offset) || isNaN(limit) || isNaN(type) || isNaN(desc) || (type !== 1 && type !== 2)) {
     ctx.status = 400;
     return ctx.body = response(null, '参数非法!', 400)
   }
 
   try {
-    const res = await articleService.getArticleCommentList(aid, uid, limit, offset, desc ? true : false)
+    const res = type === 1 ?
+      await articleService.getArticleHotComment(aid, uid, limit, offset, desc ? true : false)
+      : await articleService.getArticleCommentList(aid, uid, limit, offset, desc ? true : false)
     if (res === 0) {
       ctx.status = 404;
       ctx.body = response(null, '获取评论失败,帖子不存在!', 404)

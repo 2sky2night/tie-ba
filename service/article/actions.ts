@@ -218,3 +218,58 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
         return Promise.reject(error)
     }
 }
+
+/**
+ * 遍历评论列表获取其他信息
+ * @param commentList 
+ * @param uid 
+ * @returns 
+ */
+export async function getCommentListWithOutLikeCount (commentList: (CommentBaseItem & {like_count:number})[], uid: number | undefined) {
+    try {
+        const list: CommentInfo[] = []
+
+        for (let i = 0; i < commentList.length; i++) {
+            const cid = commentList[ i ].cid
+            // 查询当前评论者的信息
+            // 若当前已经记录过该用户信息了 则直接复用用户信息
+            const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            let isFollowedUser = false
+            let isFollowedMe = false
+            if (userExist) {
+                // 若当前有用户记录 则直接复用关注状态
+                isFollowedUser = userExist.user.is_followed
+                isFollowedMe = userExist.user.is_fans
+            } else {
+                // 没有用户记录 需要查询来获取用户对其关注状态
+                isFollowedUser = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, commentList[ i ].uid)).length ? true : false;
+                isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(commentList[ i ].uid, uid)).length ? true : false;
+            }
+            // 是否点赞该评论
+            const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
+
+            list.push({
+                cid: commentList[ i ].cid,
+                content: commentList[ i ].content,
+                aid: commentList[ i ].aid,
+                uid: commentList[ i ].uid,
+                // @ts-ignore
+                photo: commentList[ i ].photo === null ? null : commentList[ i ].photo.split(','),
+                createTime: commentList[ i ].createTime,
+                is_liked: isLiked,
+                like_count: commentList[ i ].like_count,
+                user: {
+                    ...userInfo,
+                    is_followed: isFollowedUser,
+                    is_fans: isFollowedMe
+                }
+            })
+            
+        }
+
+        return Promise.resolve(list)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
