@@ -221,7 +221,7 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
 
 /**
  * 遍历评论列表获取其他信息
- * @param commentList 
+ * @param commentList 评论列表项 每一项必须包含点赞数量
  * @param uid 
  * @returns 
  */
@@ -269,6 +269,85 @@ export async function getCommentListWithOutLikeCount (commentList: (CommentBaseI
         }
 
         return Promise.resolve(list)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+/**
+ * 遍历帖子列表 获取帖子详情数据
+ * @param articleList 帖子列表项 每一项必须包含点赞数量
+ * @param uid 
+ * @returns 
+ */
+export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseItem&{like_count:number})[], uid: number | undefined) {
+    try {
+        const list: ArticleItem[] = []
+        for (let i = 0; i < articleList.length; i++) {
+            const aid = articleList[ i ].aid
+            // 1.查询帖子收藏数量
+            const [ starCount ] = await article.countInStarArticleTableByAid(aid)
+            // 2.查询帖子评论数量
+            const [ commentCount ] = await article.countInCommentTableByAid(aid)
+            // 4.查询当前用户对帖子的状态
+            const isLiked = uid === undefined ? false : (await article.selectInLikeArticleTableByAidAndUid(uid, aid)).length ? true : false
+            const isStar = uid === undefined ? false : (await article.selectInStarArticleTableByUidAndAid(uid, aid)).length ? true : false
+            // 6.查询该帖子的创建者信息
+            // 查询是否已经存在该用户信息了
+            const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            let isFollowedUser = false
+            let isFollowedMe = false
+            if (userExist) {
+                // 用户存在则,复制当前用户对楼主的关注状态
+                isFollowedUser = userExist.user.is_followed
+                isFollowedMe = userExist.user.is_fans
+            } else {
+                // 用户不存在,查询当前用户对楼主的关注状态
+                isFollowedUser = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, articleList[ i ].uid)).length ? true : false
+                isFollowedMe = uid === undefined ? false : (await user.selectByUidAndUidIsFollow(articleList[ i ].uid, uid)).length ? true : false
+            }
+
+            // 6.查询对应吧的信息
+            const barExist = list.find(ele => ele.bid === articleList[ i ].bid)
+            const barInfor = barExist ? barExist.bar : (await bar.selectByBid(articleList[ i ].bid))[ 0 ]
+            let isFollowedBar = false
+            //  查询当前用户对吧的关注状态
+            if (barExist) {
+                isFollowedBar = barExist.bar.is_followed
+            } else {
+                isFollowedBar = uid === undefined ? false : (await bar.selectFollowByUidAndBid(articleList[ i ].bid, uid)).length ? true : false
+            }
+
+
+            list.push({
+                aid: articleList[ i ].aid,
+                title: articleList[ i ].title,
+                content: articleList[ i ].content,
+                // @ts-ignore
+                photo: articleList[ i ].photo ? articleList[ i ].photo.split(',') : null,
+                createTime: articleList[ i ].createTime,
+                uid: articleList[ i ].uid,
+                bid: articleList[ i ].bid,
+                like_count: articleList[i].like_count,
+                is_liked: isLiked,
+                star_count: starCount.total,
+                is_star: isStar,
+                comment_count: commentCount.total,
+                user: {
+                    ...userInfo,
+                    is_followed: isFollowedUser,
+                    is_fans: isFollowedMe
+                },
+                bar: {
+                    ...barInfor,
+                    is_followed: isFollowedBar
+                }
+            })
+
+        }
+        return Promise.resolve(list)
+
     } catch (error) {
         return Promise.reject(error)
     }

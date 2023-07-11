@@ -448,15 +448,19 @@ async function toGetBarArticleList (ctx: Context) {
     const offset = ctx.query.offset ? +ctx.query.offset : 0
     // 排序方式 默认降序
     const desc = ctx.query.desc ? +ctx.query.desc : 1
+    // 排序依据 1热度 2时间 默认热度
+    const type = ctx.query.type ? +ctx.query.type : 1
 
-    if (isNaN(bid) || isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+    if (isNaN(bid) || isNaN(limit) || isNaN(offset) || isNaN(desc) || (type !== 1 && type !== 2)) {
         ctx.status = 400
         ctx.body = response(null, '参数非法!', 400)
         return
     }
 
     try {
-        const res = await barService.getBarArticleList(bid, currentUid, limit, offset, desc ? true : false)
+        const res = type === 1 ?
+            await barService.getBarHotArticleList(bid, currentUid, limit, offset, desc ? true : false)
+            : await barService.getBarArticleList(bid, currentUid, limit, offset, desc ? true : false)
         if (res) {
             ctx.body = response(res, 'ok')
         } else {

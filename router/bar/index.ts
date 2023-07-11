@@ -41,7 +41,7 @@ barRouter.get('bar', `${ baseRouteURL }/discover`, middleware.tokenParse, BarCon
 // 获取吧简要信息  (使用中间件解析token 需要使用token中的数据) query {bid:number}
 barRouter.get('bar', `${ baseRouteURL }/briefly`, middleware.tokenParse, BarController.toGetBarBrieflyInfo)
 
-// 获取吧的帖子列表  (使用中间件解析token 需要使用token中的数据) query {bid:number,limit?:number=20,offset?:number=0,desc?:number}
+// 获取吧的帖子列表  (使用中间件解析token 需要使用token中的数据) query {bid:number,type?:number,limit?:number=20,offset?:number=0,desc?:number}
 barRouter.get('bar', `${ baseRouteURL }/article/list`, middleware.tokenParse, BarController.toGetBarArticleList)
 
 export default barRouter

@@ -743,9 +743,21 @@ class ArticleModel extends BaseModel {
    * @param desc 根据创建时间降序
    * @returns 
    */
-  async selectInArticleTableByBidLimit (bid: number, limit: number, offset: number,desc:boolean) {
+  async selectInArticleTableByBidLimit (bid: number, limit: number, offset: number, desc: boolean) {
     try {
-      const res =await this.runSql<ArticleBaseItem[]>(`select * from article where bid=${bid} order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where bid=${ bid } order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 获取该吧的所有帖子
+   * @param bid 
+   */
+  async selectInArticleTableByBid (bid:number) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where bid = ${ bid }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

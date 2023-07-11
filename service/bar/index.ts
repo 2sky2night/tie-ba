@@ -7,7 +7,7 @@ import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../m
 import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
 import { getBarList, getBarListWithId } from './actions';
-import { getArticleList } from '../article/actions'
+import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
 
 // 吧模型实例
 const bar = new BarModel()
@@ -425,6 +425,73 @@ class BarService {
                 desc,
                 total: count.total,
                 has_more: limit + offset < count.total
+            })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取该吧的热门帖子
+     * @param bid 吧id
+     * @param currentUid 当前登录的用户
+     * @param limit 每页长度
+     * @param offset 从多少偏移量开始获取数据
+     * @param desc 是否降序
+     */
+    async getBarHotArticleList (bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+        try {
+            // 查询该吧是否存在
+            const resExist = await bar.selectByBid(bid)
+            // 吧不存在
+            if (!resExist.length) return Promise.resolve(0)
+            // 获取该吧的帖子总数
+            const [ count ] = await article.countInArticleTableByBid(bid)
+            // 存在 获取该吧所有的帖子
+            const allArticleList = await article.selectInArticleTableByBid(bid)
+            // 查询所有帖子点赞的数量
+            const _allArticleList: (typeof allArticleList[ 1 ] & { like_count: number })[] = []
+            for (let i = 0; i < allArticleList.length; i++) {
+                const [ likeCount ] = await article.countInLikeArticleTableByAid(allArticleList[ i ].aid)
+                _allArticleList.push({
+                    ...allArticleList[ i ],
+                    like_count: likeCount.total
+                })
+            }
+            // 根据降序或升序进行排序
+            if (desc) {
+                // 热度降序
+                for (let i = 0; i < _allArticleList.length; i++) {
+                    for (let j = 0; j < _allArticleList.length - 1; j++) {
+                        if (_allArticleList[ j ].like_count < _allArticleList[ j + 1 ].like_count) {
+                            const temp = _allArticleList[ j ]
+                            _allArticleList[ j ] = _allArticleList[ j + 1 ]
+                            _allArticleList[ j + 1 ] = temp
+                        }
+                    }
+                }
+            } else {
+                // 热度升序
+                for (let i = 0; i < _allArticleList.length; i++) {
+                    for (let j = 0; j < _allArticleList.length - 1; j++) {
+                        if (_allArticleList[ j ].like_count > _allArticleList[ j + 1 ].like_count) {
+                            const temp = _allArticleList[ j ]
+                            _allArticleList[ j ] = _allArticleList[ j + 1 ]
+                            _allArticleList[ j + 1 ] = temp
+                        }
+                    }
+                }
+            }
+            // 获取用户截取的数据
+            const _list = _allArticleList.slice(offset, offset + limit)
+            // 根据这些截取的帖子数据 获取详情数据
+            const list = await getArticleListWithoutLikeCount(_list, currentUid)
+            return Promise.resolve({
+                list,
+                offset,
+                limit,
+                has_more: limit + offset < count.total,
+                desc,
+                total: count.total
             })
         } catch (error) {
             return Promise.reject(error)
