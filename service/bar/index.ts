@@ -8,6 +8,7 @@ import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
 import { getBarList, getBarListWithId } from './actions';
 import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
+import { getUserListById } from '../user/actions';
 
 // 吧模型实例
 const bar = new BarModel()
@@ -191,31 +192,11 @@ class BarService {
             // 吧不存在
             if (!resExist.length) return Promise.resolve(0)
             // 2.吧存在 查询关注该吧的用户列表
-            const followBarList = await bar.selectFollowByBidLimit(bid, limit, offset, desc)
+            const followBarList = (await bar.selectFollowByBidLimit(bid, limit, offset, desc)).map(ele=>ele.uid)
             // 3.遍历用户列表 查询对应数据
-            const userList: any[] = []
-            for (let i = 0; i < followBarList.length; i++) {
-                const uid = followBarList[ i ].uid
-                // 1.查询用户数据
-                const [ userInfo ] = await user.selectByUid(uid)
-                // 2.查询用户粉丝 关注数量
-                const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(uid)
-                const [ followCount ] = await user.selectByUidScopedFollowCount(uid)
-                // 3.查询当前用户对该用户的状态
-                const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, uid)).length ? true : false
-                const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, currentUid)).length ? true : false
-
-                userList.push({
-                    ...userInfo,
-                    fans_count: fansCount.total,
-                    follow_count: followCount.total,
-                    is_followed: isFollowedUser,
-                    is_fans: isFollowedMe
-                })
-            }
-            // 4.获取关注该吧用户总数
-            const [ followCount ] = await bar.selectFollowByBidCount(bid)
-
+            const userList = await getUserListById(followBarList,currentUid)
+            // 查询关注的总数量
+            const [followCount] = await bar.selectFollowByBidCount(bid)
             return Promise.resolve({
                 list: userList,
                 limit,
