@@ -53,21 +53,24 @@ articleRouter.get('article', `${ baseRouteURL }/liked/list`, Middleware.tokenPar
 articleRouter.get('article', `${ baseRouteURL }/star/list`, Middleware.tokenParse, ArticleController.toGetStarArticleUserList)
 
 // 获取用户的帖子列表 (单独解析token) query {uid:number;limit?number=20;offset?:number=0,desc:number}
-articleRouter.get('article', `${baseRouteURL}/user/list`, Middleware.tokenParse, ArticleController.toGetUserArticleList)
+articleRouter.get('article', `${ baseRouteURL }/user/list`, Middleware.tokenParse, ArticleController.toGetUserArticleList)
 
 // 删除帖子 (需要token) query:{aid:number}
-articleRouter.delete('article', `${baseRouteURL}/delete`, ArticleController.toDeleteArticle)
+articleRouter.delete('article', `${ baseRouteURL }/delete`, ArticleController.toDeleteArticle)
 
 // 获取帖子列表 (单独解析token) query:{limit?:number;offset?:number,desc?:number}
 articleRouter.get('article', `${ baseRouteURL }/list`, Middleware.tokenParse, ArticleController.toGetArticleList)
 
 // 获取热门帖子列表 (单独解析token) query:{limit?:number;offset?:number,day?:number}
-articleRouter.get('article', `${baseRouteURL}/hot`, Middleware.tokenParse, ArticleController.toGetHotAricle)
+articleRouter.get('article', `${ baseRouteURL }/hot`, Middleware.tokenParse, ArticleController.toGetHotAricle)
 
 // 获取热门评论列表 (单独解析token) query:{limit?:number;offset?:number,day?:number}
-articleRouter.get('article', `${baseRouteURL}/comment/discover`, Middleware.tokenParse, ArticleController.toGetHotComment)
+articleRouter.get('article', `${ baseRouteURL }/comment/discover`, Middleware.tokenParse, ArticleController.toGetHotComment)
 
 // 获取关注者发的新帖列表 (需要token) query:{limit?:number;offset?:number}
-articleRouter.get('article', `${baseRouteURL}/discover`, ArticleController.toDiscoverArticle)
+articleRouter.get('article', `${ baseRouteURL }/discover`, ArticleController.toDiscoverArticle)
+
+// 通过帖子id列表获取帖子数据(单独解析token) (aids:string)
+articleRouter.get('article', `${ baseRouteURL }/list/aids`, Middleware.tokenParse, ArticleController.toGetArticleListByAidList)
 
 export default articleRouter

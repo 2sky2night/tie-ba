@@ -430,7 +430,7 @@ class UserService {
                 return Promise.resolve(1)
             } else {
                 // 若用户名存在 且该用户的用户id不为当前用户则不能修改
-                return Promise.reject(0)
+                return Promise.resolve(0)
             }
 
         } catch (error) {

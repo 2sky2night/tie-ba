@@ -810,6 +810,44 @@ async function toDiscoverArticle (ctx: Context) {
   }
 }
 
+/**
+ * 通过aid列表获取帖子列表信息
+ * @param ctx 
+ * @returns 
+ */
+async function toGetArticleListByAidList (ctx: Context) {
+  const uid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+  const _aids = ctx.query.aids
+  // 校验参数是否携带
+  if (_aids === undefined) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法', 400)
+  }
+  // 解析参数
+  const aidList = (_aids as string).split(',').map(ele => +ele)
+  // 校验参数是否合法
+  if (aidList.some(ele => isNaN(ele))) {
+    // 不合法
+    ctx.status = 400
+    ctx.body = response(null, '参数不合法', 400)
+  } else {
+    // 合法
+    try {
+      const res = await articleService.getArticleByAidList(aidList, uid)
+      if (res === 0) {
+        ctx.status = 404
+        ctx.body = response(null, '获取帖子列表失败,有不存在的帖子', 404)
+      } else {
+        ctx.body = response(res, 'ok')
+      }
+    } catch (error) {
+      console.log(error)
+      ctx.status = 500;
+      ctx.body = response(null, '服务器出错了!', 500)
+    }
+  }
+}
+
 export default {
   toCreateArticle,
   toGetArticleInfo,
@@ -831,5 +869,6 @@ export default {
   toGetArticleList,
   toGetHotAricle,
   toGetHotComment,
-  toDiscoverArticle
+  toDiscoverArticle,
+  toGetArticleListByAidList
 }

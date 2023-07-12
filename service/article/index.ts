@@ -3,7 +3,7 @@ import ArticleModel from '../../model/article';
 import BarModel from '../../model/bar'
 import UserModel from '../../model/user'
 // types
-import type { CommentBaseItem, InserCommentBody, InsertArticleBody } from '../../model/article/types';
+import type { ArticleBaseItem, CommentBaseItem, InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
 import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount } from './actions'
@@ -800,6 +800,34 @@ class ArticleService {
         has_more: limit + offset < commentList.length
       })
 
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 通过aid（帖子id）列表获取帖子列表详情信息
+   * @param aidList 
+   * @param currentUid 
+   */
+  async getArticleByAidList (aidList: number[], currentUid: number | undefined) {
+    try {
+      // 帖子列表
+      const _list:ArticleBaseItem[]=[]
+      // 遍历检查每个帖子是否存在
+      for (let i = 0; i < aidList.length; i++) {
+        const [ item ] = await article.selectInArticleTableByAid(aidList[ i ])
+        //不存在 则响应错误信息
+        if (item === undefined) {
+          return Promise.resolve(0)
+        } else {
+          _list.push(item)
+        }
+      }
+      const list = await getArticleList(_list,currentUid)
+      return Promise.resolve({
+        list,
+        total:list.length
+      })
     } catch (error) {
       return Promise.reject(error)
     }
