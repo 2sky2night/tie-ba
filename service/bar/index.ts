@@ -192,11 +192,11 @@ class BarService {
             // 吧不存在
             if (!resExist.length) return Promise.resolve(0)
             // 2.吧存在 查询关注该吧的用户列表
-            const followBarList = (await bar.selectFollowByBidLimit(bid, limit, offset, desc)).map(ele=>ele.uid)
+            const followBarList = (await bar.selectFollowByBidLimit(bid, limit, offset, desc)).map(ele => ele.uid)
             // 3.遍历用户列表 查询对应数据
-            const userList = await getUserListById(followBarList,currentUid)
+            const userList = await getUserListById(followBarList, currentUid)
             // 查询关注的总数量
-            const [followCount] = await bar.selectFollowByBidCount(bid)
+            const [ followCount ] = await bar.selectFollowByBidCount(bid)
             return Promise.resolve({
                 list: userList,
                 limit,
@@ -474,6 +474,52 @@ class BarService {
                 desc,
                 total: count.total
             })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 分页展示所有的吧 只包含了吧最基础的信息
+     * @param limit 
+     * @param offset 
+     */
+    async getAllBarBriefly (limit: number, offset: number, desc: boolean) {
+        try {
+            const list = await bar.selectInBarTableLimit(limit, offset, desc)
+            const [ count ] = await bar.countInBarTable()
+            return Promise.resolve({
+                list,
+                total: count.total,
+                limit,
+                offset,
+                desc,
+                has_more: limit + offset < count.total
+            })
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 分页展示用户关注的吧列表 只包含了吧最基础的信息
+     * @param uid 用户id
+     * @param limit 偏移量
+     * @param offset 从多少偏移量开始获取数据
+     * @param desc  根据吧创建时间降序
+     */
+    async getUserAllFollowBarBriefly (uid: number, limit: number, offset: number, desc: boolean) {
+        try {
+            // 获取吧列表
+            const list = await bar.findUserFollowBarLimit(uid, limit, offset, desc)
+            // 获取关注吧总数
+            const [ count ] = await bar.selectFollowByUidCount(uid)
+            return {
+                list,
+                total: count.total,
+                limit,
+                offset,
+                desc,
+                has_more:limit+offset<count.total
+            }
         } catch (error) {
             return Promise.reject(error)
         }

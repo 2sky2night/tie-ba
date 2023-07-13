@@ -29,6 +29,7 @@ async function toCreateArticle (ctx: Context) {
     title: body.title
   }
 
+  // 校验图片
   if (body.photo && body.photo instanceof Array) {
     // 若携带了帖子配图且为数组 
     // 需要检验配图携带的上限
@@ -41,6 +42,11 @@ async function toCreateArticle (ctx: Context) {
   } else if (typeof body.photo === 'string') {
     // 若是字符串(单个图片)
     insertBody.photo = body.photo
+  }
+  // 校验文本
+  if (body.title.length > 30) {
+    ctx.status = 400;
+    return ctx.body = response(null, '发帖失败,帖子标题不超过30个字符')
   }
 
   try {

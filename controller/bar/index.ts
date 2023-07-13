@@ -50,14 +50,23 @@ async function toCreateBar (ctx: Context) {
 }
 
 
-/**
- * 获取所有的吧
+/** 
+ * 获取所有的吧 近包含吧的基本数据
  * @param ctx 
  * @returns 返回所有吧
  */
 async function toGetAllBar (ctx: Context) {
+    const offset = ctx.query.offset ? +ctx.query.offset : 0
+    const limit = ctx.query.limit ? +ctx.query.limit : 20
+    const desc = ctx.query.desc ? +ctx.query.desc : 1
+
+    if (isNaN(offset) || isNaN(limit) || isNaN(desc)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    }
+
     try {
-        const res = await barService.findAllBar()
+        const res = await barService.getAllBarBriefly(limit, offset, desc ? true : false)
         ctx.body = response(res, 'ok')
     } catch (error) {
         console.log(error)
@@ -474,6 +483,34 @@ async function toGetBarArticleList (ctx: Context) {
     }
 }
 
+/**
+ * 分页获取用户关注的吧列表 仅包含简要信息
+ * @param ctx 
+ */
+async function toGetUserFollowBarListBriefly (ctx: Context) {
+    const uid = (ctx.state.user as Token).uid
+
+    const limit = ctx.query.limit ? +ctx.query.limit : 20;
+    const offset = ctx.query.offset ? +ctx.query.offset : 0;
+    const desc = ctx.query.desc ? +ctx.query.desc : 1;
+
+    if (isNaN(limit) || isNaN(offset) || isNaN(desc)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数不合法!', 400)
+        return
+    }
+
+    try {
+        const res = await barService.getUserAllFollowBarBriefly(uid, limit, offset, desc ? true : false)
+        ctx.body=response(res,'ok')
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+
 export default {
     toCreateBar,
     toGetAllBar,
@@ -486,5 +523,6 @@ export default {
     toGetBarList,
     toGetHotBarList,
     toGetBarBrieflyInfo,
-    toGetBarArticleList
+    toGetBarArticleList,
+    toGetUserFollowBarListBriefly
 }

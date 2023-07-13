@@ -296,6 +296,21 @@ class BarModel extends BaseModel {
             return Promise.reject(error)
         }
     }
+    /**
+     * 查询用户关注的吧 分页
+     * @param uid 用户id
+     * @param limit 查询多少条数据?
+     * @param offset 偏移量多少开始查询数据
+     * @param desc 降序或升序
+     */
+    async findUserFollowBarLimit (uid: number, limit: number, offset: number, desc: boolean) {
+        try {
+            const res = await this.runSql<Bar[]>(`select * from bar where bid in (select bid from user_follow_bar where uid=${ uid }) order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
 
 export default BarModel
