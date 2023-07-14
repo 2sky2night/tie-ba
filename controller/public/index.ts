@@ -19,8 +19,8 @@ async function toSearch (ctx: Context) {
     ctx.status = 400
     return ctx.body = response(null, '未携带关键词参数!', 400)
   }
-  // 搜索类型 默认搜索帖子title
-  const type = ctx.query.type ? +ctx.query.type : 1
+  // 搜索类型 默认搜索帖子
+  const type = ctx.query.type ? +ctx.query.type : 6
   const limit = ctx.query.limit ? +ctx.query.limit : 20
   const offset = ctx.query.offset ? +ctx.query.offset : 0
   const desc = ctx.query.desc ? +ctx.query.desc : 1
@@ -31,7 +31,7 @@ async function toSearch (ctx: Context) {
     ctx.status = 400
     return ctx.body = response(null, '参数非法!', 400)
   }
-  if (type > 5 || type < 1) {
+  if (type > 6 || type < 1) {
     ctx.status = 400
     return ctx.body = response(null, '参数非法!', 400)
   }
@@ -44,6 +44,7 @@ async function toSearch (ctx: Context) {
       case 3: res = await publicService.searchBar(currentUid, keywords, limit, offset, desc ? true : false); break;
       case 4: res = await publicService.searchCommentContent(currentUid, keywords, limit, offset, desc ? true : false); break;
       case 5: res = await publicService.searchUser(currentUid, keywords, limit, offset, desc ? true : false); break;
+      case 6: res = await publicService.searchArticle(currentUid, keywords, limit, offset, desc ? true : false); break;
     }
     ctx.body = response(res, 'ok')
   } catch (error) {

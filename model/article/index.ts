@@ -753,11 +753,40 @@ class ArticleModel extends BaseModel {
   }
   /**
    * 在帖子表中 获取该吧的所有帖子
-   * @param bid 
+   * @param bid 吧id
    */
   async selectInArticleTableByBid (bid:number) {
     try {
       const res = await this.runSql<ArticleBaseItem[]>(`select * from article where bid = ${ bid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 模糊匹配帖子标题和帖子内容 （分页限制）
+   * @param keywords 关键词
+   * @param limit 查询多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据创建时间升序或降序
+   * @returns 
+   */
+  async selectInArticleTableLikeTitleOrContentLimit (keywords: string, limit: number, offset: number, desc: boolean) {
+    try {
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where content like '%${keywords}%' or title like '%${keywords}%' order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在帖子表中 模糊匹配搜索帖子标题和帖子内容的总数
+   * @param keywords 
+   * @returns 
+   */
+  async countInArticleTableLikeTitleOrContent (keywords: string) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from article where content like '%${keywords}%' or title like '%${keywords}%'`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)

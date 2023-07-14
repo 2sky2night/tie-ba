@@ -840,12 +840,7 @@ async function toGetArticleListByAidList (ctx: Context) {
     // 合法
     try {
       const res = await articleService.getArticleByAidList(aidList, uid)
-      if (res === 0) {
-        ctx.status = 404
-        ctx.body = response(null, '获取帖子列表失败,有不存在的帖子', 404)
-      } else {
-        ctx.body = response(res, 'ok')
-      }
+      ctx.body = response(res, 'ok')
     } catch (error) {
       console.log(error)
       ctx.status = 500;

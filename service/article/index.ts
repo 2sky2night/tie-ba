@@ -812,21 +812,47 @@ class ArticleService {
   async getArticleByAidList (aidList: number[], currentUid: number | undefined) {
     try {
       // 帖子列表
-      const _list:ArticleBaseItem[]=[]
+      const _list: (ArticleBaseItem | { aid: number; not_found: true })[] = []
       // 遍历检查每个帖子是否存在
       for (let i = 0; i < aidList.length; i++) {
         const [ item ] = await article.selectInArticleTableByAid(aidList[ i ])
         //不存在 则响应错误信息
         if (item === undefined) {
-          return Promise.resolve(0)
+          _list.push({
+            aid: aidList[ i ],
+            not_found: true
+          })
         } else {
           _list.push(item)
         }
       }
-      const list = await getArticleList(_list,currentUid)
+      // 可以找到的数据列表
+      const _foundList = _list.filter(ele => Reflect.get(ele, 'not_found') === undefined) as ArticleBaseItem[]
+      // 获取这些可以找到的帖子列表的详情数据
+      const foundList = await getArticleList(_foundList, currentUid)
+      const list: any[] = []
+      // 按照原有查询的顺序 将可以找到的数据列表与不能找到的数据列表进行合并
+      for (let i = 0; i < _list.length; i++) {
+        //@ts-ignore
+        if (_list[ i ].not_found === true) {
+          // 是不存在的帖子记录
+          list.push(_list[ i ])
+        } else {
+          // 是存在帖子记录的 需要通过在foundList查找对应aid并保存到list
+          const item = foundList.find(ele => ele.aid === (_list[ i ].aid))
+          if (item) {
+            list.push(item)
+          } else {
+            list.push({
+              aid: _list[ i ].aid,
+              not_found: true
+            })
+          }
+        }
+      }
       return Promise.resolve({
         list,
-        total:list.length
+        total: list.length
       })
     } catch (error) {
       return Promise.reject(error)

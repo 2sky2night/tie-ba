@@ -278,6 +278,30 @@ class PublicService {
       return Promise.reject(error)
     }
   }
+    /**
+   * 搜索帖子
+   * @param currentUid  当前登录的用户id
+   * @param keywords 搜索关键词
+   * @param limit 返回多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   * @param desc 根据创建时间升序降序
+   */
+  async searchArticle (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+    // 获取需要查询的帖子列表
+    const articleList = await article.selectInArticleTableLikeTitleOrContentLimit(keywords, limit, offset, desc)
+    // 获取匹配到的总数
+    const [ count ] = await article.countInArticleTableLikeTitleOrContent(keywords)
+    // 遍历帖子列表 查询帖子的其他信息
+    const list = await getArticleList(articleList, currentUid)
+    return Promise.resolve({
+      list,
+      limit,
+      offset,
+      desc,
+      total: count.total,
+      has_more:limit+offset<count.total
+    })
+  }
 }
 
 export default PublicService
