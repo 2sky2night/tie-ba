@@ -1,5 +1,9 @@
-INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 1, '2023-06-11 16:14:17');
 INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 2, '2023-06-11 16:14:30');
 INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (2, 2, '2023-06-11 18:19:36');
 INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (2, 1, '2023-06-11 18:19:40');
 INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (2, 5, '2023-06-11 18:19:42');
+INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (4, 1, '2023-06-18 17:39:19');
+INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 4, '2023-07-01 09:56:15');
+INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 9, '2023-07-01 10:20:06');
+INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 5, '2023-07-01 11:28:50');
+INSERT INTO `user_star_article`(`uid`, `aid`, `createTime`) VALUES (1, 11, '2023-07-09 20:11:18');
