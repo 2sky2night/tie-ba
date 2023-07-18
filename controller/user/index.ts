@@ -464,8 +464,17 @@ async function toGetUserInfo(ctx: Context) {
  */
 async function toGetDiscoverUserList(ctx: Context) {
     const token = ctx.state.user as Token
+    const type = ctx.query.type ? +ctx.query.type : 1
+    let day = 1;
+    switch (type) {
+      case 1: break;
+      case 2: day = 3; break;
+      case 3: day = 15; break;
+      case 4: day = 90; break;
+      case 5: day = 365; break;
+    }
     try {
-        const res = await userService.getDiscoverUserList(token.uid)
+        const res = await userService.getDiscoverUserList(token.uid,day)
         ctx.body = response(res, 'ok')
     } catch (error) {
         ctx.status = 500

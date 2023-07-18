@@ -659,13 +659,13 @@ class UserService {
         }
     }
     /**
-     * 发现用户 (根据传入的用户该用户的哪些关注者最近10天发了帖子)
+     * 发现用户 (根据传入的用户该用户的哪些关注者最近x天发了帖子)
      * @param uid 
      * @returns 
      */
-    async getDiscoverUserList(uid: number) {
+    async getDiscoverUserList(uid: number,day:number) {
         try {
-            const userList = await user.discoverUser(uid, 10)
+            const userList = await user.discoverUser(uid, day)
             return Promise.resolve({
                 list: userList,
                 total: userList.length
