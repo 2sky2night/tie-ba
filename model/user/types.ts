@@ -26,6 +26,10 @@ export interface User {
      * 用户的状态 0注销 1存在
      */
     state: number;
+    /**
+     * 用户的简介
+     */
+    udesc: string;
 }
 
 
@@ -57,6 +61,10 @@ export interface UserWithout {
      * 用户的头像
      */
     avatar: string;
+    /**
+     * 用户的简介
+     */
+    udesc: string;
 }
 
 /**
@@ -93,6 +101,7 @@ export interface UserInfo extends UserWithout {
 export interface UserUpdateBody {
     username: string;
     avatar: string;
+    udesc:string
 }
 
 /**

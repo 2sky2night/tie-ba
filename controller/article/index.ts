@@ -22,11 +22,24 @@ async function toCreateArticle (ctx: Context) {
     ctx.body = response(null, '参数非法!', 400)
     return
   }
+
+  if (!body.title.trim().length) {
+    ctx.status = 400;
+    ctx.body = response(null, '帖子标题不能为空!', 400)
+    return
+  }
+
+  if (!body.content.trim().length) {
+    ctx.status = 400;
+    ctx.body = response(null, '帖子内容不能为空!', 400)
+    return
+  }
+
   const insertBody: InsertArticleBody = {
     uid: token.uid,
-    content: body.content,
+    content: body.content.trim(),
     bid: body.bid,
-    title: body.title
+    title: body.title.trim()
   }
 
   // 校验图片

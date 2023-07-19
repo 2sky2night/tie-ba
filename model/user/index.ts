@@ -53,7 +53,7 @@ class UserModel extends BaseModel {
      */
     async searchInUserTableByUsername (keywords: string, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<UserWithout[]>(`SELECT uid,username,createTime,avatar FROM user where username like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
+            const res = await this.runSql<UserWithout[]>(`SELECT uid,username,createTime,avatar,udesc FROM user where username like '%${ keywords }%' ORDER BY createTime ${ desc ? 'desc' : 'asc' } LIMIT ${ limit } OFFSET ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -80,7 +80,7 @@ class UserModel extends BaseModel {
      */
     async discoverUser (uid:number,day:number) {
         try {
-            const sqlString = `select user.uid,user.username,user.createTime,user.avatar from user,(select uid_is_followed from user_follow_user where uid = ${uid} and uid_is_followed in (select DISTINCT uid from article where  createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}' ORDER BY uid)) as temp where user.uid=temp.uid_is_followed`
+            const sqlString = `select user.uid,user.username,user.createTime,user.avatar,user.udesc from user,(select uid_is_followed from user_follow_user where uid = ${uid} and uid_is_followed in (select DISTINCT uid from article where  createTime BETWEEN '${getDaysBeforeTimeString(day)}' and '${getTimeString(new Date())}' ORDER BY uid)) as temp where user.uid=temp.uid_is_followed`
             const res = await this.runSql<UserWithout[]>(sqlString)
             return Promise.resolve(res)
         } catch (error) {
@@ -109,7 +109,7 @@ class UserModel extends BaseModel {
      */
     async selectDataByUsername (username: string): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where username='${ username }';`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar,udesc from user where username='${ username }';`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -122,7 +122,7 @@ class UserModel extends BaseModel {
      */
     async selectByUid (uid: number): Promise<UserWithout[]> {
         try {
-            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar from user where uid=${ uid }`)
+            const res = await this.runSql<UserWithout[]>(`select uid,username,createTime,avatar,udesc from user where uid=${ uid }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -241,11 +241,12 @@ class UserModel extends BaseModel {
      * @param uid 用户id
      * @param username 用户名
      * @param avatar 头像
+     * @param udesc 用户简介
      * @returns 
      */
-    async updateInUserTableByUid (uid: number, username: string, avatar: string) {
+    async updateInUserTableByUid (uid: number, username: string, avatar: string,udesc:string) {
         try {
-            const res = await this.runSql<OkPacket>(`UPDATE user SET username = '${ username }', avatar='${ avatar }'  WHERE uid = ${ uid }`)
+            const res = await this.runSql<OkPacket>(`UPDATE user SET username = '${ username }', avatar='${ avatar }',udesc='${udesc}'  WHERE uid = ${ uid }`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {

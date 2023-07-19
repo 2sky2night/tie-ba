@@ -33,7 +33,7 @@ export async function getArticleList (articleList: ArticleBaseItem[], uid: numbe
             // 5.查询该帖子的创建者信息
             // 查询是否已经存在该用户信息了
             const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar,udesc:userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -179,7 +179,7 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
             // 查询当前评论者的信息
             // 若当前已经记录过该用户信息了 则直接复用用户信息
             const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime,udesc:userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -234,7 +234,7 @@ export async function getCommentListWithOutLikeCount (commentList: (CommentBaseI
             // 查询当前评论者的信息
             // 若当前已经记录过该用户信息了 则直接复用用户信息
             const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime,udesc:userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -295,7 +295,7 @@ export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseI
             // 6.查询该帖子的创建者信息
             // 查询是否已经存在该用户信息了
             const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar,udesc:userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {

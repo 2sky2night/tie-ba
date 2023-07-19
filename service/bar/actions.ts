@@ -33,7 +33,7 @@ export async function getBarListWithId (barIdList: number[], currentUid: number 
       // 4.查询吧主的信息
       // 若当前吧主信息已经查询过了 则直接服用数据
       const userExist = list.find(ele => ele.uid === barInfo.uid)
-      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar} : (await user.selectByUid(barInfo.uid))[ 0 ]
+      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar,udesc:userExist.user.udesc} : (await user.selectByUid(barInfo.uid))[ 0 ]
       let isFollowedUser = false
       let isFollowedMe = false
       // 5.查询当前用户对吧主的关注状态
@@ -93,7 +93,7 @@ export async function getBarList (barList: Bar[],currentUid:number|undefined) {
       // 3.查询吧主的信息
       // 若当前吧主信息已经查询过了 则直接复用数据
       const userExist = list.find(ele => ele.uid === uid)
-      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar} : (await user.selectByUid(uid))[ 0 ]
+      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar,udesc:userExist.user.udesc} : (await user.selectByUid(uid))[ 0 ]
       let isFollowedUser = false
       let isFollowedMe = false
       // 4.查询当前用户对吧主的关注状态

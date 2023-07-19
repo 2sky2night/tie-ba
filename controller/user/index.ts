@@ -18,7 +18,7 @@ const userService = new UserService()
  * 通过用户名查询用户 (测试用)
  * @param ctx 
  */
-async function checkUser(ctx: Context) {
+async function checkUser (ctx: Context) {
     const username = ctx.query.username
     if (!username) {
         ctx.status = 400
@@ -27,7 +27,7 @@ async function checkUser(ctx: Context) {
     try {
         const res = await userService.findUserByUsername(username as string)
         if (res.length) {
-            ctx.body = response(res[0], 'ok', 200)
+            ctx.body = response(res[ 0 ], 'ok', 200)
         } else {
             ctx.body = response(null, '查无此人', 400)
         }
@@ -41,7 +41,7 @@ async function checkUser(ctx: Context) {
  * 用户登录
  * @param ctx 
  */
-async function toLogin(ctx: Context) {
+async function toLogin (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -58,13 +58,16 @@ async function toLogin(ctx: Context) {
         ctx.status = 400
         return ctx.body = response(null, '用户名不能为空!', 400)
     }
-    if (body.password.length < 5 || body.password.length > 14) {
+    if (body.password.length < 6 || body.password.length > 14) {
         // 密码长度非法
         return ctx.body = response(null, '密码长度必须为6-14位!', 400)
     }
 
     try {
-        const res = await userService.checkLogin(body)
+        const res = await userService.checkLogin({
+            username: body.username.trim(),
+            password: body.password
+        })
         switch (res) {
             case 0: ctx.status = 400; return ctx.body = response(null, '用户名不存在', 400);
             case 1: ctx.status = 400; return ctx.body = response(null, '密码错误', 400);
@@ -84,7 +87,7 @@ async function toLogin(ctx: Context) {
  * 用户注册
  * @param ctx 
  */
-async function toRegister(ctx: Context) {
+async function toRegister (ctx: Context) {
     const body = (ctx.request as any).body as UserBody
     if (!body) {
         // 未携带参数
@@ -107,7 +110,10 @@ async function toRegister(ctx: Context) {
         return ctx.body = response(null, '密码长度必须为6-14位!', 400)
     }
     try {
-        const res = await userService.createUser(body)
+        const res = await userService.createUser({
+            password: body.password,
+            username: body.username.trim()
+        })
         if (res) {
             // 注册成功
             ctx.body = response(null, '注册成功!', 200)
@@ -126,7 +132,7 @@ async function toRegister(ctx: Context) {
  * 测试解析token
  * @param ctx 
  */
-async function testToken(ctx: Context) {
+async function testToken (ctx: Context) {
     console.log(ctx.state)
     ctx.body = response(ctx.state, 'ok', 200)
 }
@@ -135,7 +141,7 @@ async function testToken(ctx: Context) {
  * 通过token来获取用户信息 (需要token 未完成)
  * @param ctx 
  */
-async function getUserInfoByToken(ctx: Context) {
+async function getUserInfoByToken (ctx: Context) {
 
     const user = ctx.state.user as Token;
 
@@ -163,7 +169,7 @@ async function getUserInfoByToken(ctx: Context) {
  * 关注用户 （需要token）
  * @param ctx 
  */
-async function toFollowUser(ctx: Context) {
+async function toFollowUser (ctx: Context) {
     const token = ctx.state.user as Token
     const query = ctx.query
     if (query.uid === undefined) {
@@ -210,7 +216,7 @@ async function toFollowUser(ctx: Context) {
  * 取消关注用户
  * @param ctx 
  */
-async function toCancelFollowUser(ctx: Context) {
+async function toCancelFollowUser (ctx: Context) {
     const token = ctx.state.user as Token;
 
     if (ctx.query.uid === undefined) {
@@ -249,7 +255,7 @@ async function toCancelFollowUser(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserFollowList(ctx: Context) {
+async function toGetUserFollowList (ctx: Context) {
     const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
     if (ctx.query.uid === undefined) {
         // 未携带参数
@@ -292,7 +298,7 @@ async function toGetUserFollowList(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserFansList(ctx: Context) {
+async function toGetUserFansList (ctx: Context) {
     const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
     if (ctx.query.uid === undefined) {
@@ -333,10 +339,10 @@ async function toGetUserFansList(ctx: Context) {
  * 修改用户信息 (不包含密码)
  * @param ctx 
  */
-async function toUpdateUser(ctx: Context) {
+async function toUpdateUser (ctx: Context) {
     const token = ctx.state.user as Token
     const body = (ctx.request as any).body as UserUpdateBody
-    if (body === undefined || body.avatar === undefined || body.username === undefined) {
+    if (body === undefined || body.avatar === undefined || body.username === undefined || body.udesc === undefined) {
         ctx.status = 400;
         return ctx.body = response(null, '有参数未携带!', 400)
     }
@@ -347,8 +353,14 @@ async function toUpdateUser(ctx: Context) {
         return ctx.body = response(null, '用户名不能为空!', 400)
     }
 
+    if (body.udesc.length >= 254) {
+        // 用户名长度非法
+        ctx.status = 400
+        return ctx.body = response(null, '简介长度非法!', 400)
+    }
+
     try {
-        const res = await userService.updateUserData(token.uid, body.avatar, body.username)
+        const res = await userService.updateUserData(token.uid, body.avatar, body.username.trim(), body.udesc.trim())
         if (res) {
             // 更新成功
             ctx.body = response(null, '修改用户信息成功!')
@@ -367,7 +379,7 @@ async function toUpdateUser(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toUpdateUserPassword(ctx: Context) {
+async function toUpdateUserPassword (ctx: Context) {
     const token = ctx.state.user as Token
     const body = (ctx.request as any).body as UserUpdatePasswordBody
 
@@ -403,7 +415,7 @@ async function toUpdateUserPassword(ctx: Context) {
 /**
  * 获取用户信息（通过查询参数的uid）
  */
-async function toGetUserProfile(ctx: Context) {
+async function toGetUserProfile (ctx: Context) {
 
     const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
 
@@ -434,7 +446,7 @@ async function toGetUserProfile(ctx: Context) {
  * 通过token来获取用户信息 (需要token)
  * @param ctx 
  */
-async function toGetUserInfo(ctx: Context) {
+async function toGetUserInfo (ctx: Context) {
 
     const user = ctx.state.user as Token;
 
@@ -462,19 +474,19 @@ async function toGetUserInfo(ctx: Context) {
  * 查看当前登录的用户有哪些关注者最近十天发了新贴
  * @param ctx 
  */
-async function toGetDiscoverUserList(ctx: Context) {
+async function toGetDiscoverUserList (ctx: Context) {
     const token = ctx.state.user as Token
     const type = ctx.query.type ? +ctx.query.type : 1
     let day = 1;
     switch (type) {
-      case 1: break;
-      case 2: day = 3; break;
-      case 3: day = 15; break;
-      case 4: day = 90; break;
-      case 5: day = 365; break;
+        case 1: break;
+        case 2: day = 3; break;
+        case 3: day = 15; break;
+        case 4: day = 90; break;
+        case 5: day = 365; break;
     }
     try {
-        const res = await userService.getDiscoverUserList(token.uid,day)
+        const res = await userService.getDiscoverUserList(token.uid, day)
         ctx.body = response(res, 'ok')
     } catch (error) {
         ctx.status = 500
@@ -487,7 +499,7 @@ async function toGetDiscoverUserList(ctx: Context) {
  * @param ctx 
  * @returns 
  */
-async function toGetUserCardInfo(ctx: Context) {
+async function toGetUserCardInfo (ctx: Context) {
     const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
     if (ctx.query.uid === undefined) {
         ctx.status = 400
@@ -502,6 +514,26 @@ async function toGetUserCardInfo(ctx: Context) {
         const res = await userService.getUserCardInfo(uid, currentUid)
         if (res) {
             ctx.body = response(res, 'ok')
+        } else {
+            ctx.status = 404
+            ctx.body = response(null, '获取用户资料失败,用户不存在!', 404)
+        }
+    } catch (error) {
+        ctx.status = 500
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 通过token获取用户基础数据
+ * @param ctx 
+ */
+async function toGetUserBaseInfo (ctx: Context) {
+    const uid = (ctx.state.user as Token).uid
+    try {
+        const res = await userService.getUserBaseInfo(uid)
+        if (res) {
+            ctx.body=response(res,'ok')
         } else {
             ctx.status = 404
             ctx.body = response(null, '获取用户资料失败,用户不存在!', 404)
@@ -527,5 +559,6 @@ export default {
     toGetUserProfile,
     toGetUserInfo,
     toGetDiscoverUserList,
-    toGetUserCardInfo
+    toGetUserCardInfo,
+    toGetUserBaseInfo
 }

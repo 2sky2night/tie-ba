@@ -54,4 +54,7 @@ userRouter.get('user', `${ baseRouteURL }/discover`, UserController.toGetDiscove
 // 获取用户简要信息 (中间件解析token) query:{uid:number}
 userRouter.get('user', `${baseRouteURL}/card`, Middleware.tokenParse, UserController.toGetUserCardInfo)
 
+// 获取用户基础数据 需要token
+userRouter.get('user', `${baseRouteURL}/base`,  UserController.toGetUserBaseInfo)
+
 export default userRouter

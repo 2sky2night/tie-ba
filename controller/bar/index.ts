@@ -24,12 +24,17 @@ async function toCreateBar (ctx: Context) {
         ctx.body = response(null, '有参数未携带', 400)
         return
     }
+    if (!body.bname.trim().length) {
+        ctx.status = 400
+        ctx.body = response(null, '吧名不能为空!', 400)
+        return
+    }
     try {
         // 把用户token 解析出来uid
         const user = ctx.state.user as Token
         if (user.uid) {
             // 创建吧
-            const res = await barService.createBar({ ...body, uid: user.uid })
+            const res = await barService.createBar({ bdesc:body.bdesc,bname:body.bname.trim(),photo:body.photo, uid: user.uid })
             if (res) {
                 // 创建成功
                 ctx.body = response(null, '创建吧成功!', 200)

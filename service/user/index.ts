@@ -417,20 +417,24 @@ class UserService {
      * @param username 用户名称
      * @returns 0:用户名已经存在了 1:修改成功
      */
-    async updateUserData(uid: number, avatar: string, username: string): Promise<0 | 1> {
+    async updateUserData(uid: number, avatar: string, username: string,udesc:string): Promise<0 | 1> {
         try {
             const resExist = await user.selectByUsername(username)
-            if (resExist.length && resExist[0].uid === uid) {
-                // 若存在该用户名 但修改的用户就是当前用户则可以修改
-                await user.updateInUserTableByUid(uid, username, avatar)
-                return Promise.resolve(1)
-            } else if (!resExist.length) {
-                // 不存在该用户名 则可以修改
-                await user.updateInUserTableByUid(uid, username, avatar)
-                return Promise.resolve(1)
+            // 若用户名存在时 需要判断当前修改的用户id是否为该存在的用户的id，是则可以修改
+            // 若用户名不存在时 可以直接修改
+            if (resExist.length) {
+                // 存在
+                if (resExist[ 0 ].uid === uid) {
+                    // 该用户是当前需要修改昵称的用户 则可以修改
+                    await user.updateInUserTableByUid(uid, username, avatar, udesc)
+                    return Promise.resolve(1)
+                } else {
+                    return Promise.resolve(0)
+                }
             } else {
-                // 若用户名存在 且该用户的用户id不为当前用户则不能修改
-                return Promise.resolve(0)
+                // 不存在 可以直接修改
+                await user.updateInUserTableByUid(uid, username, avatar, udesc)
+                return Promise.resolve(1)
             }
 
         } catch (error) {
@@ -707,6 +711,22 @@ class UserService {
                 is_fans: isFollowMe
             })
 
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 通过token获取用户基础数据
+     * @param uid 
+     */
+    async getUserBaseInfo (uid: number) {
+        try {
+            const [ userInfo ] = await user.selectByUid(uid)
+            if (userInfo) {
+                return Promise.resolve(userInfo)
+            } else {
+                return Promise.resolve(0)
+            }
         } catch (error) {
             return Promise.reject(error)
         }
