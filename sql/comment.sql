@@ -20,7 +20,7 @@ INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VAL
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (20, '大师傅士大夫', '2023-07-10 14:23:18', 33, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (21, 'adsad', '2023-07-10 14:23:34', 33, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (22, 'dddd', '2023-07-10 14:26:04', 33, 1, NULL);
-INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (23, '哈哈哈哈的😫😫😫', '2023-07-10 14:58:05', 1, 1, NULL);
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (23, '哈哈哈哈的', '2023-07-10 14:58:05', 1, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (24, '哈哈哈', '2023-07-10 15:58:18', 32, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (25, '十大', '2023-07-11 09:23:24', 34, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (26, 'asdsad', '2023-07-11 17:11:23', 34, 1, NULL);
