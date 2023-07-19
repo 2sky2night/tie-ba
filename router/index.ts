@@ -14,13 +14,13 @@ import publicRouter from './public';
 const router = new Router()
 
 // 注册用户路由
-router.use(userRouter.routes())
+router.use('/api',userRouter.routes())
 // 注册吧路由
-router.use(barRouter.routes())
+router.use('/api',barRouter.routes())
 // 注册帖子路由
-router.use(ArticleRouter.routes())
+router.use('/api',ArticleRouter.routes())
 // 注册上传文件的路由
-router.use(FileRouter.routes())
+router.use('/api',FileRouter.routes())
 // 注册公共路由
-router.use(publicRouter.routes())
+router.use('/api',publicRouter.routes())
 export default router
