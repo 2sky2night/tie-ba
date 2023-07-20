@@ -1,9 +1,10 @@
+import dayJs from 'dayjs'
 /**
  * 当前时间的字符串 YYYY:MM:DD HH:MM:SS
  * @returns 
  */
 export function getNowTimeString () {
-    return new Date().toLocaleString().replace('/', '-').replace('/', '-')
+    return dayJs().format('YYYY-MM-DD HH:mm:ss')
 }
 
 /**
@@ -24,5 +25,5 @@ export function getDaysBeforeTimeString (day: number) {
 export function getTimeString (date: Date) {
     // 由于日期型的特殊性质 2022-06-20>>2022-06-21 才算六月二十日这一天 所以需要给当前时间+1天
     const time = new Date(date.getTime() + 24 * 60 * 60 * 1000)
-    return time.toLocaleString().split(' ')[ 0 ].replace('/', '-').replace('/', '-')
+    return dayJs(time).format('YYYY-MM-DD HH:mm:ss')
 }

@@ -7,6 +7,7 @@ specifiers:
   '@types/koa-static': ^4.0.2
   '@types/mysql': ^2.15.21
   '@types/node': ^20.2.5
+  dayjs: ^1.11.9
   jsonwebtoken: ^9.0.0
   koa: ^2.14.2
   koa-body: ^6.0.1
@@ -23,6 +24,7 @@ specifiers:
 dependencies:
   '@types/koa-router': 7.4.4
   '@types/koa-static': 4.0.2
+  dayjs: 1.11.9
   jsonwebtoken: 9.0.0
   koa: 2.14.2
   koa-body: 6.0.1
@@ -386,6 +388,10 @@ packages:
   /create-require/1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
+
+  /dayjs/1.11.9:
+    resolution: {integrity: sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==}
+    dev: false
 
   /debug/3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
