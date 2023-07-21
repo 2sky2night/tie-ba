@@ -518,8 +518,31 @@ class BarService {
                 limit,
                 offset,
                 desc,
-                has_more:limit+offset<count.total
+                has_more: limit + offset < count.total
             }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 修改吧信息
+     * @param uid 用户id
+     * @param bid 吧id
+     * @param bname 吧名称
+     * @param bdesc 吧简介
+     * @param photo 用户简介
+     */
+    async updateBarInfo (uid: number, bid: number, bname: string, bdesc: string, photo: string) {
+        try {
+            // 查询吧是否存在
+            const [ barInfo ] = await bar.selectByBid(bid)
+            // 吧不存在
+            if (!barInfo) return Promise.resolve(-1)
+            // 当前修改吧的人不为吧主 也不能修改吧的信息
+            if (barInfo.uid !== uid) return Promise.resolve(0)
+            // 若为吧主则可以修改吧的信息
+            await bar.updateInBarTable(bid, bname, photo, bdesc)
+            return Promise.resolve(1)
         } catch (error) {
             return Promise.reject(error)
         }

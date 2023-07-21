@@ -34,7 +34,7 @@ async function toCreateBar (ctx: Context) {
         const user = ctx.state.user as Token
         if (user.uid) {
             // 创建吧
-            const res = await barService.createBar({ bdesc:body.bdesc,bname:body.bname.trim(),photo:body.photo, uid: user.uid })
+            const res = await barService.createBar({ bdesc: body.bdesc, bname: body.bname.trim(), photo: body.photo, uid: user.uid })
             if (res) {
                 // 创建成功
                 ctx.body = response(null, '创建吧成功!', 200)
@@ -507,7 +507,52 @@ async function toGetUserFollowBarListBriefly (ctx: Context) {
 
     try {
         const res = await barService.getUserAllFollowBarBriefly(uid, limit, offset, desc ? true : false)
-        ctx.body=response(res,'ok')
+        ctx.body = response(res, 'ok')
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+/**
+ * 修改吧的信息
+ * @param ctx 
+ */
+async function toUpdateBarInfo (ctx: Context) {
+    const uid = (ctx.state.user as Token).uid
+    const body = ctx.request.body
+
+    // 校验参数
+    if (body === undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '参数未携带!', 400)
+        return
+    }
+
+    if (body.bname === undefined || body.bdesc === undefined || body.photo === undefined || body.bid===undefined) {
+        ctx.status = 400
+        ctx.body = response(null, '有参数未携带!', 400)
+        return
+    }
+
+    if (isNaN(+body.bid)) {
+        ctx.status = 400
+        ctx.body = response(null, '参数携带非法!', 400)
+        return
+    }
+
+    try {
+        const res = await barService.updateBarInfo(uid, body.bid, body.bname, body.bdesc, body.photo)
+        if (res === -1) {
+            ctx.status = 400
+            ctx.body = response(null, '修改吧信息失败,吧不存在!', 400)
+        } else if (res === 0) {
+            ctx.status = 400
+            ctx.body = response(null, '修改吧信息失败,只有吧主才能修改吧信息!', 400)
+        } else {
+            ctx.body = response(null, '修改吧信息成功!')
+        }
     } catch (error) {
         console.log(error)
         ctx.status = 500;
@@ -529,5 +574,6 @@ export default {
     toGetHotBarList,
     toGetBarBrieflyInfo,
     toGetBarArticleList,
-    toGetUserFollowBarListBriefly
+    toGetUserFollowBarListBriefly,
+    toUpdateBarInfo
 }

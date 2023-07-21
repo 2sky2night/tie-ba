@@ -47,4 +47,6 @@ barRouter.get('bar', `${ baseRouteURL }/article/list`, middleware.tokenParse, Ba
 // 获取用户关注的所有吧 分页展示，仅包含吧的简要信息 query{offset:number;limit:number;desc:boolean}
 barRouter.get('bar', `${ baseRouteURL }/user/list/briefly`,  BarController.toGetUserFollowBarListBriefly)
 
+// 修改吧信息 只有吧主才能修改 json:{bname:string;photo:string;photo:string}
+barRouter.put('bar',`${ baseRouteURL }/edit`,BarController.toUpdateBarInfo)
 export default barRouter

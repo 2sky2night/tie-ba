@@ -28,7 +28,7 @@ class BarModel extends BaseModel {
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('修改失败!')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -197,9 +197,9 @@ class BarModel extends BaseModel {
         try {
             const res = await this.runSql<OkPacket>(`INSERT INTO user_follow_bar (uid, bid, createTime) VALUES (${ uid }, ${ bid }, '${ getNowTimeString() }')`)
             if (res.affectedRows) {
-                return Promise.resolve()
+                return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('修改失败!')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -229,9 +229,9 @@ class BarModel extends BaseModel {
         try {
             const res = await this.runSql<OkPacket>(`DELETE FROM user_follow_bar WHERE uid = ${ uid } AND bid = ${ bid }`)
             if (res.affectedRows) {
-                return Promise.resolve()
+                return Promise.resolve('ok')
             } else {
-                await Promise.reject()
+                await Promise.reject('修改失败!')
             }
         } catch (error) {
             return Promise.reject(error)
@@ -307,6 +307,26 @@ class BarModel extends BaseModel {
         try {
             const res = await this.runSql<Bar[]>(`select * from bar where bid in (select bid from user_follow_bar where uid=${ uid }) order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
             return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 编辑吧信息
+     * @param bid 吧id
+     * @param bname 吧名 
+     * @param photo 吧头像
+     * @param bdesc 吧简介
+     * @returns 
+     */
+    async updateInBarTable (bid:number,bname:string,photo:string,bdesc:string) {
+        try {
+            const res = await this.runSql<OkPacket>(`update bar set bname='${ bname }',photo='${ photo }',bdesc='${ bdesc }' where bid=${bid}`)
+            if (res.affectedRows) {
+                return Promise.resolve('ok')
+            } else {
+                return Promise.reject('修改失败')
+            }     
         } catch (error) {
             return Promise.reject(error)
         }
