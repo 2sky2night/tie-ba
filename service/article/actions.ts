@@ -1,5 +1,5 @@
-import type { ArticleBaseItem, CommentBaseItem } from "../../model/article/types"
-import type { ArticleItem, CommentInfo } from "./types"
+import type { ArticleBaseItem, CommentBaseItem, ReplyBaseItem } from "../../model/article/types"
+import type { ArticleItem, CommentItem, ReplyItem } from "./types"
 import ArticleModel from "../../model/article"
 import UserModel from "../../model/user"
 import BarModel from "../../model/bar"
@@ -33,7 +33,7 @@ export async function getArticleList (articleList: ArticleBaseItem[], uid: numbe
             // 5.查询该帖子的创建者信息
             // 查询是否已经存在该用户信息了
             const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar,udesc:userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar, udesc: userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -170,7 +170,7 @@ export async function getArticleListWithId (articleIdList: number[], uid: number
  */
 export async function getCommentList (commentList: CommentBaseItem[], uid: number | undefined) {
     try {
-        const list: CommentInfo[] = []
+        const list: CommentItem[] = []
 
         for (let i = 0; i < commentList.length; i++) {
             const cid = commentList[ i ].cid
@@ -179,7 +179,7 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
             // 查询当前评论者的信息
             // 若当前已经记录过该用户信息了 则直接复用用户信息
             const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime,udesc:userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime, udesc: userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -193,7 +193,11 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
             }
             // 是否点赞该评论
             const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
-
+            // 获取回复总数
+            const [ replyCount ] = await article.countInReplyTableByCid(cid)
+            // 获取该评论的热门5条回复
+            const _replyList = await getCommentHotReply(cid,5)
+            const replyList = await getCommentReplyInfoList(_replyList, uid)
             list.push({
                 cid: commentList[ i ].cid,
                 content: commentList[ i ].content,
@@ -204,13 +208,17 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
                 createTime: commentList[ i ].createTime,
                 is_liked: isLiked,
                 like_count: likeCount.total,
+                reply: {
+                    list: replyList,
+                    total: replyCount.total
+                },
                 user: {
                     ...userInfo,
                     is_followed: isFollowedUser,
-                    is_fans: isFollowedMe
+                    is_fans: isFollowedMe,
                 }
             })
-            
+
         }
 
         return Promise.resolve(list)
@@ -225,16 +233,16 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
  * @param uid 
  * @returns 
  */
-export async function getCommentListWithOutLikeCount (commentList: (CommentBaseItem & {like_count:number})[], uid: number | undefined) {
+export async function getCommentListWithOutLikeCount (commentList: (CommentBaseItem & { like_count: number })[], uid: number | undefined) {
     try {
-        const list: CommentInfo[] = []
+        const list: CommentItem[] = []
 
         for (let i = 0; i < commentList.length; i++) {
             const cid = commentList[ i ].cid
             // 查询当前评论者的信息
             // 若当前已经记录过该用户信息了 则直接复用用户信息
             const userExist = list.find(ele => ele.uid === commentList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime,udesc:userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.user.uid, username: userExist.user.username, avatar: userExist.user.avatar, createTime: userExist.user.createTime, udesc: userExist.user.udesc } : (await user.selectByUid(commentList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -248,7 +256,11 @@ export async function getCommentListWithOutLikeCount (commentList: (CommentBaseI
             }
             // 是否点赞该评论
             const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
-
+            // 获取回复总数
+            const [ replyCount ] = await article.countInReplyTableByCid(cid)
+            // 获取该评论的热门5条回复
+            const _replyList = await getCommentHotReply(cid,5)
+            const replyList = await getCommentReplyInfoList(_replyList, uid)
             list.push({
                 cid: commentList[ i ].cid,
                 content: commentList[ i ].content,
@@ -259,13 +271,17 @@ export async function getCommentListWithOutLikeCount (commentList: (CommentBaseI
                 createTime: commentList[ i ].createTime,
                 is_liked: isLiked,
                 like_count: commentList[ i ].like_count,
+                reply: {
+                    list: replyList,
+                    total: replyCount.total
+                },
                 user: {
                     ...userInfo,
                     is_followed: isFollowedUser,
                     is_fans: isFollowedMe
                 }
             })
-            
+
         }
 
         return Promise.resolve(list)
@@ -280,7 +296,7 @@ export async function getCommentListWithOutLikeCount (commentList: (CommentBaseI
  * @param uid 
  * @returns 
  */
-export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseItem&{like_count:number})[], uid: number | undefined) {
+export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseItem & { like_count: number })[], uid: number | undefined) {
     try {
         const list: ArticleItem[] = []
         for (let i = 0; i < articleList.length; i++) {
@@ -295,7 +311,7 @@ export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseI
             // 6.查询该帖子的创建者信息
             // 查询是否已经存在该用户信息了
             const userExist = list.find(ele => ele.uid === articleList[ i ].uid)
-            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar,udesc:userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
+            const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar, udesc: userExist.user.udesc } : (await user.selectByUid(articleList[ i ].uid))[ 0 ]
             let isFollowedUser = false
             let isFollowedMe = false
             if (userExist) {
@@ -329,7 +345,7 @@ export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseI
                 createTime: articleList[ i ].createTime,
                 uid: articleList[ i ].uid,
                 bid: articleList[ i ].bid,
-                like_count: articleList[i].like_count,
+                like_count: articleList[ i ].like_count,
                 is_liked: isLiked,
                 star_count: starCount.total,
                 is_star: isStar,
@@ -348,6 +364,99 @@ export async function getArticleListWithoutLikeCount (articleList: (ArticleBaseI
         }
         return Promise.resolve(list)
 
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+/**
+ * 根据回复列表 查询详情数据
+ * @param list 回复列表
+ * @param uid 当前登录的用户
+ */
+export async function getCommentReplyInfoList (replyList: ReplyBaseItem[], uid: number | undefined) {
+    try {
+        const list: ReplyItem[] = []
+        for (let i = 0; i < replyList.length; i++) {
+            const rid = replyList[ i ].rid
+            // 点赞总数
+            const [ likeCount ] = await article.countInLikeReplyTableByRid(rid)
+            // 当前用户是否点赞
+            const isLiked = uid === undefined ? false : (await article.selectInLikeReplyTable(uid, rid)).length > 0
+            // 发送回复的用户数据
+            const [ userInfo ] = await user.selectByUid(replyList[ i ].uid)
+            // 若该回复是对某个回复进行回复的 还需要查询该目标回复的数据
+            if (replyList[ i ].type === 2) {
+                // 查询回复的对象
+                const [ replyBase ] = await article.selectInReplyTableByRid(replyList[ i ].id)
+                // 查询该回复的用户数据
+                const [ replyUserInfo ] = await user.selectByUid(replyBase.uid)
+                list.push({
+                    ...replyList[ i ],
+                    like_count: likeCount.total,
+                    is_liked: isLiked,
+                    user: userInfo,
+                    reply: {
+                        ...replyBase,
+                        user: replyUserInfo
+                    }
+                })
+            } else {
+                // 对于评论的回复
+                list.push({
+                    ...replyList[ i ],
+                    like_count: likeCount.total,
+                    is_liked: isLiked,
+                    user: userInfo
+                })
+            }
+        }
+        return Promise.resolve(list)
+    } catch (error) {
+        return Promise.reject(error)
+    }
+}
+
+/**
+ * 获取该评论的热门回复 n条
+ * @param cid 评论id
+ * @param limit 获取多少条目
+ */
+export async function getCommentHotReply (cid: number,limit:number) {
+    try {
+        // 根据点赞数量 让回复列表倒叙排列
+        const replyList = await article.selectInReplyTableByCid(cid)
+        // 获取所有回复的点赞数量
+        const likeList = await article.getCommentReplyCount(cid)
+        // 回复列表
+        const list: (ReplyBaseItem & { like_count: number })[] = []
+        replyList.forEach(ele => {
+            const item = likeList.find(item => item.rid === ele.rid)
+            if (item) {
+                // 有点赞数据
+                list.push({
+                    ...ele,
+                    like_count: item.total
+                })
+            } else {
+                list.push({
+                    ...ele,
+                    like_count: 0
+                })
+            }
+        })
+        // 根据回复列表对点赞数量进行降序排序
+        for (let i = 0; i < list.length; i++) {
+            for (let j = 0; j < list.length - 1; j++) {
+                if (list[ j ].like_count < list[ j + 1 ].like_count) {
+                    const temp = list[ j ]
+                    list[ j ] = list[ j + 1 ]
+                    list[ j + 1 ] = temp
+                }
+            }
+        }
+        // 只要前n个
+        return Promise.resolve(list.slice(0,limit))
     } catch (error) {
         return Promise.reject(error)
     }

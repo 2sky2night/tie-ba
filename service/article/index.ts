@@ -6,7 +6,7 @@ import UserModel from '../../model/user'
 import type { ArticleBaseItem, CommentBaseItem, InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
-import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount } from './actions'
+import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount, getCommentReplyInfoList } from './actions'
 import { getUserListById } from '../user/actions';
 
 const user = new UserModel()
@@ -42,7 +42,7 @@ class ArticleService {
     3.通过帖子详情数据的bid查询帖子所属吧的详情数据
     4.通过aid来查询帖子点赞数量，以及当前登录用户对帖子的点赞状态
     5.通过aid来查询帖子的收藏数量，以及当前登录用户对帖子的收藏状态
-    6.通过aid来查询帖子的评论总数
+    6.通过aid来查询帖子的评论总数(评论总数+回复总数)
    * @param aid 
    * @returns 
    */
@@ -82,6 +82,8 @@ class ArticleService {
 
         // 7.查询帖子的评论总数
         const [ commentsCount ] = await article.countInCommentTableByAid(aid)
+        // 回复算不算评论？？？
+        // const [ replyCount ] = await article.getArticleAllReplyCount(aid)
 
         return Promise.resolve({
           aid: articleInfo.aid,
@@ -873,7 +875,7 @@ class ArticleService {
         return Promise.resolve(0)
       }
       // 评论存在 插入回复记录
-      await article.insertInReplyTable(uid, cid, content, 1)
+      await article.insertInReplyTable(uid, cid, content, 1, cid)
       return Promise.resolve(1)
     } catch (error) {
       return Promise.reject(error)
@@ -885,8 +887,9 @@ class ArticleService {
    * @param uid 用户id
    * @param rid 回复id
    * @param content 回复内容
+   * @param cid 评论的id
    */
-  async replyReply (uid: number, rid: number, content: string) {
+  async replyReply (uid: number, rid: number, content: string, cid: number) {
     try {
       // 查询回复是否存在
       const [ replyItem ] = await article.selectInReplyTableByRid(rid)
@@ -895,7 +898,7 @@ class ArticleService {
         return Promise.resolve(0)
       }
       // 存在 插入回复内容
-      await article.insertInReplyTable(uid, rid, content, 2)
+      await article.insertInReplyTable(uid, rid, content, 2, cid)
       return Promise.resolve(1)
     } catch (error) {
       return Promise.reject(error)
@@ -953,6 +956,50 @@ class ArticleService {
         // 不存在点赞记录 不能删除
         return Promise.resolve(0)
       }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取评论的回复列表 分页展示
+   * @param cid 评论id
+   * @param uid 当前登录的用户
+   * @param limit 条目
+   * @param offset 从offset开始获取数据
+   */
+  async getCommentReplyList (cid: number, uid: undefined | number, limit: number, offset: number) {
+    try {
+      // 该评论是否存在
+      const [ commentItem ] = await article.selectInCommentTableByCid(cid)
+      if (!commentItem) {
+        // 评论不存在
+        return Promise.resolve(0)
+      }
+      // 评论存在 查询评论相关数据
+      const [ userInfo ] = await user.selectByUid(commentItem.uid)
+      const [ likeCount ] = await article.countInLikeCommentTabeByCid(cid)
+      const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length > 0
+      // 查询回复列表数据
+      const _list = await article.selectInReplyTableByCidLimit(cid, limit, offset)
+      // 获取回复列表的详情数据
+      const list = await getCommentReplyInfoList(_list, uid)
+      // 获取评论的所有回复数量
+      const [ count ] = await article.countInReplyTableByCid(cid)
+      
+      return Promise.resolve({
+        comment: {
+          ...commentItem,
+          like_count: likeCount.total,
+          is_liked: isLiked,
+          user: userInfo
+        },
+        list,
+        limit,
+        offset,
+        total: count.total,
+        has_more: limit + offset < count.total,
+        // desc: true
+      })
     } catch (error) {
       return Promise.reject(error)
     }

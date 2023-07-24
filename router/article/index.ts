@@ -82,4 +82,8 @@ articleRouter.get('article', `${ baseRouteURL }/reply/like`, ArticleController.t
 // 取消点赞回复 query:{rid:number}
 articleRouter.delete('article', `${ baseRouteURL }/reply/like`, ArticleController.toCancelLikeReply)
 
+// 获取评论的回复列表 query:{cid:number;limit:number;offset:number}
+articleRouter.get('article', `${ baseRouteURL }/reply/list`,Middleware.tokenParse,  ArticleController.toGetCommentReplyList)
+
+
 export default articleRouter
