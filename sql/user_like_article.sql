@@ -9,7 +9,6 @@ INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (7, 1, '2023-
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (33, 1, '2023-07-10 14:22:05');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (34, 8, '2023-07-10 16:19:31');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (1, 9, '2023-07-11 10:40:22');
-INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (1, 1, '2023-07-11 17:19:22');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (38, 1, '2023-07-13 18:15:44');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (41, 1, '2023-07-14 11:07:05');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (45, 1, '2023-07-14 16:51:20');
@@ -19,3 +18,5 @@ INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (50, 1, '2023
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (34, 1, '2023-07-17 17:25:26');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (52, 1, '2023-07-18 16:13:16');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (31, 13, '2023-07-18 18:44:20');
+INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (53, 1, '2023-07-21 10:27:51');
+INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (1, 1, '2023-07-24 15:44:16');

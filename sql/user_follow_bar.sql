@@ -19,4 +19,3 @@ INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 15, '2023-0
 INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 17, '2023-07-18 15:28:28');
 INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 19, '2023-07-18 15:28:29');
 INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 21, '2023-07-18 15:28:29');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 23, '2023-07-18 15:28:30');

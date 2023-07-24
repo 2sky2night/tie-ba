@@ -1,0 +1,10 @@
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (15, 'ipsum culpa', '2023-07-24 15:12:35', 1, 1, 1, 1);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (16, 'ipsum culpa', '2023-07-24 15:13:29', 1, 15, 2, 1);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (17, 'ipsum culpa', '2023-07-24 15:16:49', 1, 1, 1, 1);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (18, 'ipsum culpa', '2023-07-24 17:57:49', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (19, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (20, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (21, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (22, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (23, 'ipsum culpa', '2023-07-24 17:58:19', 1, 15, 1, 15);
+INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (24, 'ipsum culpa', '2023-07-24 17:58:57', 1, 23, 2, 15);
