@@ -175,3 +175,28 @@ export interface CommentItem {
   uid: number;
   photo: string[] | null;
 }
+
+/**
+ * 回复的基础数据
+ */
+export interface ReplyBaseItem {
+  rid: number;
+  content: string;
+  createTime: string;
+  uid: number;
+  id: number;
+  /**
+   * 回复的类型 1回复评论 2对回复进行回复
+   */
+  type: 1 | 2
+}
+
+
+/**
+ * 用户点赞回复表
+ */
+export interface UserLikeReplyItem{
+  rid: number;
+  uid: number;
+  createTime: string;
+}

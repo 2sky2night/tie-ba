@@ -43,6 +43,12 @@ tie-ba-lower
 
 ​	5.一个用户可以创建多个评论 （用户--拥有-评论	1对n）
 
+​	5.5 
+
+​		用户也可以对评论做出回复，一个用户可以做出多个回复，一个回复只有一个用户；（用户---拥有----回复 一对n）一条评论可以有多个回复，一个回复对应一条评论（评论---拥有---回复  1对n）。
+
+​	一条回复可以有多个回复，一个回复只能有对应一个回复。（回复--拥有--回复 1对n）
+
 ​	6.一个用户可以点赞多个评论、一个评论也可以被多个用户点赞（用户--点赞--评论	n对n）
 
 ​	7.一个用户可以点赞多个帖子、一个帖子也可以被多个用户点赞	（用户--点赞--帖子	n对n）
@@ -51,11 +57,13 @@ tie-ba-lower
 
 ​	9.一个用户可以收藏多个帖子，一个帖子也可以被多个用户收藏（用户--收藏--帖子 n对n）
 
+​	10.一个用户可以点赞多个回复，一个回复也可以被多个用户点赞 （用户---点赞---回复 n对n）
+
 ​	数据库ER图如下：
 
 ![image-20230608212854698](C:\Users\Dell\AppData\Roaming\Typora\typora-user-images\image-20230608212854698.png)
 
-1.用户表：uid、username、password、createTime
+1.用户表：uid、username、password、createTime、desc
 
 2.评论表：cid、content、createTime、aid、uid
 
@@ -73,7 +81,11 @@ tie-ba-lower
 
 9.用户收藏帖子表:uid、aid、createTime
 
-测试
+10.用户回复评论表：rid、uid、id、content、createTime，type（type=1为回复评论，type=2为对回复进行回复）
+
+11.用户点赞回复表：rid,uid,createTime
+
+试
 
 INSERT INTO `tie_bar_lower`.`user`(`username`, `password`, `createTime`) VALUES ('admin', '123456', '2023-05-29 15:28:10')
 

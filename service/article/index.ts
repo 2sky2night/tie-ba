@@ -858,6 +858,105 @@ class ArticleService {
       return Promise.reject(error)
     }
   }
+  /**
+   * 回复评论
+   * @param uid 用户id 
+   * @param cid 评论id
+   * @param content 回复评论的内容
+   */
+  async replyComment (uid: number, cid: number, content: string) {
+    try {
+      // 评论是否存在
+      const [ commentItem ] = await article.selectInCommentTableByCid(cid)
+      if (!commentItem) {
+        // 评论不存在
+        return Promise.resolve(0)
+      }
+      // 评论存在 插入回复记录
+      await article.insertInReplyTable(uid, cid, content, 1)
+      return Promise.resolve(1)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+
+  }
+  /**
+   * 对回复进行回复
+   * @param uid 用户id
+   * @param rid 回复id
+   * @param content 回复内容
+   */
+  async replyReply (uid: number, rid: number, content: string) {
+    try {
+      // 查询回复是否存在
+      const [ replyItem ] = await article.selectInReplyTableByRid(rid)
+      if (!replyItem) {
+        // 回复不存在
+        return Promise.resolve(0)
+      }
+      // 存在 插入回复内容
+      await article.insertInReplyTable(uid, rid, content, 2)
+      return Promise.resolve(1)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 用户点赞回复
+   * @param uid 用户id
+   * @param rid 回复id
+   * @returns -1回复不存在 0已经点过赞了 1点赞成功
+   */
+  async likeReply (uid: number, rid: number): Promise<-1 | 0 | 1> {
+    try {
+      // 回复是否存在
+      const [ replyItem ] = await article.selectInReplyTableByRid(rid)
+      if (!replyItem) {
+        // 回复不存在
+        return Promise.resolve(-1)
+      }
+      // 当前用户是否已经点赞过了？
+      const [ likeItem ] = await article.selectInLikeReplyTable(uid, rid)
+      if (likeItem) {
+        // 已经点赞过回复了 不能重复点赞
+        return Promise.resolve(0)
+      } else {
+        // 未点过赞 则可以插入点赞记录        
+        await article.insertInLikeReplyTable(uid, rid)
+        return Promise.resolve(1)
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 取消点赞回复
+   * @param uid 用户id
+   * @param rid 回复id
+   * @returns -1回复不存在 0未点赞过回复 1取消回复成功
+   */
+  async cancelLikeReply (uid: number, rid: number): Promise<-1 | 0 | 1> {
+    try {
+      // 回复是否存在
+      const [ replyItem ] = await article.selectInReplyTableByRid(rid)
+      if (!replyItem) {
+        // 不存在
+        return Promise.resolve(-1)
+      }
+      // 是否存在点赞记录
+      const [ likeItem ] = await article.selectInLikeReplyTable(uid, rid)
+      if (likeItem) {
+        // 存在点赞记录 则可以删除
+        await article.deleteInLikeReplyTable(uid, rid)
+        return Promise.resolve(1)
+      } else {
+        // 不存在点赞记录 不能删除
+        return Promise.resolve(0)
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 }
 
 export default ArticleService
