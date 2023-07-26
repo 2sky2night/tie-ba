@@ -908,13 +908,18 @@ async function toReplyComment (ctx: Context) {
     } else if (type === 2) {
       // 对回复进行回复
       const res = await articleService.replyReply(uid, id, body.content.trim(), body.cid)
-      if (res) {
-        // 回复存在
-        ctx.body = response(null, '回复成功!')
-      } else {
+      if (res === -1) {
         // 回复不存在
         ctx.status = 400
         ctx.body = response(null, '回复失败,回复不存在!', 400)
+
+      } else if (res === 0) {
+        // 评论中不存在该回复
+        ctx.status = 400
+        ctx.body = response(null, '回复失败,评论中不存在该回复!', 400)
+      } else {
+        // 回复存在
+        ctx.body = response(null, '回复成功!')
       }
     }
 
@@ -1016,7 +1021,7 @@ async function toGetCommentReplyList (ctx: Context) {
   const cid = + ctx.query.cid
 
   // 校验参数是否合法
-  if (isNaN(limit) || isNaN(offset)||isNaN(cid)) {
+  if (isNaN(limit) || isNaN(offset) || isNaN(cid)) {
     ctx.status = 400
     return ctx.body = response(null, '参数非法!', 400)
   }
@@ -1024,7 +1029,7 @@ async function toGetCommentReplyList (ctx: Context) {
   try {
     const res = await articleService.getCommentReplyList(cid, currentUid, limit, offset)
     if (res) {
-      ctx.body=response(res,'ok')
+      ctx.body = response(res, 'ok')
     } else {
       ctx.status = 400
       ctx.body = response(null, '获取评论的回复列表失败,评论不存在!', 400)

@@ -888,6 +888,7 @@ class ArticleService {
    * @param rid 回复id
    * @param content 回复内容
    * @param cid 评论的id
+   * @returns -1回复不存在 0评论中不存在该回复 1回复成功
    */
   async replyReply (uid: number, rid: number, content: string, cid: number) {
     try {
@@ -895,9 +896,15 @@ class ArticleService {
       const [ replyItem ] = await article.selectInReplyTableByRid(rid)
       if (!replyItem) {
         // 回复不存在
+        return Promise.resolve(-1)
+      }
+      // 查询该评论是否有该回复
+      const resExist = await article.selectInReplyTableByRidAndCid(rid, cid)
+      if (!resExist.length) {
+        // 该评论中不存在该回复
         return Promise.resolve(0)
       }
-      // 存在 插入回复内容
+      // 存在 则回复回复成功 插入回复内容
       await article.insertInReplyTable(uid, rid, content, 2, cid)
       return Promise.resolve(1)
     } catch (error) {
@@ -985,10 +992,15 @@ class ArticleService {
       const list = await getCommentReplyInfoList(_list, uid)
       // 获取评论的所有回复数量
       const [ count ] = await article.countInReplyTableByCid(cid)
-      
+
       return Promise.resolve({
         comment: {
-          ...commentItem,
+          cid: commentItem.cid,
+          content: commentItem.content,
+          createTime: commentItem.createTime,
+          aid: commentItem.aid,
+          uid: commentItem.uid,
+          photo: commentItem.photo === null ? null : commentItem.photo.split(','),
           like_count: likeCount.total,
           is_liked: isLiked,
           user: userInfo

@@ -826,6 +826,19 @@ class ArticleModel extends BaseModel {
     }
   }
   /**
+   * 在回复评论表中 通过rid和cid查询评论中是否存在该回复
+   * @param rid 
+   * @param cid 
+   */
+  async selectInReplyTableByRidAndCid (rid: number, cid: number) {
+    try {
+      const res = await this.runSql<ReplyBaseItem[]>(`select * from user_reply_comment where cid=${cid} and rid=${rid}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
    * 在用户点赞回复表中 插入一条记录
    * @param uid 用户id
    * @param rid 回复id
