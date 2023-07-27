@@ -33,3 +33,8 @@ INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VAL
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (33, 'asd', '2023-07-17 14:30:12', 50, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (34, 'asd1', '2023-07-18 10:18:17', 51, 1, NULL);
 INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (35, 'sdasd', '2023-07-19 11:40:46', 53, 1, 'http://127.0.0.1:3000/img/截图_2023-06-23_09-38-00_1689738028167_02b15e496e5f6914a1ca49f05.png,http://127.0.0.1:3000/img/image-20230620172137194_1689737887786_02b15e496e5f6914a1ca49f00.png');
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (36, '抢沙发', '2023-07-25 14:36:41', 60, 1, NULL);
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (37, '有配图', '2023-07-25 14:37:06', 60, 1, '/img/photo_2023-06-09_11-34-54_1690267014543_7369469874eb1812409a7e900.jpg,/img/photo_2023-06-09_11-34-54_1690267022989_7369469874eb1812409a7e901.jpg,/img/photo_2023-06-09_11-34-54_1690267024534_7369469874eb1812409a7e902.jpg');
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (38, 'dsf', '2023-07-26 18:21:39', 59, 1, NULL);
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (39, 'asdasd', '2023-07-27 11:04:07', 58, 1, NULL);
+INSERT INTO `comment`(`cid`, `content`, `createTime`, `aid`, `uid`, `photo`) VALUES (40, '呃呃呃', '2023-07-27 11:10:49', 58, 1, NULL);

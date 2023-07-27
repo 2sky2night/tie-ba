@@ -195,8 +195,8 @@ export async function getCommentList (commentList: CommentBaseItem[], uid: numbe
             const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length ? true : false;
             // 获取回复总数
             const [ replyCount ] = await article.countInReplyTableByCid(cid)
-            // 获取该评论的热门5条回复
-            const _replyList = await getCommentHotReply(cid,5)
+            // 获取该评论的热门3条回复
+            const _replyList = await getCommentHotReply(cid,3)
             const replyList = await getCommentReplyInfoList(_replyList, uid)
             list.push({
                 cid: commentList[ i ].cid,

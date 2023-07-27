@@ -20,3 +20,4 @@ INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (52, 1, '2023
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (31, 13, '2023-07-18 18:44:20');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (53, 1, '2023-07-21 10:27:51');
 INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (1, 1, '2023-07-24 15:44:16');
+INSERT INTO `user_like_article`(`aid`, `uid`, `createTime`) VALUES (60, 1, '2023-07-26 16:04:51');

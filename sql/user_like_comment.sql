@@ -32,3 +32,7 @@ INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (14, 1, '2023
 INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (17, 1, '2023-07-10 16:18:49');
 INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (12, 8, '2023-07-10 16:19:37');
 INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (1, 1, '2023-07-18 10:05:18');
+INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (37, 1, '2023-07-26 17:16:14');
+INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (39, 1, '2023-07-27 11:06:32');
+INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (40, 1, '2023-07-27 11:37:49');
+INSERT INTO `user_like_comment`(`cid`, `uid`, `createTime`) VALUES (36, 1, '2023-07-27 11:48:15');

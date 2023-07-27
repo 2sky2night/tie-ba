@@ -6,3 +6,14 @@ INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (18, 1, '2023-0
 INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (19, 1, '2023-07-24 17:58:03');
 INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (20, 1, '2023-07-24 17:58:07');
 INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (21, 1, '2023-07-24 17:58:10');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (27, 1, '2023-07-26 17:45:19');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (26, 1, '2023-07-27 10:12:17');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (28, 1, '2023-07-27 10:13:46');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (30, 1, '2023-07-27 10:13:51');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (41, 1, '2023-07-27 10:52:33');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (37, 1, '2023-07-27 11:00:30');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (58, 1, '2023-07-27 11:11:39');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (59, 1, '2023-07-27 11:11:41');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (60, 1, '2023-07-27 11:11:42');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (38, 1, '2023-07-27 11:48:16');
+INSERT INTO `user_like_reply`(`rid`, `uid`, `createTime`) VALUES (39, 1, '2023-07-27 11:48:52');
