@@ -1,70 +1,58 @@
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (15, '回复1', '2023-07-24 15:12:35', 1, 1, 1, 1);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (16, '回复的回复1', '2023-07-24 15:13:29', 1, 15, 2, 1);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (17, 'ipsum culpa', '2023-07-24 15:16:49', 1, 1, 1, 1);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (18, 'ipsum culpa', '2023-07-24 17:57:49', 1, 2, 1, 2);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (19, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (20, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (21, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (22, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (23, 'ipsum culpa', '2023-07-24 17:58:19', 1, 15, 1, 15);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (24, 'ipsum culpa', '2023-07-24 17:58:57', 1, 23, 2, 15);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (25, '毛知被当根通压育统音做机全两般上也加。', '2023-07-25 10:09:25', 1, 15, 2, 1);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (26, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:06', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (27, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:07', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (28, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:08', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (29, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:14', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (30, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:15', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (31, '不主进办叫原立志还分位就按去而专。', '2023-07-25 14:41:15', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (36, '深效党通此做回容习办气务。', '2023-07-25 15:10:36', 1, 31, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (37, '深效党通此做回容习办气务。', '2023-07-25 15:10:49', 1, 36, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (38, '深效党通此做回容习办气务。', '2023-07-25 15:12:03', 1, 36, 1, 36);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (39, '深效党通此深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务做回容习办气务。', '2023-07-25 15:33:00', 1, 36, 1, 36);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (40, '深效党通此深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务深效党通此做回容习办气务做回容习办气务。', '2023-07-25 15:33:25', 2, 36, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (41, '第一个通过界面接口发送的评论', '2023-07-27 10:52:28', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (42, '第一个通过界面接口发送的评论', '2023-07-27 10:53:35', 1, 41, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (43, '撒旦', '2023-07-27 10:54:48', 1, 42, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (44, '撒旦撒旦', '2023-07-27 10:54:58', 1, 43, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (45, 'asdsd', '2023-07-27 11:04:10', 1, 39, 1, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (46, 'asdsad', '2023-07-27 11:04:14', 1, 45, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (47, 'asdsad', '2023-07-27 11:04:17', 1, 39, 1, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (48, 'asdsad', '2023-07-27 11:04:23', 1, 45, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (49, 'asdasd', '2023-07-27 11:04:26', 1, 48, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (50, 'asdasd', '2023-07-27 11:04:29', 1, 49, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (51, 'sadsadsad', '2023-07-27 11:04:33', 1, 50, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (52, 'asdsadasd', '2023-07-27 11:04:36', 1, 51, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (53, '啊大苏打', '2023-07-27 11:04:42', 1, 52, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (54, '撒旦撒旦', '2023-07-27 11:04:48', 1, 39, 1, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (55, '啊实打实的', '2023-07-27 11:04:51', 1, 39, 1, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (56, '阿斯顿撒大苏打', '2023-07-27 11:04:53', 1, 39, 1, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (57, '啊啊', '2023-07-27 11:11:18', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (58, '阿萨大四', '2023-07-27 11:11:24', 1, 57, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (59, '大五', '2023-07-27 11:11:29', 1, 58, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (60, '大六', '2023-07-27 11:11:36', 1, 59, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (61, 'asdasd回复', '2023-07-27 11:33:23', 1, 54, 2, 39);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (62, 'asd', '2023-07-27 11:34:08', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (63, 'sads', '2023-07-27 11:34:10', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (64, 'sadsad', '2023-07-27 11:34:12', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (65, 'asdsad', '2023-07-27 11:34:13', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (66, 'sadad', '2023-07-27 11:34:14', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (67, 'asdasd', '2023-07-27 11:34:15', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (68, 'sadsadasd', '2023-07-27 11:34:17', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (69, 'asdasdsad', '2023-07-27 11:34:18', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (70, 'asdasd', '2023-07-27 11:34:19', 1, 40, 1, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (71, 'asdsad', '2023-07-27 11:34:21', 1, 59, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (72, 'sdsda', '2023-07-27 11:34:24', 1, 71, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (73, 'sdsad', '2023-07-27 11:37:43', 1, 67, 2, 40);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (74, 'asdasd', '2023-07-27 11:38:19', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (75, 'sadasd', '2023-07-27 11:38:21', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (76, 'sadsad', '2023-07-27 11:38:25', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (77, 'asdasd', '2023-07-27 11:38:27', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (78, 'sdaasd', '2023-07-27 11:38:28', 1, 27, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (79, 'asdasd', '2023-07-27 11:38:30', 1, 26, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (80, 'sadasd', '2023-07-27 11:38:32', 1, 28, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (81, 'sadasdas', '2023-07-27 11:38:33', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (82, 'asdsadasd', '2023-07-27 11:38:35', 1, 26, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (83, 'asdasdasd', '2023-07-27 11:38:37', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (84, 'sadasdasd', '2023-07-27 11:38:38', 1, 27, 2, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (85, 'adsad', '2023-07-27 11:40:51', 1, 37, 1, 37);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (86, '回复也太多了吧!发🎃🎃', '2023-07-27 11:49:21', 1, 39, 2, 36);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (87, '水贴是这样的', '2023-07-27 11:49:44', 1, 86, 2, 36);
-INSERT INTO `user_reply_comment`(`rid`, `content`, `createTime`, `uid`, `id`, `type`, `cid`) VALUES (88, 'o.0', '2023-07-27 11:50:35', 1, 37, 1, 37);
+/*
+ Navicat MySQL Data Transfer
+
+ Source Server         : mysql
+ Source Server Type    : MySQL
+ Source Server Version : 80033
+ Source Host           : localhost:3306
+ Source Schema         : tie_bar_lower
+
+ Target Server Type    : MySQL
+ Target Server Version : 80033
+ File Encoding         : 65001
+
+ Date: 27/07/2023 18:23:35
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for user_reply_comment
+-- ----------------------------
+DROP TABLE IF EXISTS `user_reply_comment`;
+CREATE TABLE `user_reply_comment`  (
+  `rid` int(0) NOT NULL AUTO_INCREMENT,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+  `createTime` datetime(0) NULL DEFAULT NULL,
+  `uid` int(0) NULL DEFAULT NULL,
+  `id` int(0) NULL DEFAULT NULL COMMENT 'id，记录评论的id或回复的id',
+  `type` tinyint(0) NULL DEFAULT NULL COMMENT '1回复评论 2对回复进行回复',
+  `cid` int(0) NULL DEFAULT NULL COMMENT '评论的id',
+  PRIMARY KEY (`rid`) USING BTREE,
+  INDEX `uid_reply_comment`(`uid`) USING BTREE,
+  INDEX `cid_reply_comment`(`cid`) USING BTREE,
+  CONSTRAINT `cid_reply_comment` FOREIGN KEY (`cid`) REFERENCES `comment` (`cid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `uid_reply_comment` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 102 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_reply_comment
+-- ----------------------------
+INSERT INTO `user_reply_comment` VALUES (15, '回复1', '2023-07-24 15:12:35', 1, 1, 1, 1);
+INSERT INTO `user_reply_comment` VALUES (16, '回复的回复1', '2023-07-24 15:13:29', 1, 15, 2, 1);
+INSERT INTO `user_reply_comment` VALUES (17, 'ipsum culpa', '2023-07-24 15:16:49', 1, 1, 1, 1);
+INSERT INTO `user_reply_comment` VALUES (18, 'ipsum culpa', '2023-07-24 17:57:49', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (19, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (20, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (21, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (22, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (23, 'ipsum culpa', '2023-07-24 17:58:19', 1, 15, 1, 15);
+INSERT INTO `user_reply_comment` VALUES (24, 'ipsum culpa', '2023-07-24 17:58:57', 1, 23, 2, 15);
+INSERT INTO `user_reply_comment` VALUES (25, '毛知被当根通压育统音做机全两般上也加。', '2023-07-25 10:09:25', 1, 15, 2, 1);
+INSERT INTO `user_reply_comment` VALUES (102, 'asdasd', '2023-07-27 17:14:01', 1, 62, 1, 62);
+INSERT INTO `user_reply_comment` VALUES (103, 'sadasd', '2023-07-27 17:14:05', 1, 102, 2, 62);
+INSERT INTO `user_reply_comment` VALUES (104, 'asdasdasd', '2023-07-27 17:14:08', 1, 103, 2, 62);
+INSERT INTO `user_reply_comment` VALUES (105, 'asdadasd', '2023-07-27 17:14:10', 1, 104, 2, 62);
+
+SET FOREIGN_KEY_CHECKS = 1;

@@ -916,7 +916,7 @@ class ArticleModel extends BaseModel {
   }
   /**
    * 在回复表中 查询评论的总回复数量(包括所有属于该评论的回复 对于评论的回复+回复的回复)
-   * @param cid 回复id
+   * @param cid 评论id
    * @returns 
    */
   async countInReplyTableByCid (cid: number) {

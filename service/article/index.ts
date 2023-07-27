@@ -758,19 +758,22 @@ class ArticleService {
       }
       // 2.帖子存在 获取帖子所有的评论
       const _commentList = await article.selectInCommentTableByAid(aid)
-      const commentList = _commentList.map(ele => ({ ...ele, like_count: 0 }))
-      // 3.遍历评论 查询评论所有的点赞数量
+      const commentList = _commentList.map(ele => ({ ...ele, like_count: 0, reply_count: 0 }))
+      // 3.遍历评论 查询评论所有的点赞数量和回复数量 来进行综合(点赞数量+回复数量)排序
       for (let i = 0; i < commentList.length; i++) {
         const [ likeCount ] = await article.countInLikeCommentTabeByCid(commentList[ i ].cid)
         // 保存该评论的点赞总数
         commentList[ i ].like_count = likeCount.total
+        const [ replyCount ] = await article.countInReplyTableByCid(commentList[ i ].cid)
+        // 保存该评论的回复数量
+        commentList[ i ].reply_count = replyCount.total
       }
-      // 4.遍历获取到的点赞总数的评论列表 根据点赞总数进行降序排序
+      // 4.遍历记录回复总数和点赞总数的评论列表 根据点赞和评论总数进行降序排序
       if (desc) {
         // 降序    
         for (let i = 0; i < commentList.length; i++) {
           for (let j = 0; j < commentList.length - 1; j++) {
-            if (commentList[ j ].like_count < commentList[ j + 1 ].like_count) {
+            if (commentList[ j ].like_count + commentList[ j ].reply_count < commentList[ j + 1 ].like_count + commentList[ j + 1 ].reply_count) {
               const temp = commentList[ j ]
               commentList[ j ] = commentList[ j + 1 ]
               commentList[ j + 1 ] = temp
@@ -781,7 +784,7 @@ class ArticleService {
         // 升序
         for (let i = 0; i < commentList.length; i++) {
           for (let j = 0; j < commentList.length - 1; j++) {
-            if (commentList[ j ].like_count > commentList[ j + 1 ].like_count) {
+            if (commentList[ j ].like_count + commentList[ j ].reply_count > commentList[ j + 1 ].like_count + commentList[ j + 1 ].reply_count) {
               const temp = commentList[ j ]
               commentList[ j ] = commentList[ j + 1 ]
               commentList[ j + 1 ] = temp

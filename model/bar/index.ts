@@ -1,7 +1,7 @@
 // 基础模型
 import BaseModel from '../base'
 // 类型
-import type { Bar, BarCreateBody, UserFollowBarItem } from './types'
+import type { Bar, BarCreateBody, UserFollowBarItem,UserCheckBar,BarRank } from './types'
 import type { OkPacket } from 'mysql'
 import type { CountRes } from '../../types/index'
 // 工具函数
@@ -310,6 +310,34 @@ class BarModel extends BaseModel {
         } catch (error) {
             return Promise.reject(error)
         }
+    }
+    /**
+     * 在用户签到表中 查询用户签到吧的信息
+     * @param uid 用户id
+     * @param bid 吧id
+     */
+    async selectInUserCheckBarTableByUidAndBid (uid:number,bid:number) {
+        try {
+            const res = await this.runSql<UserCheckBar[]>(`select * from user_check_bar where uid=${ uid } and bid=${ bid }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    async updateUserCheckBarTable (uid: number, bid: number, score: number) {
+        
+    }
+    /**
+     * 在吧等级制度表中 通过bid查询对应吧的等级制度信息
+     * @param bid 
+     */
+    async selectInBarRankTableByBid (bid: number) {
+     try {
+         const res = await this.runSql<BarRank[]>(`select * from bar_rank where bid=${ bid }`)
+         return Promise.resolve(res)
+     } catch (error) {
+        return Promise.reject(error)
+     }   
     }
 }
 

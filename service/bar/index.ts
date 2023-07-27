@@ -518,7 +518,33 @@ class BarService {
                 limit,
                 offset,
                 desc,
-                has_more:limit+offset<count.total
+                has_more: limit + offset < count.total
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 用户签到吧
+     * @param uid 用户id
+     * @param bid 吧id
+     */
+    async userCheckBar (uid: number, bid: number) {
+        try {
+            // 查询吧是否存在
+            const resExist = await bar.selectByBid(bid)
+            if (!resExist.length) return Promise.resolve(-2)
+            // 查询当前用户是否关注了该吧
+            const resFollowBar = await bar.selectFollowByUidAndBid(bid,uid)
+            // 未关注该吧
+            if (!resFollowBar.length) return Promise.resolve(-1)
+            // 查询签到状态
+            const [ checkItem ] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
+            if (checkItem.is_checked === 1) {
+                // 已经签到过了
+                return Promise.resolve(0)
+            } else {
+                // 签到 
             }
         } catch (error) {
             return Promise.reject(error)
