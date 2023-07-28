@@ -11,7 +11,7 @@
  Target Server Version : 80033
  File Encoding         : 65001
 
- Date: 27/07/2023 18:23:35
+ Date: 28/07/2023 16:05:59
 */
 
 SET NAMES utf8mb4;
@@ -39,10 +39,10 @@ CREATE TABLE `user_reply_comment`  (
 -- ----------------------------
 -- Records of user_reply_comment
 -- ----------------------------
-INSERT INTO `user_reply_comment` VALUES (15, '回复1', '2023-07-24 15:12:35', 1, 1, 1, 1);
+INSERT INTO `user_reply_comment` VALUES (15, '回复1', '2023-07-24 15:12:35', 2, 1, 1, 1);
 INSERT INTO `user_reply_comment` VALUES (16, '回复的回复1', '2023-07-24 15:13:29', 1, 15, 2, 1);
 INSERT INTO `user_reply_comment` VALUES (17, 'ipsum culpa', '2023-07-24 15:16:49', 1, 1, 1, 1);
-INSERT INTO `user_reply_comment` VALUES (18, 'ipsum culpa', '2023-07-24 17:57:49', 1, 2, 1, 2);
+INSERT INTO `user_reply_comment` VALUES (18, 'ipsum culpa', '2023-07-24 17:57:49', 2, 2, 1, 2);
 INSERT INTO `user_reply_comment` VALUES (19, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
 INSERT INTO `user_reply_comment` VALUES (20, 'ipsum culpa', '2023-07-24 17:57:50', 1, 2, 1, 2);
 INSERT INTO `user_reply_comment` VALUES (21, 'ipsum culpa', '2023-07-24 17:57:51', 1, 2, 1, 2);

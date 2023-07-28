@@ -11,7 +11,7 @@
  Target Server Version : 80033
  File Encoding         : 65001
 
- Date: 27/07/2023 18:22:28
+ Date: 28/07/2023 16:05:17
 */
 
 SET NAMES utf8mb4;
@@ -35,6 +35,7 @@ CREATE TABLE `user_check_bar`  (
 -- ----------------------------
 -- Records of user_check_bar
 -- ----------------------------
-INSERT INTO `user_check_bar` VALUES (1, 1, 0, 0);
+INSERT INTO `user_check_bar` VALUES (1, 1, 0, 25);
+INSERT INTO `user_check_bar` VALUES (12, 19, 0, 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -11,7 +11,7 @@
  Target Server Version : 80033
  File Encoding         : 65001
 
- Date: 27/07/2023 18:21:26
+ Date: 28/07/2023 16:04:47
 */
 
 SET NAMES utf8mb4;
@@ -44,7 +44,7 @@ INSERT INTO `bar` VALUES (5, '我的世界', '2023-05-30 15:07:35', 1, '欢迎�
 INSERT INTO `bar` VALUES (6, '英雄联盟', '2023-05-30 15:07:35', 1, '欢迎来到英雄联盟吧!', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
 INSERT INTO `bar` VALUES (7, '赛马娘', '2023-05-30 15:13:34', 1, '欢迎来到赛马娘吧!', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
 INSERT INTO `bar` VALUES (8, '哈哈', '2023-06-06 14:41:39', 2, '即可', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
-INSERT INTO `bar` VALUES (9, '包直光想容别', '2023-07-13 17:20:44', 1, 'minim et anim', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
+INSERT INTO `bar` VALUES (9, '321321', '2023-07-13 17:20:44', 1, 'minim et anim', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
 INSERT INTO `bar` VALUES (10, '文通需决', '2023-07-13 17:20:45', 1, 'ullamco', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
 INSERT INTO `bar` VALUES (11, '重广二拉该', '2023-07-13 17:20:47', 1, 'nisi do aliqua', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
 INSERT INTO `bar` VALUES (12, '二车完离任最或', '2023-07-13 17:20:48', 1, 'eiusmod mollit et occaecat', '/img/微信图片_20230621173731_1689581691513_f59da882e88cb27c706bfe302.png');
@@ -66,6 +66,17 @@ delimiter ;;
 CREATE TRIGGER `tigger_add_bar_rank_table` AFTER INSERT ON `bar` FOR EACH ROW BEGIN
 	INSERT into bar_rank values (new.bid,'[{"label":"初出茅庐","level":1,"score":0},{"label":"初级粉丝","level":2,"score":15},{"label":"中级粉丝","level":3,"score":40},{"label":"高级粉丝","level":4,"score":100},{"label":"活跃吧友","level":5,"score":200},{"label":"核心吧友","level":6,"score":400},{"label":"铁杆吧友","level":7,"score":600},{"label":"知名人士","level":8,"score":1000},{"label":"人气楷模","level":9,"score":1500},{"label":"黄牌指导","level":10,"score":2000},{"label":"意见领袖","level":11,"score":3000},{"label":"意见领袖","level":12,"score":6000},{"label":"意见领袖","level":13,"score":10000},{"label":"意见领袖","level":14,"score":14000},{"label":"意见领袖","level":15,"score":20000}]');
 end
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table bar
+-- ----------------------------
+DROP TRIGGER IF EXISTS `tigger_delete_bar_rank_table`;
+delimiter ;;
+CREATE TRIGGER `tigger_delete_bar_rank_table` BEFORE DELETE ON `bar` FOR EACH ROW BEGIN
+	DELETE from user_check_bar where bid=old.bid;
+END
 ;;
 delimiter ;
 

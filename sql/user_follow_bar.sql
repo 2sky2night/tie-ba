@@ -11,7 +11,7 @@
  Target Server Version : 80033
  File Encoding         : 65001
 
- Date: 27/07/2023 18:22:41
+ Date: 28/07/2023 16:05:29
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,8 @@ CREATE TABLE `user_follow_bar`  (
 -- ----------------------------
 -- Records of user_follow_bar
 -- ----------------------------
-INSERT INTO `user_follow_bar` VALUES (1, 1, '2023-07-27 18:01:36');
+INSERT INTO `user_follow_bar` VALUES (12, 19, '2023-07-27 18:25:33');
+INSERT INTO `user_follow_bar` VALUES (1, 1, '2023-07-28 10:14:01');
 
 -- ----------------------------
 -- Triggers structure for table user_follow_bar
