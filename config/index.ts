@@ -33,6 +33,7 @@ export const NO_AUTH = [
     `${ BASE_REQUST }/bar/discover`,
     `${ BASE_REQUST }/bar/briefly`,
     `${ BASE_REQUST }/bar/article/list`,
+    `${ BASE_REQUST }/bar/rank/info`,
     `${ BASE_REQUST }/article/info`,
     `${ BASE_REQUST }/article/comment/list`,
     `${ BASE_REQUST }/article/user/like/list`,

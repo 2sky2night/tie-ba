@@ -3,7 +3,7 @@ import ArticleModel from "../../model/article"
 import UserModel from "../../model/user"
 import BarModel from "../../model/bar"
 // types
-import type { BarInfo } from './types'
+import type { BarInfo, BarRankJSONItem } from './types'
 import type { Bar } from '../../model/bar/types'
 
 const article = new ArticleModel()
@@ -33,7 +33,7 @@ export async function getBarListWithId (barIdList: number[], currentUid: number 
       // 4.查询吧主的信息
       // 若当前吧主信息已经查询过了 则直接服用数据
       const userExist = list.find(ele => ele.uid === barInfo.uid)
-      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar,udesc:userExist.user.udesc} : (await user.selectByUid(barInfo.uid))[ 0 ]
+      const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar, udesc: userExist.user.udesc } : (await user.selectByUid(barInfo.uid))[ 0 ]
       let isFollowedUser = false
       let isFollowedMe = false
       // 5.查询当前用户对吧主的关注状态
@@ -41,7 +41,7 @@ export async function getBarListWithId (barIdList: number[], currentUid: number 
       if (userExist) {
         // 若记录过 则直接复用数据
         isFollowedUser = userExist.user.is_followed
-        isFollowedMe=userExist.user.is_fans
+        isFollowedMe = userExist.user.is_fans
       } else {
         // 若没有记录过当前吧主 需要查询关注状态        
         isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userInfo.uid)).length ? true : false
@@ -78,14 +78,14 @@ export async function getBarListWithId (barIdList: number[], currentUid: number 
  * @param currentUid 当前登录的用户id
  * @returns 
  */
-export async function getBarList (barList: Bar[],currentUid:number|undefined) {
+export async function getBarList (barList: Bar[], currentUid: number | undefined) {
   const list: BarInfo[] = []
   try {
     for (let i = 0; i < barList.length; i++) {
 
       const bid = barList[ i ].bid
       const uid = barList[ i ].uid
-      
+
       // 1.查询吧被关注的数量
       const [ followedCount ] = await bar.selectFollowByBidCount(bid)
       // 2.查询该吧的发帖数量
@@ -93,7 +93,7 @@ export async function getBarList (barList: Bar[],currentUid:number|undefined) {
       // 3.查询吧主的信息
       // 若当前吧主信息已经查询过了 则直接复用数据
       const userExist = list.find(ele => ele.uid === uid)
-      const userInfo = userExist ?  {uid:userExist.uid,username:userExist.user.username,createTime:userExist.user.createTime,avatar:userExist.user.avatar,udesc:userExist.user.udesc} : (await user.selectByUid(uid))[ 0 ]
+      const userInfo = userExist ? { uid: userExist.uid, username: userExist.user.username, createTime: userExist.user.createTime, avatar: userExist.user.avatar, udesc: userExist.user.udesc } : (await user.selectByUid(uid))[ 0 ]
       let isFollowedUser = false
       let isFollowedMe = false
       // 4.查询当前用户对吧主的关注状态
@@ -101,7 +101,7 @@ export async function getBarList (barList: Bar[],currentUid:number|undefined) {
       if (userExist) {
         // 若记录过 则直接复用数据
         isFollowedUser = userExist.user.is_followed
-        isFollowedMe=userExist.user.is_fans
+        isFollowedMe = userExist.user.is_fans
       } else {
         // 若没有记录过当前吧主 需要查询关注状态        
         isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userInfo.uid)).length ? true : false
@@ -111,7 +111,7 @@ export async function getBarList (barList: Bar[],currentUid:number|undefined) {
       const isFollowedBar = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(bid, currentUid)).length ? true : false
 
       list.push({
-        ...barList[i],
+        ...barList[ i ],
         article_count: articleCount.total,
         user_follow_count: followedCount.total,
         is_followed: isFollowedBar,
@@ -126,5 +126,59 @@ export async function getBarList (barList: Bar[],currentUid:number|undefined) {
     return Promise.resolve(list)
   } catch (error) {
     return Promise.reject(error)
+  }
+}
+
+/**
+ * 获取用户在吧中的等级 
+ * 若用户未关注吧则 返回0级，头衔为绿牌页友
+ * @param uid 用户id
+ * @param bid 吧id
+ */
+export async function getUserRank (uid: number, bid: number) {
+  // 用户是否关注了此吧
+  const resExist = await bar.selectFollowByUidAndBid(bid, uid)
+  if (resExist.length) {
+    // 关注了 获取用户等级信息
+    const [ checkItem ] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
+    // 获取该吧的等级制度
+    const [ barRankItem ] = await bar.selectInBarRankTableByBid(bid)
+    // 解析出该吧的等级制度
+    const rankList: BarRankJSONItem[] = JSON.parse(barRankItem.rank_JSON)
+
+    if (checkItem.score >= 20000) {
+      // 满级用户 20000等级为满级
+      return {
+        level: 15,
+        label: rankList[ rankList.length - 1 ].label,
+        /*距离下一级还差多少百分比*/
+        progress: 0,
+        score: checkItem.score
+      }
+    } else {
+
+      // 未满级      
+      // 遍历吧等级制度 获取当前用户所属吧的等级制度
+      for (let i = 0; i < rankList.length - 1; i++) {
+        // 若用户分数大于等于当前等级小于下一等级的分数 则可以确定用户所在的等级
+        if (rankList[ i ].score <= checkItem.score && checkItem.score < rankList[ i + 1 ].score) {
+          return {
+            level: rankList[ i ].level,
+            label: rankList[ i ].label,
+            score: checkItem.score,
+            progress: +(((checkItem.score) / rankList[ i + 1 ].score).toFixed(2))
+          }
+        }
+      }
+    }
+
+  } else {
+    // 未关注
+    return {
+      level: 0,
+      label: '绿牌页友',
+      progress: 0,
+      score: 0
+    }
   }
 }

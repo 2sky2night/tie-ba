@@ -21,3 +21,22 @@ export interface BarInfo extends Bar {
     user_follow_count: number;
     user:User
 }
+
+/**
+ * bar_rank字段的数据结构
+ */
+export interface BarRankJSONItem {
+    label: string;
+    level: number;
+    score: number;
+} 
+
+/**
+ * 用户吧等级记录
+ */
+export interface UserRank {
+    label: string;
+    level: number;
+    score: number;
+    progress:number
+}

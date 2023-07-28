@@ -528,6 +528,7 @@ class BarService {
      * 用户签到吧
      * @param uid 用户id
      * @param bid 吧id
+     * @return -2吧不存在 -1用户未关注吧 0用户已经签到了 1签到成功
      */
     async userCheckBar (uid: number, bid: number) {
         try {
@@ -535,7 +536,7 @@ class BarService {
             const resExist = await bar.selectByBid(bid)
             if (!resExist.length) return Promise.resolve(-2)
             // 查询当前用户是否关注了该吧
-            const resFollowBar = await bar.selectFollowByUidAndBid(bid,uid)
+            const resFollowBar = await bar.selectFollowByUidAndBid(bid, uid)
             // 未关注该吧
             if (!resFollowBar.length) return Promise.resolve(-1)
             // 查询签到状态
@@ -544,7 +545,133 @@ class BarService {
                 // 已经签到过了
                 return Promise.resolve(0)
             } else {
-                // 签到 
+                // 签到 每次加五经验
+                await bar.updateUserCheckBarTable(uid, bid, checkItem.score + 5)
+                return Promise.resolve(1)
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 修改吧等级制度
+     * @param uid 用户id
+     * @param bid 吧id
+     * @param rankLableArray 吧等级制度头衔数组 
+     * @returns -1吧不存在 0您不是吧主 1修改成功
+     */
+    async updateBarRank (uid: number, bid: number, rankLableArray: string[]) {
+        try {
+            // 吧是否存在
+            const [ barInfo ] = await bar.selectByBid(bid)
+            if (barInfo === undefined) return Promise.resolve(-1)
+            // 修改吧等级制度的必须是吧主
+            if (barInfo.uid !== uid) return Promise.resolve(0)
+            // 默认的吧等级制度
+            const rankJSON = [
+                {
+                    "label": "初出茅庐",
+                    "level": 1,
+                    "score": 0
+                },
+                {
+                    "label": "初级粉丝",
+                    "level": 2,
+                    "score": 15
+                },
+                {
+                    "label": "中级粉丝",
+                    "level": 3,
+                    "score": 40
+                },
+                {
+                    "label": "高级粉丝",
+                    "level": 4,
+                    "score": 100
+                },
+                {
+                    "label": "活跃吧友",
+                    "level": 5,
+                    "score": 200
+                },
+                {
+                    "label": "核心吧友",
+                    "level": 6,
+                    "score": 400
+                },
+                {
+                    "label": "铁杆吧友",
+                    "level": 7,
+                    "score": 600
+                },
+                {
+                    "label": "知名人士",
+                    "level": 8,
+                    "score": 1000
+                },
+                {
+                    "label": "人气楷模",
+                    "level": 9,
+                    "score": 1500
+                },
+                {
+                    "label": "黄牌指导",
+                    "level": 10,
+                    "score": 2000
+                },
+                {
+                    "label": "意见领袖",
+                    "level": 11,
+                    "score": 3000
+                },
+                {
+                    "label": "意见领袖",
+                    "level": 12,
+                    "score": 6000
+                },
+                {
+                    "label": "意见领袖",
+                    "level": 13,
+                    "score": 10000
+                },
+                {
+                    "label": "意见领袖",
+                    "level": 14,
+                    "score": 14000
+                },
+                {
+                    "label": "意见领袖",
+                    "level": 15,
+                    "score": 20000
+                }
+            ]
+            // 遍历用户传入的吧等级制度通过下标依次修改对应等级的吧等级头衔
+            rankLableArray.forEach((ele, index) => {
+                rankJSON[ index ].label = ele
+            })
+            await bar.updateInBarRankTable(bid, JSON.stringify(rankJSON))
+            return Promise.resolve(1)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取吧等级制度
+     * @param bid 吧id
+     */
+    async getBarRankInfo (bid: number) {
+        try {
+            // 吧是否存在
+            const [ barInfo ] = await bar.selectByBid(bid)
+            if (barInfo) {
+                // 存在获取吧的等级制度
+                const [rankItem] = await bar.selectInBarRankTableByBid(bid)
+                return Promise.resolve({
+                    ...barInfo,
+                    rank_JSON:rankItem.rank_JSON
+                })
+            } else {
+                return Promise.resolve(0)
             }
         } catch (error) {
             return Promise.reject(error)

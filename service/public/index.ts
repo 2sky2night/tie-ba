@@ -4,7 +4,7 @@ import UserModel from '../../model/user'
 import BarModel from '../../model/bar'
 // 封装的处理函数
 import { getUserList } from '../user/actions'
-import { getArticleList, getCommentList } from '../article/actions'
+import { getArticleList, getCommentList, getCommentListWithoutBid } from '../article/actions'
 import { getBarList } from '../bar/actions'
 
 const article = new ArticleModel()
@@ -235,7 +235,7 @@ class PublicService {
       // 查询某一页匹配上的评论列表
       const commentList = await article.searchInCommentTableByContent(keywords, limit, offset, desc)
       // 遍历评论列表 查询评论相关的信息
-      const list = await getCommentList(commentList, currentUid)
+      const list = await getCommentListWithoutBid(commentList, currentUid)
       return Promise.resolve({
         list,
         limit,

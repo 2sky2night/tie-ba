@@ -1,7 +1,7 @@
-import { ReplyBaseItem } from 'model/article/types';
-import { Bar } from "../bar/types";
-import { User, UserInfo } from "../user/types";
-import { UserWithout } from 'model/user/types';
+import { ReplyBaseItem } from '../../model/article/types';
+import { Bar,UserRank } from "../bar/types";
+import { User, UserInfo, UserWithRank } from "../user/types";
+import { UserWithout } from '../../model/user/types';
 
 /**
  * 帖子详情
@@ -27,7 +27,7 @@ export interface ArticleItem {
  * 一条评论的基本信息
  */
 export interface CommentItem {
-    user: User;
+    user: UserWithRank;
     is_liked: boolean;
     like_count: number;
     cid: number;
@@ -45,9 +45,9 @@ export interface CommentItem {
 export interface ReplyItem extends ReplyBaseItem {
     like_count: number;
     is_liked: boolean;
-    user: UserWithout,
+    user: UserWithout & {bar_rank:UserRank},
     /**
-     * 回复的目标对象数据
+     * 回复的目标对象数据 回复对象不包含用户吧等级数据
      */
     reply?: ReplyBaseItem & {
         user: UserWithout

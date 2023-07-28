@@ -324,8 +324,24 @@ class BarModel extends BaseModel {
             return Promise.reject(error)
         }
     }
+    /**
+     * 在用户签到表中 执行用户签到吧操作
+     * @param uid 用户id
+     * @param bid 吧id
+     * @param score 分数
+     * @returns 
+     */
     async updateUserCheckBarTable (uid: number, bid: number, score: number) {
-        
+        try {
+            const res = await this.runSql<OkPacket>(`update user_check_bar set is_checked=1,score=${ score } where uid=${ uid } and bid=${ bid } `)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                return Promise.reject('更新失败!')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
     }
     /**
      * 在吧等级制度表中 通过bid查询对应吧的等级制度信息
@@ -338,6 +354,24 @@ class BarModel extends BaseModel {
      } catch (error) {
         return Promise.reject(error)
      }   
+    }
+    /**
+     * 更新吧的等级制度
+     * @param bid 吧id
+     * @param rank_JSON 等级制度json字符串 
+     * @returns 
+     */
+    async updateInBarRankTable (bid: number, rank_JSON: string) {
+        try {
+            const res = await this.runSql<OkPacket>(`update bar_rank set rank_JSON='${ rank_JSON }' where bid=${ bid }`)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                return Promise.reject('更新失败!')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
     }
 }
 

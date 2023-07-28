@@ -45,6 +45,17 @@ barRouter.get('bar', `${ baseRouteURL }/briefly`, middleware.tokenParse, BarCont
 barRouter.get('bar', `${ baseRouteURL }/article/list`, middleware.tokenParse, BarController.toGetBarArticleList)
 
 // 获取用户关注的所有吧 分页展示，仅包含吧的简要信息 query{offset:number;limit:number;desc:boolean}
-barRouter.get('bar', `${ baseRouteURL }/user/list/briefly`,  BarController.toGetUserFollowBarListBriefly)
+barRouter.get('bar', `${ baseRouteURL }/user/list/briefly`, BarController.toGetUserFollowBarListBriefly)
+
+// 用户签到吧 需要token query:{bid:number}
+barRouter.get('bar', `${ baseRouteURL }/signIn`, BarController.toUserCheckBar)
+
+// 修改吧等级头衔 需要token json:{bid:number,rankLabelArray:string[]}
+barRouter.put('bar', `${ baseRouteURL }/edit/rank`, BarController.toUpdateBarRank)
+
+// 获取吧的等级信息 query:{bid:number}
+barRouter.get('bar', `${ baseRouteURL }/rank/info`, BarController.toGetBarRankInfo)
+
+
 
 export default barRouter

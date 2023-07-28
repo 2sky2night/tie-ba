@@ -6,8 +6,9 @@ import UserModel from '../../model/user'
 import type { ArticleBaseItem, CommentBaseItem, InserCommentBody, InsertArticleBody } from '../../model/article/types';
 
 // 统一封装的处理函数
-import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount, getCommentReplyInfoList } from './actions'
+import { getArticleList, getArticleListWithId, getCommentList, getCommentListWithOutLikeCount, getCommentReplyInfoList,getCommentListWithoutBid } from './actions'
 import { getUserListById } from '../user/actions';
+import { getUserRank } from '../bar/actions';
 
 const user = new UserModel()
 const article = new ArticleModel()
@@ -58,7 +59,8 @@ class ArticleService {
         const userInfo = {
           ...resUserCreateArticle,
           is_followed: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(uid, resUserCreateArticle.uid)).length > 0,
-          is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateArticle.uid, uid)).length > 0
+          is_fans: uid === undefined ? false : (await user.selectByUidAndUidIsFollow(resUserCreateArticle.uid, uid)).length > 0,
+          bar_rank: await getUserRank(resUserCreateArticle.uid, articleInfo.bid)
         }
 
         // 3.查询该帖子所属的吧详情信息
@@ -390,7 +392,7 @@ class ArticleService {
       // 3.查询当前页的评论列表
       const commentList = await article.selectInCommentTableByAidLimit(aid, limit, offset, desc)
       // 4.遍历评论列表,查询相关数据
-      const list = await getCommentList(commentList, uid)
+      const list = await getCommentList(commentList, uid, resExist[ 0 ].bid)
 
       return Promise.resolve({
         list,
@@ -701,7 +703,7 @@ class ArticleService {
     try {
       const [ count ] = await article.countFindHotComment(day)
       const commentList = await article.findHotComment(day, limit, offset)
-      const list = await getCommentList(commentList, uid)
+      const list = await getCommentListWithoutBid(commentList, uid)
       return Promise.resolve({
         list,
         offset,
@@ -795,14 +797,15 @@ class ArticleService {
       // 5.根据接口请求的limit和offset进行截取 评论列表
       const _list = commentList.slice(offset, offset + limit)
       // 遍历列表获取评论相关信息
-      const list = await getCommentListWithOutLikeCount(_list, currentUid)
+      const list = await getCommentListWithOutLikeCount(_list, currentUid, resExist[ 0 ].bid)
 
       return Promise.resolve({
         list,
         total: commentList.length,
         offset,
         limit,
-        has_more: limit + offset < commentList.length
+        has_more: limit + offset < commentList.length,
+        desc
       })
 
     } catch (error) {
@@ -988,11 +991,13 @@ class ArticleService {
       // 评论存在 查询评论相关数据
       const [ userInfo ] = await user.selectByUid(commentItem.uid)
       const [ likeCount ] = await article.countInLikeCommentTabeByCid(cid)
+      // 查询评论来自与那个吧
+      const [ articleInfo ] = await article.selectInArticleTableByAid(commentItem.aid)
       const isLiked = uid === undefined ? false : (await article.selectInLikeCommentTableByCidAndUid(cid, uid)).length > 0
       // 查询回复列表数据
       const _list = await article.selectInReplyTableByCidLimit(cid, limit, offset)
       // 获取回复列表的详情数据
-      const list = await getCommentReplyInfoList(_list, uid)
+      const list = await getCommentReplyInfoList(_list, uid, articleInfo.bid)
       // 获取评论的所有回复数量
       const [ count ] = await article.countInReplyTableByCid(cid)
 
@@ -1006,7 +1011,10 @@ class ArticleService {
           photo: commentItem.photo === null ? null : commentItem.photo.split(','),
           like_count: likeCount.total,
           is_liked: isLiked,
-          user: userInfo
+          user: {
+            ...userInfo,
+            bar_rank:await getUserRank(userInfo.uid,articleInfo.bid)
+          }
         },
         list,
         limit,
