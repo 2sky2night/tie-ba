@@ -3,12 +3,12 @@ import BarModel from "../../model/bar";
 import UserModel from '../../model/user'
 import ArticleModel from '../../model/article';
 // 类型
-import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../model/bar/types";
-import type { UserInfo, UserWithout } from "../../model/user/types";
-import type { Bar } from '../../model/bar/types';
+import type { BarCreateBody } from "../../model/bar/types";
+import type { BarRankJSONItem } from './types';
+// 处理函数
 import { getBarList, getBarListWithId, getUserRank } from './actions';
-import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
 import { getUserListById } from '../user/actions';
+import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
 
 // 吧模型实例
 const bar = new BarModel()
@@ -559,9 +559,43 @@ class BarService {
                 // 已经签到过了
                 return Promise.resolve(0)
             } else {
+                // 用户签到后的经验
+                const newExp = checkItem.score + 5
                 // 签到 每次加五经验
-                await bar.updateUserCheckBarTable(uid, bid, checkItem.score + 5)
-                return Promise.resolve(1)
+                await bar.updateUserCheckBarTable(uid, bid, newExp)
+
+                // 查询当前吧等级制度
+                const [ barRank ] = await bar.selectInBarRankTableByBid(bid)
+                const rankJSON: BarRankJSONItem[] = JSON.parse(barRank.rank_JSON)
+                if (newExp >= 20000) {
+                    // 签到后满级了
+                    return Promise.resolve({
+                        level_up: false,
+                        level: 15,
+                        label: rankJSON[ rankJSON.length - 1 ].label,
+                        score: newExp,
+                        progress: 1
+                    })
+                } else {
+                    let newIndex = 0
+                    // 查询签到后用户的等级
+                    for (let i = 0; i < rankJSON.length - 1; i++) {
+                        if (rankJSON[ i ].score <= newExp && newExp < rankJSON[ i + 1 ].score) {
+                            newIndex = i
+                            break;
+                        }
+                    }
+
+                    // 响应签到信息
+                    return Promise.resolve({
+                        level_up: true,
+                        level: rankJSON[ newIndex ].level,
+                        label: rankJSON[ newIndex ].label,
+                        score: newExp,
+                        progress: +((newExp / rankJSON[ newIndex + 1 ].score).toFixed(2))
+                    })
+
+                }
             }
         } catch (error) {
             return Promise.reject(error)

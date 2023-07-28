@@ -583,9 +583,9 @@ async function toUserCheckBar (ctx: Context) {
 
     try {
         const res = await barService.userCheckBar(uid, bid)
-        if (res === 1) {
+        if (res instanceof Object) {
             // 签到成功
-            ctx.body = response(null, '签到成功!')
+            ctx.body = response(res, '签到成功!')
         } else if (res === 0) {
             // 已经签到过了
             ctx.status = 400

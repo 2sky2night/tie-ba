@@ -152,7 +152,7 @@ export async function getUserRank (uid: number, bid: number) {
         level: 15,
         label: rankList[ rankList.length - 1 ].label,
         /*距离下一级还差多少百分比*/
-        progress: 0,
+        progress: 1,
         score: checkItem.score
       }
     } else {
@@ -166,7 +166,7 @@ export async function getUserRank (uid: number, bid: number) {
             level: rankList[ i ].level,
             label: rankList[ i ].label,
             score: checkItem.score,
-            progress: +(((checkItem.score) / rankList[ i + 1 ].score).toFixed(2))
+            progress: ((checkItem.score) / rankList[ i + 1 ].score)
           }
         }
       }
