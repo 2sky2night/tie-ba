@@ -1,7 +1,7 @@
 /*
 MySQL Backup
 Database: tie_bar_lower
-Backup Time: 2023-07-28 16:01:44
+Backup Time: 2023-07-28 16:42:04
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -74,11 +74,11 @@ CREATE TABLE `user` (
   PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `user_check_bar` (
-  `uid` int NOT NULL,
+  `uid` int DEFAULT NULL,
   `bid` int DEFAULT NULL,
   `is_checked` tinyint DEFAULT '0' COMMENT '用户签到吧的状态 0未签到 1签到了',
   `score` bigint DEFAULT '0' COMMENT '签到的得分，每次签到+5分？',
-  PRIMARY KEY (`uid`),
+  KEY `uid_user_check_bar` (`uid`),
   KEY `bid_user_check_bar` (`bid`),
   CONSTRAINT `bid_user_check_bar` FOREIGN KEY (`bid`) REFERENCES `bar` (`bid`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `uid_user_check_bar` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -185,13 +185,13 @@ COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`user_check_bar` WRITE;
 DELETE FROM `tie_bar_lower`.`user_check_bar`;
-INSERT INTO `tie_bar_lower`.`user_check_bar` (`uid`,`bid`,`is_checked`,`score`) VALUES (1, 1, 0, 25),(12, 19, 0, 0);
+INSERT INTO `tie_bar_lower`.`user_check_bar` (`uid`,`bid`,`is_checked`,`score`) VALUES (1, 1, 0, 25),(12, 19, 0, 0),(1, 19, 0, 5);
 UNLOCK TABLES;
 COMMIT;
 BEGIN;
 LOCK TABLES `tie_bar_lower`.`user_follow_bar` WRITE;
 DELETE FROM `tie_bar_lower`.`user_follow_bar`;
-INSERT INTO `tie_bar_lower`.`user_follow_bar` (`uid`,`bid`,`createTime`) VALUES (12, 19, '2023-07-27 18:25:33'),(1, 1, '2023-07-28 10:14:01');
+INSERT INTO `tie_bar_lower`.`user_follow_bar` (`uid`,`bid`,`createTime`) VALUES (1, 1, '2023-07-28 10:14:01'),(12, 19, '2023-07-28 16:34:22'),(1, 19, '2023-07-28 16:41:13');
 UNLOCK TABLES;
 COMMIT;
 BEGIN;

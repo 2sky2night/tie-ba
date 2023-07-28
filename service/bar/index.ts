@@ -6,7 +6,7 @@ import ArticleModel from '../../model/article';
 import type { BarBody, BarCreateBody, BarInfo, BarInfoWithFollow } from "../../model/bar/types";
 import type { UserInfo, UserWithout } from "../../model/user/types";
 import type { Bar } from '../../model/bar/types';
-import { getBarList, getBarListWithId } from './actions';
+import { getBarList, getBarListWithId, getUserRank } from './actions';
 import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
 import { getUserListById } from '../user/actions';
 
@@ -87,8 +87,10 @@ class BarService {
                         user: {
                             ...resUser[ 0 ],
                             is_followed: false,
-                            is_fans: false
-                        }
+                            is_fans: false,
+                        },
+                        // 未登录用户 吧等级信息为null
+                        my_bar_rank: null
                     }
                 } else {
                     //  若登录 
@@ -105,15 +107,27 @@ class BarService {
                     // 3.2 查询用户是否关注了吧主
                     const resFollowUser = await user.selectByUidAndUidIsFollow(uid, barInfo.uid)
                     const resFansUser = await user.selectByUidAndUidIsFollow(barInfo.uid, uid)
-
+                    // 3.3 查询当前用户是否签到?
+                    let is_checked = false
+                    if (isFollowBar) {
+                        // 关注了该吧 查询签到状态
+                        const [ checkItem ] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
+                        if (checkItem.is_checked) {
+                            is_checked = true
+                        }
+                    }
                     // 响应请求内容
                     res = {
                         ...barInfo, is_followed: isFollowBar,
                         user: {
                             ...resUser[ 0 ],
                             is_followed: resFollowUser.length ? true : false,
-                            is_fans: resFansUser.length ? true : false
-                        }
+                            is_fans: resFansUser.length ? true : false,
+                        },
+                        // 查询当前用户在本吧的等级
+                        my_bar_rank: await getUserRank(uid, bid),
+                        // 当前是否签到了
+                        is_checked
                     }
                 }
                 // 4.查询该吧的发帖数量
@@ -665,10 +679,10 @@ class BarService {
             const [ barInfo ] = await bar.selectByBid(bid)
             if (barInfo) {
                 // 存在获取吧的等级制度
-                const [rankItem] = await bar.selectInBarRankTableByBid(bid)
+                const [ rankItem ] = await bar.selectInBarRankTableByBid(bid)
                 return Promise.resolve({
                     ...barInfo,
-                    rank_JSON:rankItem.rank_JSON
+                    rank_JSON: rankItem.rank_JSON
                 })
             } else {
                 return Promise.resolve(0)
