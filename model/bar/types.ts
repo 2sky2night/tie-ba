@@ -67,3 +67,27 @@ export interface BarInfoWithFollow extends Bar {
 export interface BarInfo extends BarInfoWithFollow {
     user: UserInfo
 }
+
+/**
+ * 用户签到吧表
+ */
+export interface UserCheckBar {
+    uid: number;
+    bid: number;
+    /**
+     * 0未签到 1签到
+     */
+    is_checked: 0 | 1;
+    /**
+     * 签到分数
+     */
+    score: number;
+}
+
+/**
+ * 吧等级制度
+ */
+export interface BarRank {
+    bid: number;
+    rank_JSON: string;
+}

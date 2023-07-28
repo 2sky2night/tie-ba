@@ -1,5 +1,7 @@
-import { Bar } from "../bar/types";
-import { User } from "../user/types";
+import { ReplyBaseItem } from '../../model/article/types';
+import { Bar,UserRank } from "../bar/types";
+import { User, UserInfo, UserWithRank } from "../user/types";
+import { UserWithout } from '../../model/user/types';
 
 /**
  * 帖子详情
@@ -22,16 +24,32 @@ export interface ArticleItem {
 }
 
 /**
- * 评论的详情信息
+ * 一条评论的基本信息
  */
-export interface CommentInfo {
-    cid: number;
-    content: string;
-    aid: number;
-    uid: number;
-    photo: null | string[];
-    createTime: string;
+export interface CommentItem {
+    user: UserWithRank;
     is_liked: boolean;
     like_count: number;
-    user: User
+    cid: number;
+    content: string;
+    createTime: string;
+    aid: number;
+    uid: number;
+    photo: string[] | null;
+    reply: {
+        list: ReplyItem[],
+        total: number;
+    }
+}
+
+export interface ReplyItem extends ReplyBaseItem {
+    like_count: number;
+    is_liked: boolean;
+    user: UserWithout & {bar_rank:UserRank},
+    /**
+     * 回复的目标对象数据 回复对象不包含用户吧等级数据
+     */
+    reply?: ReplyBaseItem & {
+        user: UserWithout
+    }
 }

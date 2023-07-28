@@ -73,4 +73,17 @@ articleRouter.get('article', `${ baseRouteURL }/discover`, ArticleController.toD
 // 通过帖子id列表获取帖子数据(单独解析token) (aids:string)
 articleRouter.get('article', `${ baseRouteURL }/list/aids`, Middleware.tokenParse, ArticleController.toGetArticleListByAidList)
 
+// 回复评论或回复 json:{id:number，content:string;type:1|2}
+articleRouter.post('article', `${ baseRouteURL }/reply`, ArticleController.toReplyComment)
+
+// 点赞回复 query:{rid:number}
+articleRouter.get('article', `${ baseRouteURL }/reply/like`, ArticleController.toLikeReply)
+
+// 取消点赞回复 query:{rid:number}
+articleRouter.delete('article', `${ baseRouteURL }/reply/like`, ArticleController.toCancelLikeReply)
+
+// 获取评论的回复列表 query:{cid:number;limit:number;offset:number}
+articleRouter.get('article', `${ baseRouteURL }/reply/list`,Middleware.tokenParse,  ArticleController.toGetCommentReplyList)
+
+
 export default articleRouter

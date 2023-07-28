@@ -1,6 +1,6 @@
 import type { OkPacket } from 'mysql'
-import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleStarBaseItem, InserCommentBody, CommentBaseItem, LikeCommentBaseItem } from './types'
-import type { Count, CountRes } from '../../types'
+import type { ArticleBaseItem, InsertArticleBody, ArticleLikeBaseItem, ArticleStarBaseItem, InserCommentBody, CommentBaseItem, LikeCommentBaseItem, ReplyBaseItem, UserLikeReplyItem } from './types'
+import type { CountRes } from '../../types'
 import BaseModel from '../base/index'
 import { getNowTimeString, getDaysBeforeTimeString, getTimeString } from '../../utils/tools/time'
 
@@ -755,7 +755,7 @@ class ArticleModel extends BaseModel {
    * 在帖子表中 获取该吧的所有帖子
    * @param bid 吧id
    */
-  async selectInArticleTableByBid (bid:number) {
+  async selectInArticleTableByBid (bid: number) {
     try {
       const res = await this.runSql<ArticleBaseItem[]>(`select * from article where bid = ${ bid }`)
       return Promise.resolve(res)
@@ -773,7 +773,7 @@ class ArticleModel extends BaseModel {
    */
   async selectInArticleTableLikeTitleOrContentLimit (keywords: string, limit: number, offset: number, desc: boolean) {
     try {
-      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where content like '%${keywords}%' or title like '%${keywords}%' order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+      const res = await this.runSql<ArticleBaseItem[]>(`select * from article where content like '%${ keywords }%' or title like '%${ keywords }%' order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
@@ -786,12 +786,183 @@ class ArticleModel extends BaseModel {
    */
   async countInArticleTableLikeTitleOrContent (keywords: string) {
     try {
-      const res = await this.runSql<CountRes>(`select count(*) as total from article where content like '%${keywords}%' or title like '%${keywords}%'`)
+      const res = await this.runSql<CountRes>(`select count(*) as total from article where content like '%${ keywords }%' or title like '%${ keywords }%'`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复评论表中记录内容
+   * @param uid 用户id
+   * @param id 回复id或评论id 代表了回复的对象
+   * @param content 回复内容
+   * @param type 回复的类型 1回复评论 2对回复进行回复
+   * @param cid 回复的id
+   * @returns 
+   */
+  async insertInReplyTable (uid: number, id: number, content: string, type: 1 | 2, cid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`INSERT INTO user_reply_comment (uid,id,type,content,createTime,cid) VALUES (${ uid },${ id },${ type },'${ content }','${ getNowTimeString() }',${ cid })`)
+      if (res.affectedRows) {
+        Promise.resolve(res)
+      } else {
+        Promise.reject('插入记录失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复评论表中 通过rid查询该回复记录
+   * @param rid 回复id
+   */
+  async selectInReplyTableByRid (rid: number) {
+    try {
+      const res = await this.runSql<ReplyBaseItem[]>(`select * from user_reply_comment where rid=${ rid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复评论表中 通过rid和cid查询评论中是否存在该回复
+   * @param rid 
+   * @param cid 
+   */
+  async selectInReplyTableByRidAndCid (rid: number, cid: number) {
+    try {
+      const res = await this.runSql<ReplyBaseItem[]>(`select * from user_reply_comment where cid=${cid} and rid=${rid}`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在用户点赞回复表中 插入一条记录
+   * @param uid 用户id
+   * @param rid 回复id
+   * @returns 
+   */
+  async insertInLikeReplyTable (uid: number, rid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`insert into user_like_reply (uid,rid,createTime) values (${ uid },${ rid },'${ getNowTimeString() }')`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        return Promise.reject('插入记录失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在用户点赞回复表中 删除一条记录
+   * @param uid  用户id
+   * @param rid 回复id
+   * @returns 
+   */
+  async deleteInLikeReplyTable (uid: number, rid: number) {
+    try {
+      const res = await this.runSql<OkPacket>(`delete from user_like_reply where uid=${ uid } and rid=${ rid }`)
+      if (res.affectedRows) {
+        return Promise.resolve()
+      } else {
+        return Promise.reject('删除记录失败!')
+      }
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在用户点赞回复表中 查询用户点赞过该回复的记录
+   * @param uid 用户id
+   * @param rid 回复id
+   */
+  async selectInLikeReplyTable (uid: number, rid: number) {
+    try {
+      const res = await this.runSql<UserLikeReplyItem[]>(`select * from user_like_reply where uid=${ uid } and rid=${ rid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复表中 分页获取评论的回复
+   * @param cid 评论id
+   * @param limit 查询多少条数据
+   * @param offset 从多少偏移量开始获取数据
+   */
+  async selectInReplyTableByCidLimit (cid: number, limit: number, offset: number) {
+    try {
+      const res = await this.runSql<ReplyBaseItem[]>(`select * from user_reply_comment where cid=${ cid } limit ${ limit } offset ${ offset }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复表中 查询该评论的所有回复
+   * @param cid 评论id
+   * @returns 
+   */
+  async selectInReplyTableByCid (cid: number) {
+    try {
+      const res = await this.runSql<ReplyBaseItem[]>(`select * from user_reply_comment where cid=${ cid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在回复表中 查询评论的总回复数量(包括所有属于该评论的回复 对于评论的回复+回复的回复)
+   * @param cid 评论id
+   * @returns 
+   */
+  async countInReplyTableByCid (cid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_reply_comment where cid=${ cid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 在点赞回复表中 通过回复id来查询点赞总数
+   * @param rid 回复id
+   */
+  async countInLikeReplyTableByRid (rid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_like_reply where rid=${ rid }`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取帖子的回复总数
+   * @param aid 
+   * @returns 
+   */
+  async getArticleAllReplyCount (aid: number) {
+    try {
+      const res = await this.runSql<CountRes>(`select count(*) as total from user_reply_comment where cid in (select cid from comment WHERE aid=${ aid })`)
+      return Promise.resolve(res)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+  /**
+   * 获取当前评论所有回复的点赞数量 （没有的则说明该回复的点赞数量为0)
+   * @param cid 评论id
+   */
+  async getCommentReplyCount (cid: number) {
+    try {
+      const res = await this.runSql<{rid:number,total:number}[]>(`select count(rid) as total,rid from user_like_reply where rid in (select rid from user_reply_comment where cid=${ cid }) GROUP BY rid`)
       return Promise.resolve(res)
     } catch (error) {
       return Promise.reject(error)
     }
   }
 }
-
 export default ArticleModel

@@ -1,7 +1,7 @@
 // 基础模型
 import BaseModel from '../base'
 // 类型
-import type { Bar, BarCreateBody, UserFollowBarItem } from './types'
+import type { Bar, BarCreateBody, UserFollowBarItem,UserCheckBar,BarRank } from './types'
 import type { OkPacket } from 'mysql'
 import type { CountRes } from '../../types/index'
 // 工具函数
@@ -319,14 +319,76 @@ class BarModel extends BaseModel {
      * @param bdesc 吧简介
      * @returns 
      */
-    async updateInBarTable (bid:number,bname:string,photo:string,bdesc:string) {
+    async updateInBarTable (bid: number, bname: string, photo: string, bdesc: string) {
         try {
-            const res = await this.runSql<OkPacket>(`update bar set bname='${ bname }',photo='${ photo }',bdesc='${ bdesc }' where bid=${bid}`)
+            const res = await this.runSql<OkPacket>(`update bar set bname='${ bname }',photo='${ photo }',bdesc='${ bdesc }' where bid=${ bid }`)
             if (res.affectedRows) {
                 return Promise.resolve('ok')
             } else {
                 return Promise.reject('修改失败')
-            }     
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户签到表中 查询用户签到吧的信息
+     * @param uid 用户id
+     * @param bid 吧id
+     */
+    async selectInUserCheckBarTableByUidAndBid (uid:number,bid:number) {
+        try {
+            const res = await this.runSql<UserCheckBar[]>(`select * from user_check_bar where uid=${ uid } and bid=${ bid }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户签到表中 执行用户签到吧操作
+     * @param uid 用户id
+     * @param bid 吧id
+     * @param score 分数
+     * @returns 
+     */
+    async updateUserCheckBarTable (uid: number, bid: number, score: number) {
+        try {
+            const res = await this.runSql<OkPacket>(`update user_check_bar set is_checked=1,score=${ score } where uid=${ uid } and bid=${ bid } `)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                return Promise.reject('更新失败!')
+            }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在吧等级制度表中 通过bid查询对应吧的等级制度信息
+     * @param bid 
+     */
+    async selectInBarRankTableByBid (bid: number) {
+     try {
+         const res = await this.runSql<BarRank[]>(`select * from bar_rank where bid=${ bid }`)
+         return Promise.resolve(res)
+     } catch (error) {
+        return Promise.reject(error)
+     }   
+    }
+    /**
+     * 更新吧的等级制度
+     * @param bid 吧id
+     * @param rank_JSON 等级制度json字符串 
+     * @returns 
+     */
+    async updateInBarRankTable (bid: number, rank_JSON: string) {
+        try {
+            const res = await this.runSql<OkPacket>(`update bar_rank set rank_JSON='${ rank_JSON }' where bid=${ bid }`)
+            if (res.affectedRows) {
+                return Promise.resolve()
+            } else {
+                return Promise.reject('更新失败!')
+            }
         } catch (error) {
             return Promise.reject(error)
         }

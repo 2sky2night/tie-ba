@@ -1,4 +1,5 @@
-import { UserInfo } from "../user/types";
+import { ReplyItem } from 'service/article/types';
+import { User, UserInfo } from "../user/types";
 
 /**
  * 帖子的基础数据
@@ -161,17 +162,35 @@ export interface LikeCommentBaseItem {
   createTime: string;
 }
 
+
 /**
- * 一条评论的基本信息
+ * 回复的基础数据
  */
-export interface CommentItem {
-  user: UserInfo;
-  is_liked: boolean;
-  like_count: number;
-  cid: number;
+export interface ReplyBaseItem {
+  rid: number;
   content: string;
   createTime: string;
-  aid: number;
   uid: number;
-  photo: string[] | null;
+  /**
+   * 回复对象的id
+   */
+  id: number;
+  /**
+   * 回复的类型 1回复评论 2对回复进行回复
+   */
+  type: 1 | 2;
+  /**
+   * 评论所属的id
+   */
+  cid: number;
+}
+
+
+/**
+ * 用户点赞回复表
+ */
+export interface UserLikeReplyItem {
+  rid: number;
+  uid: number;
+  createTime: string;
 }

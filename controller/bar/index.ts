@@ -561,6 +561,135 @@ async function toUpdateBarInfo (ctx: Context) {
 
 }
 
+/**
+ * 用户签到吧
+ * @param ctx 
+ */
+async function toUserCheckBar (ctx: Context) {
+    const uid = (ctx.state.user as Token).uid
+
+    // 解析查询参数
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带!', 400)
+    }
+
+    const bid = +ctx.query.bid
+    // 校验参数
+    if (isNaN(bid)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法', 400)
+    }
+
+    try {
+        const res = await barService.userCheckBar(uid, bid)
+        if (res === 1) {
+            // 签到成功
+            ctx.body = response(null, '签到成功!')
+        } else if (res === 0) {
+            // 已经签到过了
+            ctx.status = 400
+            ctx.body = response(null, '签到失败,今天已经签到过了!', 400)
+        } else if (res === -1) {
+            // 未关注吧
+            ctx.status = 400
+            ctx.body = response(null, '签到失败,您还未关注此吧!', 400)
+        } else if (res === -2) {
+            // 吧不存在
+            ctx.status = 400
+            ctx.body = response(null, '签到失败,吧不存在!', 400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
+/**
+ * 修改吧的等级制度头衔
+ * @param ctx 
+ */
+async function toUpdateBarRank (ctx: Context) {
+    const uid = (ctx.state.user as Token).uid
+    const body = ctx.request.body
+    // 校验参数
+    if (body === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '未携带请求体!', 400)
+    }
+    if (body.bid === undefined || body.rankLableList === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带!', 400)
+    }
+    const bid = +body.bid
+    // 检验参数
+    if (isNaN(bid) || !(body.rankLableList instanceof Array)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法!', 400)
+    }
+    // 吧等级制度昵称必须有15个，因为等级一共为15级
+    if (body.rankLableList.length !== 15) {
+        ctx.status = 400
+        return ctx.body = response(null, '吧等级头衔昵称必须为15个!', 400)
+    }
+
+    try {
+        const res = await barService.updateBarRank(uid, bid, body.rankLableList)
+        if (res === 1) {
+            ctx.body = response(null, '修改吧等级头衔昵称成功!')
+        } else if (res === 0) {
+            ctx.status = 400
+            ctx.body = response(null, '修改吧等级头衔昵称失败,只有吧主才能修改等级头衔昵称!', 400)
+        } else if (res === -1) {
+            ctx.status = 400
+            ctx.body = response(null, '修改吧等级头衔昵称失败,吧不存在!', 400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+/**
+ * 获取吧的等级制度
+ * @param ctx 
+ */
+async function toGetBarRankInfo (ctx: Context) {
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数未携带!', 400)
+    }
+    const bid = +ctx.query.bid
+    if (isNaN(bid)) {
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法!', 400)
+    }
+    try {
+        const res = await barService.getBarRankInfo(bid)
+        if (res) {
+            // 吧存在
+            ctx.body = response(res, 'ok', 400)
+        } else {
+            // 吧不存在
+            ctx.status = 400
+            ctx.body = response(null, '获取吧等级制度失败,吧不存在!', 400)
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+}
+
+/**
+ * 接口：本吧等级排行榜
+ */
+
+/**
+ * 接口：本吧等级分布
+ */
+
 export default {
     toCreateBar,
     toGetAllBar,
@@ -575,5 +704,8 @@ export default {
     toGetBarBrieflyInfo,
     toGetBarArticleList,
     toGetUserFollowBarListBriefly,
-    toUpdateBarInfo
+    toUpdateBarInfo,
+    toUserCheckBar,
+    toUpdateBarRank,
+    toGetBarRankInfo
 }

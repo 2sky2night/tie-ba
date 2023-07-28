@@ -1,22 +1,61 @@
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 3, '2023-05-30 21:43:36');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (2, 1, '2023-06-12 10:34:32');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (2, 2, '2023-06-12 11:08:34');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (3, 1, '2023-07-11 17:29:40');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (4, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (5, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (6, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (7, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (8, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (9, 1, '2023-07-11 17:29:51');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 1, '2023-07-11 18:04:50');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 8, '2023-07-17 18:30:42');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 24, '2023-07-18 15:28:24');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 22, '2023-07-18 15:28:25');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 20, '2023-07-18 15:28:26');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 18, '2023-07-18 15:28:27');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 16, '2023-07-18 15:28:27');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 15, '2023-07-18 15:28:28');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 17, '2023-07-18 15:28:28');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 19, '2023-07-18 15:28:29');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 21, '2023-07-18 15:28:29');
-INSERT INTO `user_follow_bar`(`uid`, `bid`, `createTime`) VALUES (1, 23, '2023-07-18 15:28:30');
+/*
+ Navicat MySQL Data Transfer
+
+ Source Server         : mysql
+ Source Server Type    : MySQL
+ Source Server Version : 80033
+ Source Host           : localhost:3306
+ Source Schema         : tie_bar_lower
+
+ Target Server Type    : MySQL
+ Target Server Version : 80033
+ File Encoding         : 65001
+
+ Date: 27/07/2023 18:22:41
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for user_follow_bar
+-- ----------------------------
+DROP TABLE IF EXISTS `user_follow_bar`;
+CREATE TABLE `user_follow_bar`  (
+  `uid` int(0) NULL DEFAULT NULL,
+  `bid` int(0) NULL DEFAULT NULL,
+  `createTime` datetime(0) NULL DEFAULT NULL,
+  INDEX `uid_follow`(`uid`) USING BTREE,
+  INDEX `bid_follow`(`bid`) USING BTREE,
+  CONSTRAINT `bid_follow` FOREIGN KEY (`bid`) REFERENCES `bar` (`bid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `uid_follow` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of user_follow_bar
+-- ----------------------------
+INSERT INTO `user_follow_bar` VALUES (1, 1, '2023-07-27 18:01:36');
+
+-- ----------------------------
+-- Triggers structure for table user_follow_bar
+-- ----------------------------
+DROP TRIGGER IF EXISTS `tirgger_add_check_bar_table`;
+delimiter ;;
+CREATE TRIGGER `tirgger_add_check_bar_table` AFTER INSERT ON `user_follow_bar` FOR EACH ROW BEGIN
+	INSERT into user_check_bar (uid,bid) VALUES (new.uid,new.bid);
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table user_follow_bar
+-- ----------------------------
+DROP TRIGGER IF EXISTS `tigger_delete_check_bar_table`;
+delimiter ;;
+CREATE TRIGGER `tigger_delete_check_bar_table` BEFORE DELETE ON `user_follow_bar` FOR EACH ROW BEGIN
+	delete from user_check_bar where uid=old.uid and bid=old.bid;
+END
+;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;

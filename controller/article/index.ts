@@ -862,6 +862,186 @@ async function toGetArticleListByAidList (ctx: Context) {
   }
 }
 
+/**
+ * 回复评论
+ * @param ctx 
+ * @returns 
+ */
+async function toReplyComment (ctx: Context) {
+  const uid = (ctx.state.user as Token).uid
+  const body = ctx.request.body
+
+  // 解析请求体
+  if (body === undefined || body.type === undefined || body.id === undefined || body.content === undefined || body.cid === undefined) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+
+  // 回复的类型 1为回复评论 2为对回复进行回复
+  const type = +body.type
+  const id = +body.id
+  const cid = +body.cid
+
+  // 校验参数
+  if (isNaN(type) || (type !== 1 && type !== 2) || isNaN(id) || !body.content.trim().length || isNaN(cid)) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    if (type === 1) {
+      // 回复评论
+      if (id !== cid) {
+        // type=1 为回复评论 则目标id和cid必须保持一致
+        ctx.status = 400
+        return ctx.body = response(null, '参数非法!', 400)
+      }
+      const res = await articleService.replyComment(uid, id, body.content.trim())
+      if (res) {
+        // 回复的评论存在
+        ctx.body = response(null, '回复评论成功!')
+      } else {
+        // 回复的评论不存在
+        ctx.status = 400
+        ctx.body = response(null, '回复评论失败,评论不存在!', 400)
+      }
+    } else if (type === 2) {
+      // 对回复进行回复
+      const res = await articleService.replyReply(uid, id, body.content.trim(), body.cid)
+      if (res === -1) {
+        // 回复不存在
+        ctx.status = 400
+        ctx.body = response(null, '回复失败,回复不存在!', 400)
+
+      } else if (res === 0) {
+        // 评论中不存在该回复
+        ctx.status = 400
+        ctx.body = response(null, '回复失败,评论中不存在该回复!', 400)
+      } else {
+        // 回复存在
+        ctx.body = response(null, '回复成功!')
+      }
+    }
+
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
+/**
+ * 点赞回复
+ * @param ctx 
+ */
+async function toLikeReply (ctx: Context) {
+  const uid = (ctx.state.user as Token).uid
+
+  // 解析参数
+  if (ctx.query.rid === undefined) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+  // 校验参数
+  const rid = +ctx.query.rid
+  if (isNaN(rid)) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    const res = await articleService.likeReply(uid, rid)
+    if (res === -1) {
+      ctx.status = 400
+      ctx.body = response(null, '点赞回复失败,回复不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400
+      ctx.body = response(null, '点赞回复失败,请勿重复点赞回复!', 400)
+    } else if (res === 1) {
+      ctx.body = response(null, '点赞回复成功!')
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
+/**
+ * 取消点赞回复
+ * @param ctx 
+ */
+async function toCancelLikeReply (ctx: Context) {
+  const uid = (ctx.state.user as Token).uid
+  // 解析参数
+  if (ctx.query.rid === undefined) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+  // 校验参数
+  const rid = +ctx.query.rid
+  if (isNaN(rid)) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+  try {
+    const res = await articleService.cancelLikeReply(uid, rid)
+    if (res === -1) {
+      ctx.status = 400
+      ctx.body = response(null, '取消点赞回复失败,回复不存在!', 400)
+    } else if (res === 0) {
+      ctx.status = 400
+      ctx.body = response(null, '取消点赞回复失败,还未点赞过回复!', 400)
+    } else if (res === 1) {
+      ctx.body = response(null, '取消点赞回复成功!', 200)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+}
+
+/**
+ * 获取评论的回复列表
+ * @param ctx 
+ * @returns 
+ */
+async function toGetCommentReplyList (ctx: Context) {
+  const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined;
+
+  if (ctx.query.cid === undefined) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数未携带!', 400)
+  }
+  // 解析参数
+  const limit = ctx.query.limit ? +ctx.query.limit : 20
+  const offset = ctx.query.offset ? +ctx.query.offset : 0
+  const cid = + ctx.query.cid
+
+  // 校验参数是否合法
+  if (isNaN(limit) || isNaN(offset) || isNaN(cid)) {
+    ctx.status = 400
+    return ctx.body = response(null, '参数非法!', 400)
+  }
+
+  try {
+    const res = await articleService.getCommentReplyList(cid, currentUid, limit, offset)
+    if (res) {
+      ctx.body = response(res, 'ok')
+    } else {
+      ctx.status = 400
+      ctx.body = response(null, '获取评论的回复列表失败,评论不存在!', 400)
+    }
+  } catch (error) {
+    console.log(error)
+    ctx.status = 500;
+    ctx.body = response(null, '服务器出错了!', 500)
+  }
+
+}
+
 export default {
   toCreateArticle,
   toGetArticleInfo,
@@ -884,5 +1064,9 @@ export default {
   toGetHotAricle,
   toGetHotComment,
   toDiscoverArticle,
-  toGetArticleListByAidList
+  toGetArticleListByAidList,
+  toReplyComment,
+  toLikeReply,
+  toCancelLikeReply,
+  toGetCommentReplyList
 }
