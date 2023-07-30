@@ -669,7 +669,7 @@ async function toGetBarRankInfo (ctx: Context) {
         const res = await barService.getBarRankInfo(bid)
         if (res) {
             // 吧存在
-            ctx.body = response(res, 'ok', 400)
+            ctx.body = response(res, 'ok')
         } else {
             // 吧不存在
             ctx.status = 400

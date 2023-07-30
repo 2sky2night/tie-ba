@@ -5,7 +5,7 @@ import BarModel from '../../model/bar'
 // 封装的处理函数
 import { getUserList } from '../user/actions'
 import { getArticleList, getCommentList, getCommentListWithoutBid } from '../article/actions'
-import { getBarList } from '../bar/actions'
+import { getBarList, getUserRank } from '../bar/actions'
 
 const article = new ArticleModel()
 const bar = new BarModel()
@@ -24,34 +24,34 @@ class PublicService {
  * @param limit 
  * @param offset 
  */
-  async searchUserFollow (uid: number, currentUid: number | undefined, keywords: string, limit: number, offset: number) {
+  async searchUserFollow(uid: number, currentUid: number | undefined, keywords: string, limit: number, offset: number) {
     try {
       // 1.查询用户是否存在
       const resExist = await user.selectByUid(uid)
       // 不存在
       if (!resExist.length) return Promise.resolve(0)
       // 2.存在 获取关注用户总数
-      const [ count ] = await user.countSearchUserFollowByUsername(uid, keywords)
+      const [count] = await user.countSearchUserFollowByUsername(uid, keywords)
       // 3.获取用户列表
       const userList = await user.searchUserFollowByUsername(uid, keywords, limit, offset)
       // 4.遍历用户列表 查询用户信息
       const userInfoList: any[] = []
       for (let i = 0; i < userList.length; i++) {
         // 查询该用户的粉丝总数
-        const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(userList[ i ].uid)
+        const [fansCount] = await user.selectByUidFollowedScopedFollowCount(userList[i].uid)
         // 查询该用户的关注总数
-        const [ followUserCount ] = await user.selectByUidScopedFollowCount(userList[ i ].uid)
+        const [followUserCount] = await user.selectByUidScopedFollowCount(userList[i].uid)
         // 查询该用户关注吧的总数
-        const [ followBarCount ] = await bar.countInBarTableByUid(userList[ i ].uid)
+        const [followBarCount] = await bar.countInBarTableByUid(userList[i].uid)
         // 查询该用户的文章总数
-        const [ articleCount ] = await article.countInArticleTableByUid(userList[ i ].uid)
+        const [articleCount] = await article.countInArticleTableByUid(userList[i].uid)
         // 查询创建吧的数量
-        const [ barCount ] = await bar.countInBarTableByUid(userList[ i ].uid)
+        const [barCount] = await bar.countInBarTableByUid(userList[i].uid)
         // 查询当前用户对该用户的关注状态
-        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userList[ i ].uid)).length ? true : false
-        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userList[ i ].uid, currentUid)).length ? true : false
+        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userList[i].uid)).length ? true : false
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userList[i].uid, currentUid)).length ? true : false
         userInfoList.push({
-          ...userList[ i ],
+          ...userList[i],
           follow_user_count: followUserCount.total,
           follow_bar_count: followBarCount.total,
           fans_count: fansCount.total,
@@ -84,34 +84,34 @@ class PublicService {
    * @param limit 返回多少条数据
    * @param offset 从多少偏移量开始获取数据
    */
-  async searchFansList (uid: number, currentUid: number | undefined, keywords: string, limit: number, offset: number) {
+  async searchFansList(uid: number, currentUid: number | undefined, keywords: string, limit: number, offset: number) {
     try {
       // 1.用户是否存在
       const resExist = await user.selectByUid(uid)
       // 不存在
       if (!resExist.length) return Promise.resolve(0)
       // 2.存在 查询模糊匹配后的粉丝总数
-      const [ count ] = await user.countSearchUserFansByUsername(uid, keywords)
+      const [count] = await user.countSearchUserFansByUsername(uid, keywords)
       // 查询模糊匹配后的粉丝列表
       const userList = await user.searchUserFansByUsername(uid, keywords, limit, offset)
       // 4.遍历用户列表 查询用户信息
       const userInfoList: any[] = []
       for (let i = 0; i < userList.length; i++) {
         // 查询该用户的粉丝总数
-        const [ fansCount ] = await user.selectByUidFollowedScopedFollowCount(userList[ i ].uid)
+        const [fansCount] = await user.selectByUidFollowedScopedFollowCount(userList[i].uid)
         // 查询该用户的关注总数
-        const [ followUserCount ] = await user.selectByUidScopedFollowCount(userList[ i ].uid)
+        const [followUserCount] = await user.selectByUidScopedFollowCount(userList[i].uid)
         // 查询该用户关注吧的总数
-        const [ followBarCount ] = await bar.countInBarTableByUid(userList[ i ].uid)
+        const [followBarCount] = await bar.countInBarTableByUid(userList[i].uid)
         // 查询该用户的文章总数
-        const [ articleCount ] = await article.countInArticleTableByUid(userList[ i ].uid)
+        const [articleCount] = await article.countInArticleTableByUid(userList[i].uid)
         // 查询创建吧的数量
-        const [ barCount ] = await bar.countInBarTableByUid(userList[ i ].uid)
+        const [barCount] = await bar.countInBarTableByUid(userList[i].uid)
         // 查询当前用户对该用户的关注状态
-        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userList[ i ].uid)).length ? true : false
-        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userList[ i ].uid, currentUid)).length ? true : false
+        const isFollowedUser = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(currentUid, userList[i].uid)).length ? true : false
+        const isFollowedMe = currentUid === undefined ? false : (await user.selectByUidAndUidIsFollow(userList[i].uid, currentUid)).length ? true : false
         userInfoList.push({
-          ...userList[ i ],
+          ...userList[i],
           follow_user_count: followUserCount.total,
           follow_bar_count: followBarCount.total,
           fans_count: fansCount.total,
@@ -140,12 +140,12 @@ class PublicService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 根据创建时间升序降序
    */
-  async searchUser (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  async searchUser(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       // 获取用户列表
       const userList = await user.searchInUserTableByUsername(keywords, limit, offset, desc)
       // 获取用户总数
-      const [ count ] = await user.countSearchInUserTableByUsername(keywords)
+      const [count] = await user.countSearchInUserTableByUsername(keywords)
       // 遍历用户列表 查询用户其他信息
       const list = await getUserList(userList, currentUid)
       return Promise.resolve({
@@ -169,10 +169,10 @@ class PublicService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 根据创建时间升序降序
    */
-  async searchArticleTitle (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  async searchArticleTitle(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       // 查询匹配上的总数
-      const [ count ] = await article.countSearchInAricleTableByTitle(keywords)
+      const [count] = await article.countSearchInAricleTableByTitle(keywords)
       // 查询某一页匹配上的帖子列表
       const articleList = await article.searchInArticleTableByTitle(keywords, limit, offset, desc)
       // 遍历帖子列表 查询相关信息
@@ -199,10 +199,10 @@ class PublicService {
    * @param desc 根据创建时间升序降序
    * @returns 
    */
-  async searchArticleContent (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  async searchArticleContent(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       // 查询匹配到的总数
-      const [ count ] = await article.countSearchInAricleTableByContent(keywords)
+      const [count] = await article.countSearchInAricleTableByContent(keywords)
       // 查询匹配到的帖子列表
       const articleList = await article.searchInArticleTableByContent(keywords, limit, offset, desc)
       // 遍历帖子列表查询相关信息
@@ -228,10 +228,10 @@ class PublicService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 根据创建时间升序降序
    */
-  async searchCommentContent (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  async searchCommentContent(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       // 查询总数
-      const [ count ] = await article.countSearchInCommentTableByContent(keywords)
+      const [count] = await article.countSearchInCommentTableByContent(keywords)
       // 查询某一页匹配上的评论列表
       const commentList = await article.searchInCommentTableByContent(keywords, limit, offset, desc)
       // 遍历评论列表 查询评论相关的信息
@@ -257,14 +257,19 @@ class PublicService {
    * @param offset 从多少偏移量开始获取数据
    * @param desc 根据创建时间升序降序
    */
-  async searchBar (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  async searchBar(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     try {
       // 查询匹配的吧总数
-      const [ count ] = await bar.countSearchInBarTableByBname(keywords)
+      const [count] = await bar.countSearchInBarTableByBname(keywords)
       // 查询匹配上的某一页数据
       const barList = await bar.searchInBarTableByBname(keywords, limit, offset, desc)
       // 遍历吧数据 查询其他信息
       const list = await getBarList(barList, currentUid)
+      // 查询当前用户在这些吧的等级信息
+      for (let i = 0; i < list.length; i++) {
+        const bar_rank = currentUid === undefined ? null : await getUserRank(currentUid, list[i].bid)
+        Reflect.set(list[i], 'bar_rank', bar_rank)
+      }
       return Promise.resolve({
         list,
         limit,
@@ -278,19 +283,19 @@ class PublicService {
       return Promise.reject(error)
     }
   }
-    /**
-   * 搜索帖子
-   * @param currentUid  当前登录的用户id
-   * @param keywords 搜索关键词
-   * @param limit 返回多少条数据
-   * @param offset 从多少偏移量开始获取数据
-   * @param desc 根据创建时间升序降序
-   */
-  async searchArticle (currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
+  /**
+ * 搜索帖子
+ * @param currentUid  当前登录的用户id
+ * @param keywords 搜索关键词
+ * @param limit 返回多少条数据
+ * @param offset 从多少偏移量开始获取数据
+ * @param desc 根据创建时间升序降序
+ */
+  async searchArticle(currentUid: number | undefined, keywords: string, limit: number, offset: number, desc: boolean) {
     // 获取需要查询的帖子列表
     const articleList = await article.selectInArticleTableLikeTitleOrContentLimit(keywords, limit, offset, desc)
     // 获取匹配到的总数
-    const [ count ] = await article.countInArticleTableLikeTitleOrContent(keywords)
+    const [count] = await article.countInArticleTableLikeTitleOrContent(keywords)
     // 遍历帖子列表 查询帖子的其他信息
     const list = await getArticleList(articleList, currentUid)
     return Promise.resolve({
@@ -299,7 +304,7 @@ class PublicService {
       offset,
       desc,
       total: count.total,
-      has_more:limit+offset<count.total
+      has_more: limit + offset < count.total
     })
   }
 }
