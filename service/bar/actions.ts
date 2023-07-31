@@ -182,3 +182,33 @@ export async function getUserRank (uid: number, bid: number) {
     }
   }
 }
+
+/**
+ * 通过吧规则和当前经验 返回对应等级
+ * @param rule 吧等级规则
+ * @param score 当前经验
+ */
+export function getBarRankByRuleAndScore (rule: BarRankJSONItem[], score: number) {
+  if (score >= 20000) {
+    // 满级了
+    return {
+      level: 15,
+      label: rule[ rule.length - 1 ].label,
+      /*距离下一级还差多少百分比*/
+      progress: 1,
+      score
+    }
+  } else {
+    // 以当前经验值计算等级信息
+    for (let i = 0; i < rule.length - 1; i++) {
+      if (rule[ i ].score <= score && score < rule[ i + 1 ].score) {
+        return {
+          level: rule[ i ].level,
+          label: rule[ i ].label,
+          progress: score / rule[ i + 1 ].score,
+          score
+        }
+      }
+    }
+  }
+}

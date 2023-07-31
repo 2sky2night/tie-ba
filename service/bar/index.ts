@@ -6,7 +6,7 @@ import ArticleModel from '../../model/article';
 import type { BarCreateBody } from "../../model/bar/types";
 import type { BarRankJSONItem } from './types';
 // 处理函数
-import { getBarList, getBarListWithId, getUserRank } from './actions';
+import { getBarList, getBarListWithId, getUserRank, getBarRankByRuleAndScore } from './actions';
 import { getUserListById } from '../user/actions';
 import { getArticleList, getArticleListWithoutLikeCount } from '../article/actions'
 
@@ -26,7 +26,7 @@ class BarService {
      * @param data 吧的数据
      * @returns 创建的结果 0吧名重复 1创建成功
      */
-    async createBar(data: BarCreateBody): Promise<0 | 1> {
+    async createBar (data: BarCreateBody): Promise<0 | 1> {
         try {
             // 先查询吧是否存在
             const resExist = await bar.selectByBname(data.bname)
@@ -46,7 +46,7 @@ class BarService {
      * 获取所有的吧
      * @returns 所有吧的数据
      */
-    async findAllBar() {
+    async findAllBar () {
         try {
             const res = await bar.selectAllBar()
             return Promise.resolve(res)
@@ -64,10 +64,10 @@ class BarService {
      * 3.获取关注该吧的数量、发帖数量
      * 4.获取吧主信息，查询当前用户与吧主的关注状态
      */
-    async getBarInfo(bid: number, uid: number | undefined) {
+    async getBarInfo (bid: number, uid: number | undefined) {
         try {
             //  1.获取吧的信息
-            const [barInfo] = await bar.selectByBid(bid)
+            const [ barInfo ] = await bar.selectByBid(bid)
             if (!barInfo) {
                 // 吧不存在
                 return Promise.resolve(0)
@@ -85,7 +85,7 @@ class BarService {
                         ...barInfo,
                         is_followed: false,
                         user: {
-                            ...resUser[0],
+                            ...resUser[ 0 ],
                             is_followed: false,
                             is_fans: false,
                         },
@@ -111,7 +111,7 @@ class BarService {
                     let is_checked = false
                     if (isFollowBar) {
                         // 关注了该吧 查询签到状态
-                        const [checkItem] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
+                        const [ checkItem ] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
                         if (checkItem.is_checked) {
                             is_checked = true
                         }
@@ -120,7 +120,7 @@ class BarService {
                     res = {
                         ...barInfo, is_followed: isFollowBar,
                         user: {
-                            ...resUser[0],
+                            ...resUser[ 0 ],
                             is_followed: resFollowUser.length ? true : false,
                             is_fans: resFansUser.length ? true : false,
                         },
@@ -132,10 +132,10 @@ class BarService {
                 }
                 // 4.查询该吧的发帖数量
                 const resArticleCount = await article.countInArticleTableByBid(bid)
-                Reflect.set(res, 'article_count', resArticleCount[0].total)
+                Reflect.set(res, 'article_count', resArticleCount[ 0 ].total)
                 // 5.查询关注该吧的人数
                 const resFollowBarCount = await bar.selectFollowByBidCount(bid)
-                Reflect.set(res, 'user_follow_count', resFollowBarCount[0].total)
+                Reflect.set(res, 'user_follow_count', resFollowBarCount[ 0 ].total)
                 return Promise.resolve(res)
             } else {
                 //  获取吧主的用户数据失败
@@ -151,7 +151,7 @@ class BarService {
      * @param uid 用户的id
      * @returns 0已经关注了 1关注成功
      */
-    async toFollowBar(bid: number, uid: number): Promise<0 | 1> {
+    async toFollowBar (bid: number, uid: number): Promise<0 | 1> {
         try {
             // 先检查用户是否关注吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)
@@ -172,7 +172,7 @@ class BarService {
      * @param uid 用户id
      * @returns 0:未关注不能取消关注吧 1：关注了则取消关注吧
      */
-    async toCancelFollowBar(bid: number, uid: number): Promise<0 | 1> {
+    async toCancelFollowBar (bid: number, uid: number): Promise<0 | 1> {
         try {
             // 1.当前用户是否关注过吧
             const resExist = await bar.selectFollowByUidAndBid(bid, uid)
@@ -199,7 +199,7 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @returns 
      */
-    async getFollowBarUser(bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getFollowBarUser (bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 1.查询吧是否存在
             const resExist = await bar.selectByBid(bid)
@@ -210,7 +210,7 @@ class BarService {
             // 3.遍历用户列表 查询对应数据
             const userList = await getUserListById(followBarList, currentUid)
             // 查询关注的总数量
-            const [followCount] = await bar.selectFollowByBidCount(bid)
+            const [ followCount ] = await bar.selectFollowByBidCount(bid)
             return Promise.resolve({
                 list: userList,
                 limit,
@@ -239,15 +239,15 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param desc 根据关注时间降序或升序
      */
-    async getUserFollowBar(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getUserFollowBar (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 0.该用户是否存在
-            const [userInfo] = await user.selectByUid(uid)
+            const [ userInfo ] = await user.selectByUid(uid)
             // 用户不存在
             if (!userInfo) return Promise.resolve(0)
 
             // 1. 获取该用户关注吧的总数量
-            const [followCount] = await bar.selectFollowByUidCount(uid)
+            const [ followCount ] = await bar.selectFollowByUidCount(uid)
 
             // 2. 获取该用户关注的吧id列表
             const bidList = (await bar.selectFollowByUidLimit(uid, limit, offset, desc)).map(ele => ele.bid)
@@ -257,8 +257,8 @@ class BarService {
 
             // 查询用户在这些吧的等级信息
             for (let i = 0; i < barList.length; i++) {
-                const bar_rank = await getUserRank(uid, barList[i].bid)
-                Reflect.set(barList[i], 'bar_rank', bar_rank)
+                const bar_rank = await getUserRank(uid, barList[ i ].bid)
+                Reflect.set(barList[ i ], 'bar_rank', bar_rank)
             }
 
             return Promise.resolve({
@@ -286,22 +286,22 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param desc 根据创建时间降序或升序
      */
-    async getUserBarList(uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getUserBarList (uid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 1.查询用户是否存在
             const resExist = await user.selectByUid(uid)
             // 用户不存在
             if (!resExist.length) return Promise.resolve(0)
             // 2.用户存在 查询该用户创建吧的总数
-            const [count] = await bar.countInBarTableByUid(uid)
+            const [ count ] = await bar.countInBarTableByUid(uid)
             // 3.查询该页的吧信息列表
             const barList = await bar.selectInBarTableByUidLimit(uid, limit, offset, desc)
             const list = await getBarList(barList, currentUid)
 
             // 查询用户在这些吧的等级信息
             for (let i = 0; i < list.length; i++) {
-                const bar_rank = await getUserRank(uid, list[i].bid)
-                Reflect.set(list[i], 'bar_rank', bar_rank)
+                const bar_rank = await getUserRank(uid, list[ i ].bid)
+                Reflect.set(list[ i ], 'bar_rank', bar_rank)
             }
 
             return Promise.resolve({
@@ -327,15 +327,15 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param desc 根据创建时间降序或升序
      */
-    async getBarList(currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getBarList (currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             const barList = await bar.selectInBarTableLimit(limit, offset, desc)
-            const [count] = await bar.countInBarTable()
+            const [ count ] = await bar.countInBarTable()
             const list = await getBarList(barList, currentUid)
             // 查询当前用户在这些吧的等级信息
             for (let i = 0; i < list.length; i++) {
-                const bar_rank = currentUid === undefined ? null : await getUserRank(currentUid, list[i].bid)
-                Reflect.set(list[i], 'bar_rank', bar_rank)
+                const bar_rank = currentUid === undefined ? null : await getUserRank(currentUid, list[ i ].bid)
+                Reflect.set(list[ i ], 'bar_rank', bar_rank)
             }
             return Promise.resolve({
                 list,
@@ -358,10 +358,10 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param day 天数
      */
-    async getHotBarList(currentUid: number | undefined, limit: number, offset: number, day: number) {
+    async getHotBarList (currentUid: number | undefined, limit: number, offset: number, day: number) {
         try {
             // 查询热吧总数
-            const [count] = await bar.countFindHotBar(day)
+            const [ count ] = await bar.countFindHotBar(day)
             // 查询热吧
             const barList = await bar.findHotBar(day, limit, offset)
             // 查询遍历吧列表 查询吧的其他信息
@@ -369,8 +369,8 @@ class BarService {
 
             // 查询当前用户在这些吧的等级信息
             for (let i = 0; i < list.length; i++) {
-                const bar_rank = currentUid === undefined ? null : await getUserRank(currentUid, list[i].bid)
-                Reflect.set(list[i], 'bar_rank', bar_rank)
+                const bar_rank = currentUid === undefined ? null : await getUserRank(currentUid, list[ i ].bid)
+                Reflect.set(list[ i ], 'bar_rank', bar_rank)
             }
 
             return Promise.resolve({
@@ -395,18 +395,18 @@ class BarService {
      * @param currentUid 
      * @returns 
      */
-    async getBarBrieflyInfo(bid: number, currentUid: number | undefined) {
+    async getBarBrieflyInfo (bid: number, currentUid: number | undefined) {
         try {
-            const [barInfo] = await bar.selectByBid(bid)
+            const [ barInfo ] = await bar.selectByBid(bid)
             // 吧不存在
             if (barInfo === undefined) return Promise.resolve(0)
             // 关注状态
             const isFollowed = currentUid === undefined ? false : (await bar.selectFollowByUidAndBid(bid, currentUid)).length > 0
             // 帖子数量、关注数量
-            const [articleCount] = await article.countInArticleTableByBid(bid)
-            const [followCount] = await bar.selectFollowByBidCount(bid)
+            const [ articleCount ] = await article.countInArticleTableByBid(bid)
+            const [ followCount ] = await bar.selectFollowByBidCount(bid)
             // 获取吧主数据
-            const [userInfo] = await user.selectByUid(barInfo.uid)
+            const [ userInfo ] = await user.selectByUid(barInfo.uid)
             return Promise.resolve({
                 ...barInfo,
                 is_followed: isFollowed,
@@ -427,7 +427,7 @@ class BarService {
      * @param desc 根据创建时间降序或升序
      * @returns 
      */
-    async getBarArticleList(bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getBarArticleList (bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 查询该吧是否存在
             const resExist = await bar.selectByBid(bid)
@@ -436,7 +436,7 @@ class BarService {
             // 吧存在 获取帖子列表
             const articleList = await article.selectInArticleTableByBidLimit(bid, limit, offset, desc)
             // 获取该吧的帖子总数
-            const [count] = await article.countInArticleTableByBid(bid)
+            const [ count ] = await article.countInArticleTableByBid(bid)
             // 获取帖子列表其他信息
             const list = await getArticleList(articleList, currentUid)
 
@@ -460,22 +460,22 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param desc 是否降序
      */
-    async getBarHotArticleList(bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
+    async getBarHotArticleList (bid: number, currentUid: number | undefined, limit: number, offset: number, desc: boolean) {
         try {
             // 查询该吧是否存在
             const resExist = await bar.selectByBid(bid)
             // 吧不存在
             if (!resExist.length) return Promise.resolve(0)
             // 获取该吧的帖子总数
-            const [count] = await article.countInArticleTableByBid(bid)
+            const [ count ] = await article.countInArticleTableByBid(bid)
             // 存在 获取该吧所有的帖子
             const allArticleList = await article.selectInArticleTableByBid(bid)
             // 查询所有帖子点赞的数量
-            const _allArticleList: (typeof allArticleList[1] & { like_count: number })[] = []
+            const _allArticleList: (typeof allArticleList[ 1 ] & { like_count: number })[] = []
             for (let i = 0; i < allArticleList.length; i++) {
-                const [likeCount] = await article.countInLikeArticleTableByAid(allArticleList[i].aid)
+                const [ likeCount ] = await article.countInLikeArticleTableByAid(allArticleList[ i ].aid)
                 _allArticleList.push({
-                    ...allArticleList[i],
+                    ...allArticleList[ i ],
                     like_count: likeCount.total
                 })
             }
@@ -484,10 +484,10 @@ class BarService {
                 // 热度降序
                 for (let i = 0; i < _allArticleList.length; i++) {
                     for (let j = 0; j < _allArticleList.length - 1; j++) {
-                        if (_allArticleList[j].like_count < _allArticleList[j + 1].like_count) {
-                            const temp = _allArticleList[j]
-                            _allArticleList[j] = _allArticleList[j + 1]
-                            _allArticleList[j + 1] = temp
+                        if (_allArticleList[ j ].like_count < _allArticleList[ j + 1 ].like_count) {
+                            const temp = _allArticleList[ j ]
+                            _allArticleList[ j ] = _allArticleList[ j + 1 ]
+                            _allArticleList[ j + 1 ] = temp
                         }
                     }
                 }
@@ -495,10 +495,10 @@ class BarService {
                 // 热度升序
                 for (let i = 0; i < _allArticleList.length; i++) {
                     for (let j = 0; j < _allArticleList.length - 1; j++) {
-                        if (_allArticleList[j].like_count > _allArticleList[j + 1].like_count) {
-                            const temp = _allArticleList[j]
-                            _allArticleList[j] = _allArticleList[j + 1]
-                            _allArticleList[j + 1] = temp
+                        if (_allArticleList[ j ].like_count > _allArticleList[ j + 1 ].like_count) {
+                            const temp = _allArticleList[ j ]
+                            _allArticleList[ j ] = _allArticleList[ j + 1 ]
+                            _allArticleList[ j + 1 ] = temp
                         }
                     }
                 }
@@ -524,10 +524,10 @@ class BarService {
      * @param limit 
      * @param offset 
      */
-    async getAllBarBriefly(limit: number, offset: number, desc: boolean) {
+    async getAllBarBriefly (limit: number, offset: number, desc: boolean) {
         try {
             const list = await bar.selectInBarTableLimit(limit, offset, desc)
-            const [count] = await bar.countInBarTable()
+            const [ count ] = await bar.countInBarTable()
             return Promise.resolve({
                 list,
                 total: count.total,
@@ -547,12 +547,12 @@ class BarService {
      * @param offset 从多少偏移量开始获取数据
      * @param desc  根据吧创建时间降序
      */
-    async getUserAllFollowBarBriefly(uid: number, limit: number, offset: number, desc: boolean) {
+    async getUserAllFollowBarBriefly (uid: number, limit: number, offset: number, desc: boolean) {
         try {
             // 获取吧列表
             const list = await bar.findUserFollowBarLimit(uid, limit, offset, desc)
             // 获取关注吧总数
-            const [count] = await bar.selectFollowByUidCount(uid)
+            const [ count ] = await bar.selectFollowByUidCount(uid)
             return {
                 list,
                 total: count.total,
@@ -571,7 +571,7 @@ class BarService {
      * @param bid 吧id
      * @return -2吧不存在 -1用户未关注吧 0用户已经签到了 1签到成功
      */
-    async userCheckBar(uid: number, bid: number) {
+    async userCheckBar (uid: number, bid: number) {
         try {
             // 查询吧是否存在
             const resExist = await bar.selectByBid(bid)
@@ -581,7 +581,7 @@ class BarService {
             // 未关注该吧
             if (!resFollowBar.length) return Promise.resolve(-1)
             // 查询签到状态
-            const [checkItem] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
+            const [ checkItem ] = await bar.selectInUserCheckBarTableByUidAndBid(uid, bid)
             if (checkItem.is_checked === 1) {
                 // 已经签到过了
                 return Promise.resolve(0)
@@ -592,13 +592,13 @@ class BarService {
                 await bar.updateUserCheckBarTable(uid, bid, newExp)
 
                 // 查询当前吧等级制度
-                const [barRank] = await bar.selectInBarRankTableByBid(bid)
+                const [ barRank ] = await bar.selectInBarRankTableByBid(bid)
                 const rankJSON: BarRankJSONItem[] = JSON.parse(barRank.rank_JSON)
                 if (newExp >= 20000) {
                     // 签到后满级了
                     return Promise.resolve({
                         level: 15,
-                        label: rankJSON[rankJSON.length - 1].label,
+                        label: rankJSON[ rankJSON.length - 1 ].label,
                         score: newExp,
                         progress: 1
                     })
@@ -606,7 +606,7 @@ class BarService {
                     let newIndex = 0
                     // 查询签到后用户的等级
                     for (let i = 0; i < rankJSON.length - 1; i++) {
-                        if (rankJSON[i].score <= newExp && newExp < rankJSON[i + 1].score) {
+                        if (rankJSON[ i ].score <= newExp && newExp < rankJSON[ i + 1 ].score) {
                             newIndex = i
                             break;
                         }
@@ -614,10 +614,10 @@ class BarService {
 
                     // 响应签到信息
                     return Promise.resolve({
-                        level: rankJSON[newIndex].level,
-                        label: rankJSON[newIndex].label,
+                        level: rankJSON[ newIndex ].level,
+                        label: rankJSON[ newIndex ].label,
                         score: newExp,
-                        progress: +((newExp / rankJSON[newIndex + 1].score).toFixed(2))
+                        progress: +((newExp / rankJSON[ newIndex + 1 ].score).toFixed(2))
                     })
 
                 }
@@ -633,10 +633,10 @@ class BarService {
      * @param rankLableArray 吧等级制度头衔数组 
      * @returns -1吧不存在 0您不是吧主 1修改成功
      */
-    async updateBarRank(uid: number, bid: number, rankLableArray: string[]) {
+    async updateBarRank (uid: number, bid: number, rankLableArray: string[]) {
         try {
             // 吧是否存在
-            const [barInfo] = await bar.selectByBid(bid)
+            const [ barInfo ] = await bar.selectByBid(bid)
             if (barInfo === undefined) return Promise.resolve(-1)
             // 修改吧等级制度的必须是吧主
             if (barInfo.uid !== uid) return Promise.resolve(0)
@@ -720,7 +720,7 @@ class BarService {
             ]
             // 遍历用户传入的吧等级制度通过下标依次修改对应等级的吧等级头衔
             rankLableArray.forEach((ele, index) => {
-                rankJSON[index].label = ele
+                rankJSON[ index ].label = ele
             })
             await bar.updateInBarRankTable(bid, JSON.stringify(rankJSON))
             return Promise.resolve(1)
@@ -732,13 +732,13 @@ class BarService {
      * 获取吧等级制度
      * @param bid 吧id
      */
-    async getBarRankInfo(bid: number) {
+    async getBarRankInfo (bid: number) {
         try {
             // 吧是否存在
-            const [barInfo] = await bar.selectByBid(bid)
+            const [ barInfo ] = await bar.selectByBid(bid)
             if (barInfo) {
                 // 存在获取吧的等级制度
-                const [rankItem] = await bar.selectInBarRankTableByBid(bid)
+                const [ rankItem ] = await bar.selectInBarRankTableByBid(bid)
                 return Promise.resolve({
                     ...barInfo,
                     rank_rules: JSON.parse(rankItem.rank_JSON)
@@ -758,10 +758,10 @@ class BarService {
      * @param bdesc 吧简介
      * @param photo 用户简介
      */
-    async updateBarInfo(uid: number, bid: number, bname: string, bdesc: string, photo: string) {
+    async updateBarInfo (uid: number, bid: number, bname: string, bdesc: string, photo: string) {
         try {
             // 查询吧是否存在
-            const [barInfo] = await bar.selectByBid(bid)
+            const [ barInfo ] = await bar.selectByBid(bid)
             // 吧不存在
             if (!barInfo) return Promise.resolve(-1)
             // 当前修改吧的人不为吧主 也不能修改吧的信息
@@ -773,6 +773,148 @@ class BarService {
             return Promise.reject(error)
         }
     }
+    /**
+     * 获取该吧用户的等级排行
+     * @param currentUid 当前登录用户的id
+     * @param bid 吧id
+     * @param limit 获取多少条数据
+     * @param offset 从哪个偏移量开始获取数据
+     * @param desc 经验降序还是升序
+     */
+    async getUserLevelList (currentUid: number | undefined, bid: number, limit: number, offset: number, desc: boolean) {
+        try {
+            // 查询该吧是否存在
+            const [ barInfo ] = await bar.selectByBid(bid)
+            // 吧不存在
+            if (!barInfo) return Promise.resolve(0)
+            // 吧存在 分页查询排行榜数据
+            const _resRankList = await bar.selectInUserCheckBarTableByBidLimit(bid, limit, offset, desc)
+            // 查询该吧总签到人数
+            const [ count ] = await bar.countInUserCheckBarTableByBid(bid)
+            // 查询该吧的等级制度规则
+            const [ rankRule ] = await bar.selectInBarRankTableByBid(bid)
+            const rule: BarRankJSONItem[] = JSON.parse(rankRule.rank_JSON)
+            // 遍历该列表 获取这些用户的等级数据
+            const resRankList = _resRankList.map(ele => {
+                return {
+                    ...ele,
+                    bar_rank: getBarRankByRuleAndScore(rule, ele.score)
+                }
+            })
+            // 遍历等级信息列表 获取用户基本信息
+            const list = await Promise.all(resRankList.map(async (ele, index) => {
+                return {
+                    // 排行第几 （注意升序降序算法不同）
+                    ranking: desc ? offset + index + 1 : count.total - (offset + index),
+                    // 用户数据
+                    user: (await user.selectByUid(ele.uid))[ 0 ],
+                    // 等级数据
+                    ...ele,
+                }
+            }))
+
+
+            // 根据当前登录的用户 查询本用户在此吧的排行等级
+            let my_bar_rank_info: null | any = null
+
+            if (currentUid !== undefined) {
+                // 用户登录了 查询用户是否关注了此吧
+                const resExist = await bar.selectFollowByUidAndBid(bid, currentUid)
+                // 关注了 查询该用户在此吧的排行第几
+                if (resExist.length) {
+                    // 先查询该吧所有签到人数据
+                    const allList = await bar.selectInUserCheckBarTableByBid(bid, desc)
+                    const index = allList.findIndex(ele => ele.uid === currentUid)
+                    if (index >= 0) {
+                        // 找到了
+                        my_bar_rank_info = {
+                            // 等级数据
+                            ...getBarRankByRuleAndScore(rule, allList[ index ].score),
+                            // 排行第几 （注意升序降序算法不同）
+                            ranking: desc ? index + 1 : count.total - index,
+                        }
+                    }
+                }
+            }
+
+            return Promise.resolve({
+                // 分页获取的排行榜列表数据
+                list,
+                // 我在此吧的等级数据
+                my_bar_rank_info,
+                limit,
+                offset,
+                desc,
+                has_more: limit + offset < count.total,
+                total: count.total
+            })
+
+
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 获取本吧等级人数分布
+     * @param bid 吧id
+     * @param currentUid 当前登录的用户 
+     */
+    async getBarLevelDistribution (bid: number, currentUid: number | undefined) {
+        try {
+            // 查询该吧是否存在
+            const [ barInfo ] = await bar.selectByBid(bid)
+            //  吧不存在
+            if (!barInfo) return Promise.resolve(0)
+            //  吧存在
+            // 查询本吧等级制度规则
+            const [ barRank ] = await bar.selectInBarRankTableByBid(bid)
+            // 解析规则制度
+            const rule: BarRankJSONItem[] = JSON.parse(barRank.rank_JSON)
+            // 查询本吧所有人的签到数据
+            const allList = await bar.selectInUserCheckBarTableByBid(bid)
+            // 等级分布数据
+            const levelDistData = rule.map(ele => {
+                return {
+                    level: ele.level,
+                    label: ele.label,
+                    count: 0,
+                    // 当前用户在这个分区里
+                    current_uid_in: false
+                }
+            })
+            // 遍历该吧的所有人来统计等级分布
+            allList.forEach(ele => {
+                //  通过分数和规则查询当前用户所在等级
+                const item = getBarRankByRuleAndScore(rule, ele.score)
+                levelDistData[ item.level - 1 ].count++
+            })
+            // 计算当前登录的用户在哪个等级里
+            if (currentUid !== undefined) {
+                // 当前用户是否关注了这个吧
+                const res = await bar.selectFollowByUidAndBid(bid, currentUid)
+                if (res.length) {
+                    // 关注了
+                    // 查询该用户在这个吧的等级数据
+                    const rankInfo = await getUserRank(currentUid, bid)
+                    levelDistData[ rankInfo.level - 1 ].current_uid_in = true
+                }
+            }
+
+
+            return Promise.resolve({
+                ...barInfo,
+                list: levelDistData,
+                total: allList.length
+            })
+
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
 }
+
+/**
+ * TODO 帖子浏览量
+ */
 
 export default BarService

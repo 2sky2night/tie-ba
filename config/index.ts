@@ -11,6 +11,7 @@ export const PROT = '3000'
  */
 export const SECRET_KEY = 'tie-ba-lower'
 
+// 请求根路径
 export const BASE_REQUST = '/api'
 
 /**
@@ -34,6 +35,8 @@ export const NO_AUTH = [
     `${ BASE_REQUST }/bar/briefly`,
     `${ BASE_REQUST }/bar/article/list`,
     `${ BASE_REQUST }/bar/rank/info`,
+    `${ BASE_REQUST }/bar/ranking`,
+    `${ BASE_REQUST }/bar/rank/distribution`,
     `${ BASE_REQUST }/article/info`,
     `${ BASE_REQUST }/article/comment/list`,
     `${ BASE_REQUST }/article/user/like/list`,

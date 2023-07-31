@@ -1,7 +1,7 @@
 // 基础模型
 import BaseModel from '../base'
 // 类型
-import type { Bar, BarCreateBody, UserFollowBarItem,UserCheckBar,BarRank } from './types'
+import type { Bar, BarCreateBody, UserFollowBarItem, UserCheckBar, BarRank } from './types'
 import type { OkPacket } from 'mysql'
 import type { CountRes } from '../../types/index'
 // 工具函数
@@ -305,7 +305,7 @@ class BarModel extends BaseModel {
      */
     async findUserFollowBarLimit (uid: number, limit: number, offset: number, desc: boolean) {
         try {
-            const res = await this.runSql<Bar[]>(`select * from bar where bid in (select bid from user_follow_bar where uid=${ uid }) order by createTime ${desc?'desc':'asc'} limit ${limit} offset ${offset}`)
+            const res = await this.runSql<Bar[]>(`select * from bar where bid in (select bid from user_follow_bar where uid=${ uid }) order by createTime ${ desc ? 'desc' : 'asc' } limit ${ limit } offset ${ offset }`)
             return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
@@ -336,7 +336,7 @@ class BarModel extends BaseModel {
      * @param uid 用户id
      * @param bid 吧id
      */
-    async selectInUserCheckBarTableByUidAndBid (uid:number,bid:number) {
+    async selectInUserCheckBarTableByUidAndBid (uid: number, bid: number) {
         try {
             const res = await this.runSql<UserCheckBar[]>(`select * from user_check_bar where uid=${ uid } and bid=${ bid }`)
             return Promise.resolve(res)
@@ -368,12 +368,12 @@ class BarModel extends BaseModel {
      * @param bid 
      */
     async selectInBarRankTableByBid (bid: number) {
-     try {
-         const res = await this.runSql<BarRank[]>(`select * from bar_rank where bid=${ bid }`)
-         return Promise.resolve(res)
-     } catch (error) {
-        return Promise.reject(error)
-     }   
+        try {
+            const res = await this.runSql<BarRank[]>(`select * from bar_rank where bid=${ bid }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
     }
     /**
      * 更新吧的等级制度
@@ -389,6 +389,47 @@ class BarModel extends BaseModel {
             } else {
                 return Promise.reject('更新失败!')
             }
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户签到表中 通过bid来查询该吧的签到用户总数
+     * @param bid 吧id
+     */
+    async countInUserCheckBarTableByBid (bid: number) {
+        try {
+            const res = await this.runSql<CountRes>(`select count(*) as total from user_check_bar WHERE bid=${ bid }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户签到表中 通过bid来查询该吧的所有用户签到数据
+     * @param bid 吧id
+     * @param desc 对用户分数倒叙排序
+     */
+    async selectInUserCheckBarTableByBid (bid: number,desc:boolean=true) {
+        try {
+            const res = await this.runSql<UserCheckBar[]>(`select * from user_check_bar where bid = ${ bid } order by score ${ desc ? 'desc' : 'asc' }`)
+            return Promise.resolve(res)
+        } catch (error) {
+            return Promise.reject(error)
+        }
+    }
+    /**
+     * 在用户签到表中 通过bid来分页查询该吧的用户签到数据
+     * @param bid 吧id
+     * @param limit 查询多少条数据
+     * @param offset 偏移量
+     * @param desc 根据检验数量倒叙排序
+     * @returns 
+     */
+    async selectInUserCheckBarTableByBidLimit (bid: number, limit: number, offset: number, desc: boolean = true) {
+        try {
+            const res = await this.runSql<UserCheckBar[]>(`select * from user_check_bar where bid = ${ bid } order by score ${ desc ? 'desc' : 'asc' } limit ${limit} offset ${offset}`)
+            return Promise.resolve(res)
         } catch (error) {
             return Promise.reject(error)
         }

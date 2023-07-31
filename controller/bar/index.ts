@@ -5,7 +5,7 @@ import type { Context } from "koa";
 import type { BarBody } from "../../model/bar/types";
 import type { Token } from '../user/types'
 // 工具函数
-import response from '../../utils/tools/response'
+import response, { paramError, paramNotCarry } from '../../utils/tools/response'
 
 /**
  * bar的service层
@@ -530,7 +530,7 @@ async function toUpdateBarInfo (ctx: Context) {
         return
     }
 
-    if (body.bname === undefined || body.bdesc === undefined || body.photo === undefined || body.bid===undefined) {
+    if (body.bname === undefined || body.bdesc === undefined || body.photo === undefined || body.bid === undefined) {
         ctx.status = 400
         ctx.body = response(null, '有参数未携带!', 400)
         return
@@ -683,12 +683,79 @@ async function toGetBarRankInfo (ctx: Context) {
 }
 
 /**
- * 接口：本吧等级排行榜
+ * 本吧等级排行榜
  */
+async function toGetUserLevelList (ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+
+    // 必要参数未携带
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400;
+        return ctx.body = paramNotCarry()
+    }
+
+    const bid = +ctx.query.bid
+    const offset = ctx.query.offset ? +ctx.query.offset : 0
+    const limit = ctx.query.limit ? +ctx.query.limit : 20
+    const desc = ctx.query.desc ? +ctx.query.desc : 1
+    // 参数非法
+    if (isNaN(bid) || isNaN(offset) || isNaN(limit) || isNaN(desc)) {
+        ctx.status = 400;
+        return ctx.body = paramError()
+    }
+
+    try {
+        const res = await barService.getUserLevelList(currentUid, bid, limit, offset, desc ? true : false)
+        if (res === 0) {
+            ctx.status = 400;
+            ctx.body = response(null, '获取本吧排行榜失败,吧不存在!', 400)
+        } else {
+            ctx.body = response(res, 'ok')
+        }
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
 
 /**
- * 接口：本吧等级分布
+ * 接口：本吧等级人数分布
  */
+async function toGetBarLevelDistribution (ctx: Context) {
+    const currentUid = ctx.header.authorization ? (ctx.state.user as Token).uid : undefined
+
+    // 必要参数未携带
+    if (ctx.query.bid === undefined) {
+        ctx.status = 400;
+        return ctx.body = paramNotCarry()
+    }
+
+    const bid = +ctx.query.bid
+
+    if (isNaN(bid)) {
+        ctx.status = 400
+        return ctx.body = paramError()
+    }
+
+    try {
+        const res = await barService.getBarLevelDistribution(bid, currentUid)
+        
+        if (res) {
+            ctx.body=response(res,'ok')
+        } else {
+            ctx.status = 400
+            ctx.body = response(null,'获取吧等级人数分布失败,吧不存在',400)
+        }
+
+    } catch (error) {
+        console.log(error)
+        ctx.status = 500;
+        ctx.body = response(null, '服务器出错了!', 500)
+    }
+
+}
 
 export default {
     toCreateBar,
@@ -707,5 +774,7 @@ export default {
     toUpdateBarInfo,
     toUserCheckBar,
     toUpdateBarRank,
-    toGetBarRankInfo
+    toGetBarRankInfo,
+    toGetUserLevelList,
+    toGetBarLevelDistribution
 }

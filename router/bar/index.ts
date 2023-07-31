@@ -9,22 +9,22 @@ const barRouter = new Router()
 const baseRouteURL = '/bar'
 
 // 创建吧 (需要token) json {bname:string;bdesc:string;photo:string}
-barRouter.post('bar', `${baseRouteURL}/create`, BarController.toCreateBar)
+barRouter.post('bar', `${ baseRouteURL }/create`, BarController.toCreateBar)
 
 // 获取所有的吧 query {limit:number;offset:number;desc：number}
-barRouter.get('bar', `${baseRouteURL}/all`, BarController.toGetAllBar)
+barRouter.get('bar', `${ baseRouteURL }/all`, BarController.toGetAllBar)
 
 // 根据吧的id获取吧的数据 (使用中间件解析token 需要使用token中的数据) query {bid:number}
-barRouter.get('bar', `${baseRouteURL}/info`, middleware.tokenParse, BarController.toGetBarInfo)
+barRouter.get('bar', `${ baseRouteURL }/info`, middleware.tokenParse, BarController.toGetBarInfo)
 
 // 关注吧 (需要token) query {bid:number}
-barRouter.get('bar', `${baseRouteURL}/follow`, BarController.toFollowBar)
+barRouter.get('bar', `${ baseRouteURL }/follow`, BarController.toFollowBar)
 
 // 取消关注吧 (需要token) query {bid:number}
-barRouter.delete('bar', `${baseRouteURL}/follow`, BarController.toCanceFollowBar)
+barRouter.delete('bar', `${ baseRouteURL }/follow`, BarController.toCanceFollowBar)
 
 // 获取关注该吧的用户 (使用中间件解析token 需要使用token中的数据) query {bid:number,limit?:number=20,offset?:number=0,desc?:number}
-barRouter.get('bar', `${baseRouteURL}/follow/list`, middleware.tokenParse, BarController.toGetBarFollowUserList)
+barRouter.get('bar', `${ baseRouteURL }/follow/list`, middleware.tokenParse, BarController.toGetBarFollowUserList)
 
 // 获取用户关注的吧列表 (使用中间件解析token 需要使用token中的数据) query {uid:number,limit?:number=20,offset?:number=0,desc?:number}
 barRouter.get('bar', `${ baseRouteURL }/user/follow/list`, middleware.tokenParse, BarController.toGetUserFollowBarList)
@@ -58,5 +58,11 @@ barRouter.get('bar', `${ baseRouteURL }/rank/info`, BarController.toGetBarRankIn
 
 // 修改吧信息 只有吧主才能修改 json:{bname:string;photo:string;photo:string}
 barRouter.put('bar', `${ baseRouteURL }/edit`, BarController.toUpdateBarInfo)
+
+// 获取该吧的用户等级排行榜 query:{bid:number,offset:number,desc:number,limit:number}
+barRouter.get('bar', `${ baseRouteURL }/ranking`, middleware.tokenParse, BarController.toGetUserLevelList)
+
+// 获取该吧等级人数分布 query:{bid:number}
+barRouter.get('bar', `${ baseRouteURL }/rank/distribution`, middleware.tokenParse, BarController.toGetBarLevelDistribution)
 
 export default barRouter
