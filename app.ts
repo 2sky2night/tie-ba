@@ -14,10 +14,10 @@ const app = new Koa()
 
 /*********注册全局中间件*****/
 // handle fallback for HTML5 history API 除了/api以外的请求都响应index.html给用户
-app.use(async(_,next) => {
-   await new Promise((r)=>setTimeout(()=>r(1),Math.random()*3000))
-   await next()
-})
+// app.use(async(_,next) => {
+//    await new Promise((r)=>setTimeout(()=>r(1),Math.random()*3000))
+//    await next()
+// })
 app.use(historyApiFallback({ whiteList: ['/api'] }));
 // 挂载静态资源
 app.use(koaStatic('public'))

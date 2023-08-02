@@ -225,7 +225,7 @@ class ArticleService {
       }
       // 2.通过uid和aid来查询用户是否收藏过帖子
       const resIsStar = await article.selectInStarArticleTableByUidAndAid(uid, aid)
-      console.log(resIsStar)
+      
       if (resIsStar.length) {
         // 若存在记录说明用户收藏过帖子 则可以取消收藏
         await article.deleteInStarArticleTableByAidAndUid(aid, uid)

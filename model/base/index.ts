@@ -7,57 +7,62 @@ import DBconfig from '../../config/DBconfig';
 class BaseModel {
     pool: mysql.Pool;
 
-    constructor() {
+    constructor () {
         this.createPool();
     }
 
     /**
      * 创建连接池
      */
-    createPool() {
+    createPool () {
         this.pool = mysql.createPool(DBconfig);
     }
 
     /**
-     * 连接数据库
+     * 通过sql字符串直接查询
+     * @param sqlString 
      */
-    // connect() {
-    //     return new Promise((resolve, reject) => {
-    //         this.pool.getConnection((err, connection) => {
-    //             if (err) {
-    //                 // 连接数据库失败
-    //                 reject('连接数据库失败');
-    //                 console.log(err);
-    //             } else {
-    //                 resolve('ok');
-    //                 // Release the connection back to the pool after completing the query
-    //                 connection.release();
-    //             }
-    //         });
-    //     });
-    // }
-
+    runSql<T = any> (sqlString: string): Promise<T>;
+    /**
+     * 通过sql占位符查询
+     * @param sqlString 
+     * @param placeholder 
+     */
+    runSql<T = any> (sqlString: string, placeholder: (string | number)[]): Promise<T>;
     /**
      * 封装公共的 SQL 方法
      */
-    async runSql<T = any>(sqlString: string): Promise<T> {
-        // 连接数据库
-        // await this.connect();
-
-        // 查询
-        return new Promise((resolve, reject) => {
-            this.pool.query(sqlString, (err, res:any) => {
-                if (err) {
-                    reject('查询失败');
-                    console.log(err);
-                } else {
-                    // 打印 SQL 查询结果
-                    console.log(`${sqlString}:${JSON.stringify(res)}`);
-                    resolve(res);
-                }
+    async runSql<T = any> (sqlString: string, placeholder?: (string | number)[]) {
+        if (typeof placeholder === 'undefined') {
+            // 直接通过sql字符串查询
+            return new Promise<T>((resolve, reject) => {
+                this.pool.query(sqlString, (err, res) => {
+                    if (err) {
+                        reject('查询失败!');
+                        console.log(err);
+                    } else {
+                        // 打印 SQL 查询结果
+                        console.log(`${ sqlString }:${ JSON.stringify(res) }`);
+                        resolve(res as T);
+                    }
+                });
             });
-        });
+        } else {
+            // 占位符查询
+            return new Promise<T>((resolve, reject) => {
+                this.pool.query(sqlString, placeholder, (error, result) => {
+                    if (error) {
+                        reject('查询失败!')
+                        console.log(error);
+                    } else {
+                        // 查询成功
+                        console.log(`sql:${ sqlString }----占位符:${ JSON.stringify(placeholder) }----结果:${ JSON.stringify(result) }`);
+                        resolve(result as T);
+                    }
+                })
+            })
+        }
     }
-}
 
+}
 export default BaseModel;
