@@ -34,7 +34,7 @@ export default async function tokenParse(ctx: Context, next: Next) {
                             // 无效的token
                             rejected(2)
                         } else {
-                            rejected()
+                            rejected(err)
                         }
                     } else {
                         // token解析成功
@@ -60,8 +60,8 @@ export default async function tokenParse(ctx: Context, next: Next) {
             ctx.status = 401;
             ctx.body = response(null, '无效的token', 400)
         } else {
-            ctx.status = 500;
-            ctx.body = response(null, '其他错误', 500)
+            ctx.status = 401;
+            ctx.body = response(null, err.toString ? err.toString() : 'token错误!', 401)
         }
     }
 }

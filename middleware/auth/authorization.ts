@@ -8,7 +8,7 @@ import response from '../../utils/tools/response'
  * @param ctx 
  * @param next 
  */
-export default async function authorizationCatcher (ctx: Context, next: Next) {
+export default async function authorizationCatcher(ctx: Context, next: Next) {
     if (NO_AUTH.includes(ctx.path)) {
         // 路由白名单
         await next()
@@ -21,7 +21,7 @@ export default async function authorizationCatcher (ctx: Context, next: Next) {
                 ctx.body = response(null, '未携带 token', 400)
             } else {
                 // 携带了token需要进行验证 (需要先格式化token，把Bearer 截取掉)
-                const tokenFormat = ctx.header.authorization.split(' ')[ 1 ]
+                const tokenFormat = ctx.header.authorization.split(' ')[1]
                 // 解析token中的数据
                 const data = await new Promise((resolve, rejected) => {
                     jwt.verify(tokenFormat, SECRET_KEY, function (err, decoded) {
@@ -38,7 +38,7 @@ export default async function authorizationCatcher (ctx: Context, next: Next) {
                                 // 无效的token
                                 rejected(2)
                             } else {
-                                rejected()
+                                rejected(err)
                             }
                         } else {
                             // token解析成功
@@ -51,7 +51,7 @@ export default async function authorizationCatcher (ctx: Context, next: Next) {
                 await next()
             }
         } catch (err) {
-            
+
             if (err === 1) {
                 // token过期
                 ctx.status = 401;
@@ -61,8 +61,8 @@ export default async function authorizationCatcher (ctx: Context, next: Next) {
                 ctx.status = 401;
                 ctx.body = response(null, '无效的token', 400)
             } else {
-                ctx.status = 500;
-                ctx.body = response(null, '其他错误', 500)
+                ctx.status = 401;
+                ctx.body = response(null, err.toString ? err.toString() : 'token错误!', 401)
             }
         }
 
